@@ -15,11 +15,32 @@ interface BlockListDao {
     @Query("SELECT EXISTS(SELECT 1 FROM block_list WHERE number = :number)")
     suspend fun isBlocked(number: String): Boolean
 
+    @Query("SELECT * FROM block_list WHERE number = :number LIMIT 1")
+    suspend fun getIfExists(number: String): BlockListEntry?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(entries: List<BlockListEntry>)
 
     @Delete
     suspend fun delete(entry: BlockListEntry)
+}
+
+@Dao
+interface AllowListDao {
+    @Query("SELECT * FROM allow_list ORDER BY addedAt DESC")
+    fun observeAll(): Flow<List<AllowListEntry>>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM allow_list WHERE number = :number)")
+    suspend fun isAllowed(number: String): Boolean
+
+    @Query("SELECT * FROM allow_list WHERE number = :number LIMIT 1")
+    suspend fun getIfExists(number: String): AllowListEntry?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entries: List<AllowListEntry>)
+
+    @Delete
+    suspend fun delete(entry: AllowListEntry)
 }
 
 @Dao

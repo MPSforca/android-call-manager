@@ -1,9 +1,29 @@
 package com.matheus.callmanager.util
 
 import android.content.Context
+import android.net.Uri
 import android.provider.ContactsContract
 
 object ContactsUtil {
+    /** Resolves a URI returned by ACTION_PICK on Phone.CONTENT_TYPE into a (number, name) pair. */
+    fun resolvePickedPhoneNumber(context: Context, uri: Uri): Pair<String, String?>? {
+        context.contentResolver.query(
+            uri,
+            arrayOf(
+                ContactsContract.CommonDataKinds.Phone.NUMBER,
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+            ),
+            null, null, null
+        )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val number = cursor.getString(0) ?: return null
+                val name = cursor.getString(1)
+                return number to name
+            }
+        }
+        return null
+    }
+
     /** True if [number] matches an entry in the user's contacts. */
     fun isContact(context: Context, number: String): Boolean {
         val uri = ContactsContract.PhoneLookup.CONTENT_FILTER_URI.buildUpon()

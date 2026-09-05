@@ -6,12 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [BlockListEntry::class, AcceptedCaller::class, BlockedCallLog::class],
-    version = 1,
+    entities = [BlockListEntry::class, AllowListEntry::class, AcceptedCaller::class, BlockedCallLog::class],
+    version = 2,
     exportSchema = false
 )
 abstract class CallManagerDatabase : RoomDatabase() {
     abstract fun blockListDao(): BlockListDao
+    abstract fun allowListDao(): AllowListDao
     abstract fun acceptedCallerDao(): AcceptedCallerDao
     abstract fun blockedCallLogDao(): BlockedCallLogDao
 
@@ -24,7 +25,7 @@ abstract class CallManagerDatabase : RoomDatabase() {
                     context.applicationContext,
                     CallManagerDatabase::class.java,
                     "call-manager.db"
-                ).build().also { instance = it }
+                ).fallbackToDestructiveMigration().build().also { instance = it }
             }
     }
 }

@@ -2,9 +2,12 @@ package com.matheus.callmanager.ui
 
 import android.Manifest
 import android.app.role.RoleManager
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.ContactsContract
+import com.matheus.callmanager.util.ContactsUtil
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -36,6 +39,22 @@ class MainActivity : ComponentActivity() {
         // No-op: user accepted or declined the call-screening role request.
     }
 
+    private var pendingContactPickTarget: ContactPickTarget? = null
+
+    private val contactPickLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val uri = result.data?.data
+        val target = pendingContactPickTarget
+        pendingContactPickTarget = null
+        if (uri != null && target != null) {
+            ContactsUtil.resolvePickedPhoneNumber(this, uri)?.let { (number, name) ->
+                when (target) {
+                    ContactPickTarget.BLOCK -> viewModel.blockContact(number, name)
+                    ContactPickTarget.ALLOW -> viewModel.allowContact(number, name)
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestNeededPermissions()
@@ -49,12 +68,24 @@ class MainActivity : ComponentActivity() {
                             requestScreeningRole()
                         })
                     } else {
-                        CallManagerApp(viewModel = viewModel)
+                        CallManagerApp(
+                            viewModel = viewModel,
+                            onPickContactToBlock = { pickContact(ContactPickTarget.BLOCK) },
+                            onPickContactToAllow = { pickContact(ContactPickTarget.ALLOW) }
+                        )
                     }
                 }
             }
         }
     }
+
+    private fun pickContact(target: ContactPickTarget) {
+        pendingContactPickTarget = target
+        val intent = Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
+        contactPickLauncher.launch(intent)
+    }
+
+    private enum class ContactPickTarget { BLOCK, ALLOW }
 
     override fun onResume() {
         super.onResume()

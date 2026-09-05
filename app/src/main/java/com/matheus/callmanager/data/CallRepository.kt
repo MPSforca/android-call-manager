@@ -10,23 +10,39 @@ sealed class ScreeningDecision {
     data class Reject(val reason: String) : ScreeningDecision()
 }
 
-/** Central place where the block-list, contacts and "recently accepted" rules are evaluated. */
+/** Central place where the block-list, allow-list, contacts and "recently accepted" rules are evaluated. */
 class CallRepository(private val context: Context) {
     private val db = CallManagerDatabase.get(context)
     private val blockListDao = db.blockListDao()
+    private val allowListDao = db.allowListDao()
     private val acceptedCallerDao = db.acceptedCallerDao()
     private val blockedCallLogDao = db.blockedCallLogDao()
     val settings = SettingsStore(context)
 
     fun observeBlockList(): Flow<List<BlockListEntry>> = blockListDao.observeAll()
+    fun observeAllowList(): Flow<List<AllowListEntry>> = allowListDao.observeAll()
     fun observeBlockedCallLog(): Flow<List<BlockedCallLog>> = blockedCallLogDao.observeAll()
 
-    suspend fun blockNumbers(numbers: List<String>) {
+    suspend fun blockNumbers(numbers: List<Pair<String, String?>>) {
         val now = System.currentTimeMillis()
-        blockListDao.insertAll(numbers.map { BlockListEntry(it, now) })
+        blockListDao.insertAll(numbers.map { (number, name) -> BlockListEntry(number, name, now) })
+        // Blocking a number should take precedence over any existing allow entry for it.
+        numbers.forEach { (number, _) ->
+            allowListDao.getIfExists(number)?.let { allowListDao.delete(it) }
+        }
     }
 
     suspend fun unblock(entry: BlockListEntry) = blockListDao.delete(entry)
+
+    suspend fun allowNumbers(numbers: List<Pair<String, String?>>) {
+        val now = System.currentTimeMillis()
+        allowListDao.insertAll(numbers.map { (number, name) -> AllowListEntry(number, name, now) })
+        numbers.forEach { (number, _) ->
+            blockListDao.getIfExists(number)?.let { blockListDao.delete(it) }
+        }
+    }
+
+    suspend fun unallow(entry: AllowListEntry) = allowListDao.delete(entry)
 
     /** Call when the user answers/accepts a call, so the same number is allowed again for X days. */
     suspend fun recordAccepted(number: String) {
@@ -37,6 +53,9 @@ class CallRepository(private val context: Context) {
     suspend fun evaluate(number: String): ScreeningDecision {
         if (blockListDao.isBlocked(number)) {
             return ScreeningDecision.Reject("On your block list")
+        }
+        if (allowListDao.isAllowed(number)) {
+            return ScreeningDecision.Allow("On your allow list")
         }
         if (settings.allowContacts && ContactsUtil.isContact(context, number)) {
             return ScreeningDecision.Allow("Known contact")

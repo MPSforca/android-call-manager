@@ -9,39 +9,56 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Rule
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import com.matheus.callmanager.BuildConfig
 import java.text.DateFormat
 import java.util.Date
-import androidx.compose.material.icons.filled.Delete
 
-private enum class Tab(val label: String) { RECENT("Recent"), BLOCKED("Blocked"), RULES("Rules") }
+private enum class Tab(val label: String) {
+    RECENT("Recent"), LISTS("Lists"), RULES("Rules"), DEBUG("Debug")
+}
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CallManagerApp(viewModel: MainViewModel) {
+fun CallManagerApp(
+    viewModel: MainViewModel,
+    onPickContactToBlock: () -> Unit,
+    onPickContactToAllow: () -> Unit
+) {
     var tab by remember { mutableStateOf(Tab.RECENT) }
+    val showDebugTab = BuildConfig.DEBUG
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Call Manager") }) },
@@ -54,10 +71,10 @@ fun CallManagerApp(viewModel: MainViewModel) {
                     label = { Text(Tab.RECENT.label) }
                 )
                 NavigationBarItem(
-                    selected = tab == Tab.BLOCKED,
-                    onClick = { tab = Tab.BLOCKED },
+                    selected = tab == Tab.LISTS,
+                    onClick = { tab = Tab.LISTS },
                     icon = { Icon(Icons.Filled.Block, contentDescription = null) },
-                    label = { Text(Tab.BLOCKED.label) }
+                    label = { Text(Tab.LISTS.label) }
                 )
                 NavigationBarItem(
                     selected = tab == Tab.RULES,
@@ -65,14 +82,23 @@ fun CallManagerApp(viewModel: MainViewModel) {
                     icon = { Icon(Icons.Filled.Rule, contentDescription = null) },
                     label = { Text(Tab.RULES.label) }
                 )
+                if (showDebugTab) {
+                    NavigationBarItem(
+                        selected = tab == Tab.DEBUG,
+                        onClick = { tab = Tab.DEBUG },
+                        icon = { Icon(Icons.Filled.BugReport, contentDescription = null) },
+                        label = { Text(Tab.DEBUG.label) }
+                    )
+                }
             }
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
             when (tab) {
                 Tab.RECENT -> RecentCallsScreen(viewModel)
-                Tab.BLOCKED -> BlockedScreen(viewModel)
+                Tab.LISTS -> ListsScreen(viewModel, onPickContactToBlock, onPickContactToAllow)
                 Tab.RULES -> RulesScreen(viewModel)
+                Tab.DEBUG -> DebugScreen(viewModel)
             }
         }
     }
@@ -102,7 +128,7 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
             items(calls, key = { it.timestamp }) { call ->
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(
                         checked = selected.contains(call.number),
@@ -114,7 +140,7 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
                         Text(call.name ?: call.number, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(
                             "${call.number} · ${DateFormat.getDateTimeInstance().format(Date(call.timestamp))}",
-                            style = androidx.compose.material3.MaterialTheme.typography.bodySmall
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }
@@ -125,32 +151,100 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
 }
 
 @Composable
-private fun BlockedScreen(viewModel: MainViewModel) {
+private fun ListsScreen(
+    viewModel: MainViewModel,
+    onPickContactToBlock: () -> Unit,
+    onPickContactToAllow: () -> Unit
+) {
     val blockList by viewModel.blockList.collectAsState()
+    val allowList by viewModel.allowList.collectAsState()
     val log by viewModel.blockedCallLog.collectAsState()
+    var manualNumber by remember { mutableStateOf("") }
 
     LazyColumn(modifier = Modifier.padding(16.dp)) {
-        item { Text("Block list", style = androidx.compose.material3.MaterialTheme.typography.titleMedium) }
+        item {
+            OutlinedTextField(
+                value = manualNumber,
+                onValueChange = { manualNumber = it },
+                label = { Text("Add a number manually") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { viewModel.blockContact(manualNumber, null); manualNumber = "" },
+                    enabled = manualNumber.isNotBlank()
+                ) { Text("Block it") }
+                OutlinedButton(
+                    onClick = { viewModel.allowContact(manualNumber, null); manualNumber = "" },
+                    enabled = manualNumber.isNotBlank()
+                ) { Text("Allow it") }
+            }
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+        }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Block list", style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = onPickContactToBlock) {
+                    Icon(Icons.Filled.PersonAdd, contentDescription = "Add contact to block list")
+                }
+            }
+        }
         items(blockList, key = { it.number }) { entry ->
             Row(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(entry.number)
+                Text(entry.displayName ?: entry.number)
                 IconButton(onClick = { viewModel.unblock(entry) }) {
                     Icon(Icons.Filled.Delete, contentDescription = "Remove")
                 }
             }
         }
+
         item { HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp)) }
-        item { Text("Rejected calls", style = androidx.compose.material3.MaterialTheme.typography.titleMedium) }
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Allow list", style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = onPickContactToAllow) {
+                    Icon(Icons.Filled.PersonAdd, contentDescription = "Add contact to allow list")
+                }
+            }
+        }
+        items(allowList, key = { it.number }) { entry ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(entry.displayName ?: entry.number)
+                IconButton(onClick = { viewModel.unallow(entry) }) {
+                    Icon(Icons.Filled.Delete, contentDescription = "Remove")
+                }
+            }
+        }
+
+        item { HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp)) }
+        item { Text("Rejected calls", style = MaterialTheme.typography.titleMedium) }
         items(log, key = { it.id }) { entry ->
             Column(modifier = Modifier.padding(vertical = 8.dp)) {
                 Text(entry.callerName ?: entry.number)
                 Text(
                     "${entry.reason} · ${DateFormat.getDateTimeInstance().format(Date(entry.timestamp))}",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }
@@ -206,6 +300,45 @@ private fun RulesScreen(viewModel: MainViewModel) {
                 blockUnknown = it
                 settings.blockUnknownNumbers = it
             })
+        }
+    }
+}
+
+/** Debug-only: runs the same rule evaluation the real CallScreeningService uses, without a real call. */
+@Composable
+private fun DebugScreen(viewModel: MainViewModel) {
+    var number by remember { mutableStateOf("") }
+    val result by viewModel.simulationResult.collectAsState()
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(
+            "Simulate an incoming call to test your rules without dialing your device.",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        OutlinedTextField(
+            value = number,
+            onValueChange = { number = it },
+            label = { Text("Phone number") },
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+        )
+        Button(
+            onClick = { viewModel.simulateIncomingCall(number) },
+            enabled = number.isNotBlank(),
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            Text("Simulate call")
+        }
+        result?.let {
+            Row(
+                modifier = Modifier.padding(top = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    if (it.startsWith("ALLOWED")) Icons.Filled.CheckCircle else Icons.Filled.Block,
+                    contentDescription = null
+                )
+                Text(it, modifier = Modifier.padding(start = 8.dp))
+            }
         }
     }
 }
