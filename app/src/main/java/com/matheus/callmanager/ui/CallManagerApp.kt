@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.BugReport
@@ -27,6 +28,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -43,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.matheus.callmanager.BuildConfig
+import com.matheus.callmanager.data.BlockedCallAction
 import java.text.DateFormat
 import java.util.Date
 
@@ -258,6 +261,7 @@ private fun RulesScreen(viewModel: MainViewModel) {
     var recentEnabled by remember { mutableStateOf(settings.recentAcceptedRuleEnabled) }
     var recentDays by remember { mutableStateOf(settings.allowRecentAcceptedDays.toFloat()) }
     var blockUnknown by remember { mutableStateOf(settings.blockUnknownNumbers) }
+    var blockedCallAction by remember { mutableStateOf(settings.blockedCallAction) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Row(
@@ -300,6 +304,41 @@ private fun RulesScreen(viewModel: MainViewModel) {
                 blockUnknown = it
                 settings.blockUnknownNumbers = it
             })
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+        Text("When a call is blocked", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "Applies to your block list and, if enabled above, unknown numbers.",
+            style = MaterialTheme.typography.bodySmall
+        )
+        Column(modifier = Modifier.padding(top = 8.dp)) {
+            listOf(
+                BlockedCallAction.SILENCE to "Show it silently — appears on screen/notifications, never rings",
+                BlockedCallAction.REJECT to "Reject it outright — never surfaces as an incoming call"
+            ).forEach { (action, label) ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = blockedCallAction == action,
+                            onClick = {
+                                blockedCallAction = action
+                                settings.blockedCallAction = action
+                            }
+                        )
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = blockedCallAction == action,
+                        onClick = {
+                            blockedCallAction = action
+                            settings.blockedCallAction = action
+                        }
+                    )
+                    Text(label, modifier = Modifier.padding(start = 8.dp))
+                }
+            }
         }
     }
 }

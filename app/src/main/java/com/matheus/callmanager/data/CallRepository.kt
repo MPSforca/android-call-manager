@@ -1,7 +1,6 @@
 package com.matheus.callmanager.data
 
 import android.content.Context
-import com.matheus.callmanager.util.ContactsUtil
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.Flow
 
@@ -10,13 +9,19 @@ sealed class ScreeningDecision {
     data class Reject(val reason: String) : ScreeningDecision()
 }
 
-/** Central place where the block-list, allow-list, contacts and "recently accepted" rules are evaluated. */
-class CallRepository(private val context: Context) {
-    private val db = CallManagerDatabase.get(context)
-    private val blockListDao = db.blockListDao()
-    private val allowListDao = db.allowListDao()
-    private val acceptedCallerDao = db.acceptedCallerDao()
-    private val blockedCallLogDao = db.blockedCallLogDao()
+/**
+ * Central place where the block-list, allow-list, contacts and "recently accepted" rules are evaluated.
+ * [database] and [contactsLookup] are injectable so this can be unit tested without a real device.
+ */
+class CallRepository(
+    context: Context,
+    private val database: CallManagerDatabase = CallManagerDatabase.get(context),
+    private val contactsLookup: ContactsLookup = AndroidContactsLookup(context)
+) {
+    private val blockListDao = database.blockListDao()
+    private val allowListDao = database.allowListDao()
+    private val acceptedCallerDao = database.acceptedCallerDao()
+    private val blockedCallLogDao = database.blockedCallLogDao()
     val settings = SettingsStore(context)
 
     fun observeBlockList(): Flow<List<BlockListEntry>> = blockListDao.observeAll()
@@ -57,7 +62,7 @@ class CallRepository(private val context: Context) {
         if (allowListDao.isAllowed(number)) {
             return ScreeningDecision.Allow("On your allow list")
         }
-        if (settings.allowContacts && ContactsUtil.isContact(context, number)) {
+        if (settings.allowContacts && contactsLookup.isContact(number)) {
             return ScreeningDecision.Allow("Known contact")
         }
         if (settings.recentAcceptedRuleEnabled) {
@@ -75,7 +80,7 @@ class CallRepository(private val context: Context) {
     }
 
     suspend fun logBlockedCall(number: String, reason: String) {
-        val name = ContactsUtil.displayName(context, number)
+        val name = contactsLookup.displayName(number)
         blockedCallLogDao.insert(
             BlockedCallLog(number = number, callerName = name, timestamp = System.currentTimeMillis(), reason = reason)
         )
