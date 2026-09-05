@@ -58,7 +58,9 @@ private enum class Tab(val label: String) {
 fun CallManagerApp(
     viewModel: MainViewModel,
     onPickContactToBlock: () -> Unit,
-    onPickContactToAllow: () -> Unit
+    onPickContactToAllow: () -> Unit,
+    isIgnoringBatteryOptimizations: Boolean,
+    onRequestIgnoreBatteryOptimizations: () -> Unit
 ) {
     var tab by remember { mutableStateOf(Tab.RECENT) }
     val showDebugTab = BuildConfig.DEBUG
@@ -100,7 +102,7 @@ fun CallManagerApp(
             when (tab) {
                 Tab.RECENT -> RecentCallsScreen(viewModel)
                 Tab.LISTS -> ListsScreen(viewModel, onPickContactToBlock, onPickContactToAllow)
-                Tab.RULES -> RulesScreen(viewModel)
+                Tab.RULES -> RulesScreen(viewModel, isIgnoringBatteryOptimizations, onRequestIgnoreBatteryOptimizations)
                 Tab.DEBUG -> DebugScreen(viewModel)
             }
         }
@@ -161,7 +163,7 @@ private fun ListsScreen(
 ) {
     val blockList by viewModel.blockList.collectAsState()
     val allowList by viewModel.allowList.collectAsState()
-    val log by viewModel.blockedCallLog.collectAsState()
+    val blockedCalls by viewModel.blockedCalls.collectAsState()
     var manualNumber by remember { mutableStateOf("") }
 
     LazyColumn(modifier = Modifier.padding(16.dp)) {
@@ -241,12 +243,18 @@ private fun ListsScreen(
         }
 
         item { HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp)) }
-        item { Text("Rejected calls", style = MaterialTheme.typography.titleMedium) }
-        items(log, key = { it.id }) { entry ->
+        item {
+            Text("Blocked calls", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Includes calls blocked by this app, Android's own block list, and your carrier.",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        items(blockedCalls, key = { "${it.number}-${it.timestamp}" }) { entry ->
             Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                Text(entry.callerName ?: entry.number)
+                Text(entry.name ?: entry.number)
                 Text(
-                    "${entry.reason} · ${DateFormat.getDateTimeInstance().format(Date(entry.timestamp))}",
+                    "${entry.reason} · ${entry.source} · ${DateFormat.getDateTimeInstance().format(Date(entry.timestamp))}",
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -255,7 +263,11 @@ private fun ListsScreen(
 }
 
 @Composable
-private fun RulesScreen(viewModel: MainViewModel) {
+private fun RulesScreen(
+    viewModel: MainViewModel,
+    isIgnoringBatteryOptimizations: Boolean,
+    onRequestIgnoreBatteryOptimizations: () -> Unit
+) {
     val settings = viewModel.settings
     var allowContacts by remember { mutableStateOf(settings.allowContacts) }
     var recentEnabled by remember { mutableStateOf(settings.recentAcceptedRuleEnabled) }
@@ -264,6 +276,24 @@ private fun RulesScreen(viewModel: MainViewModel) {
     var blockedCallAction by remember { mutableStateOf(settings.blockedCallAction) }
 
     Column(modifier = Modifier.padding(16.dp)) {
+        if (!isIgnoringBatteryOptimizations) {
+            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
+                Text("Call screening can be silently killed", style = MaterialTheme.typography.titleSmall)
+                Text(
+                    "Some phones aggressively kill background apps, which can stop calls from being " +
+                        "screened at all. This app has no persistent background process — it just needs " +
+                        "the system to be allowed to wake it briefly per call.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Button(
+                    onClick = onRequestIgnoreBatteryOptimizations,
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text("Exempt from battery optimization")
+                }
+            }
+            HorizontalDivider(modifier = Modifier.padding(bottom = 12.dp))
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween

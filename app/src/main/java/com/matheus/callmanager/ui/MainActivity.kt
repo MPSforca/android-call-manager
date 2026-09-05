@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
+import com.matheus.callmanager.util.BatteryUtil
 import com.matheus.callmanager.util.ContactsUtil
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,6 +38,12 @@ class MainActivity : ComponentActivity() {
 
     private val roleLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         // No-op: user accepted or declined the call-screening role request.
+    }
+
+    private var batteryOptimizationIgnored by mutableStateOf(false)
+
+    private val batteryOptimizationLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        batteryOptimizationIgnored = BatteryUtil.isIgnoringBatteryOptimizations(this)
     }
 
     private var pendingContactPickTarget: ContactPickTarget? = null
@@ -71,7 +78,11 @@ class MainActivity : ComponentActivity() {
                         CallManagerApp(
                             viewModel = viewModel,
                             onPickContactToBlock = { pickContact(ContactPickTarget.BLOCK) },
-                            onPickContactToAllow = { pickContact(ContactPickTarget.ALLOW) }
+                            onPickContactToAllow = { pickContact(ContactPickTarget.ALLOW) },
+                            isIgnoringBatteryOptimizations = batteryOptimizationIgnored,
+                            onRequestIgnoreBatteryOptimizations = {
+                                batteryOptimizationLauncher.launch(BatteryUtil.requestIgnoreBatteryOptimizationsIntent(this))
+                            }
                         )
                     }
                 }
@@ -90,6 +101,8 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.refreshRecentCalls()
+        viewModel.refreshSystemBlockedCalls()
+        batteryOptimizationIgnored = BatteryUtil.isIgnoringBatteryOptimizations(this)
     }
 
     private fun requestNeededPermissions() {

@@ -5,14 +5,17 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.callmanager.data.AllowListEntry
 import com.matheus.callmanager.data.BlockListEntry
-import com.matheus.callmanager.data.BlockedCallLog
+import com.matheus.callmanager.data.BlockedCallMerger
 import com.matheus.callmanager.data.CallRepository
 import com.matheus.callmanager.data.ScreeningDecision
+import com.matheus.callmanager.data.UnifiedBlockedCall
 import com.matheus.callmanager.util.CallLogUtil
 import com.matheus.callmanager.util.RecentCall
+import com.matheus.callmanager.util.SystemBlockedCall
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -22,15 +25,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _recentCalls = MutableStateFlow<List<RecentCall>>(emptyList())
     val recentCalls: StateFlow<List<RecentCall>> = _recentCalls.asStateFlow()
 
+    private val _systemBlockedCalls = MutableStateFlow<List<SystemBlockedCall>>(emptyList())
+
     val blockList: StateFlow<List<BlockListEntry>> = stateFlowFrom(repository.observeBlockList(), emptyList())
     val allowList: StateFlow<List<AllowListEntry>> = stateFlowFrom(repository.observeAllowList(), emptyList())
-    val blockedCallLog: StateFlow<List<BlockedCallLog>> = stateFlowFrom(repository.observeBlockedCallLog(), emptyList())
+
+    /**
+     * Merges this app's own block log with every call the system call log tagged BLOCKED_TYPE —
+     * covering Android's native "Blocked numbers" list, the carrier, and other call-screening apps —
+     * so the Blocked tab isn't limited to calls this app happened to be running for.
+     */
+    val blockedCalls: StateFlow<List<UnifiedBlockedCall>> = run {
+        val state = MutableStateFlow<List<UnifiedBlockedCall>>(emptyList())
+        viewModelScope.launch {
+            combine(repository.observeBlockedCallLog(), _systemBlockedCalls) { ownLog, systemLog ->
+                BlockedCallMerger.merge(ownLog, systemLog)
+            }.collect { state.value = it }
+        }
+        state.asStateFlow()
+    }
 
     private val _simulationResult = MutableStateFlow<String?>(null)
     val simulationResult: StateFlow<String?> = _simulationResult.asStateFlow()
 
     fun refreshRecentCalls() {
         _recentCalls.value = CallLogUtil.recentCalls(getApplication())
+    }
+
+    fun refreshSystemBlockedCalls() {
+        _systemBlockedCalls.value = CallLogUtil.systemBlockedCalls(getApplication())
     }
 
     fun blockNumbers(numbers: Set<String>) {
