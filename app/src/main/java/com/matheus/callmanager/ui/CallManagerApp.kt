@@ -1,5 +1,6 @@
 package com.matheus.callmanager.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CheckCircle
@@ -49,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import com.matheus.callmanager.BuildConfig
 import com.matheus.callmanager.data.BlockedCallAction
 import com.matheus.callmanager.util.CallLogUtil
+import com.matheus.callmanager.util.RecentCallGroup
 import java.text.DateFormat
 import java.util.Date
 
@@ -112,24 +115,38 @@ fun CallManagerApp(
     }
 }
 
+private enum class NumberStatus { BLOCKED, ALLOWED, NONE }
+
 @Composable
 private fun RecentCallsScreen(viewModel: MainViewModel) {
     val calls by viewModel.recentCalls.collectAsState()
     val blockList by viewModel.blockList.collectAsState()
     val allowList by viewModel.allowList.collectAsState()
     var selected by remember { mutableStateOf(setOf<String>()) }
-    var expanded by remember { mutableStateOf(setOf<String>()) }
+    var selectedNumber by remember { mutableStateOf<String?>(null) }
 
     val groups = remember(calls) { CallLogUtil.groupByNumber(calls) }
     val blockedNumbers = remember(blockList) { blockList.map { it.number }.toSet() }
     val allowedNumbers = remember(allowList) { allowList.map { it.number }.toSet() }
+
+    val detailGroup = groups.find { it.number == selectedNumber }
+    if (detailGroup != null) {
+        BackHandler { selectedNumber = null }
+        CallDetailScreen(
+            viewModel = viewModel,
+            group = detailGroup,
+            status = statusOf(detailGroup.number, blockedNumbers, allowedNumbers),
+            onBack = { selectedNumber = null }
+        )
+        return
+    }
 
     Column {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Select calls to block or allow in bulk")
+            Text("Tap a number for details, or select to block/allow in bulk")
             if (selected.isNotEmpty()) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FloatingActionButton(onClick = {
@@ -149,26 +166,23 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
         }
         LazyColumn {
             items(groups, key = { it.number }) { group ->
-                val isBlocked = blockedNumbers.contains(group.number)
-                val isAllowed = allowedNumbers.contains(group.number)
-                val isExpanded = expanded.contains(group.number)
+                val status = statusOf(group.number, blockedNumbers, allowedNumbers)
+                val latestCall = group.calls.first()
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            when {
-                                isBlocked -> MaterialTheme.colorScheme.errorContainer
-                                isAllowed -> MaterialTheme.colorScheme.primaryContainer
-                                else -> MaterialTheme.colorScheme.surface
+                            when (status) {
+                                NumberStatus.BLOCKED -> MaterialTheme.colorScheme.errorContainer
+                                NumberStatus.ALLOWED -> MaterialTheme.colorScheme.primaryContainer
+                                NumberStatus.NONE -> MaterialTheme.colorScheme.surface
                             }
                         )
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                expanded = if (isExpanded) expanded - group.number else expanded + group.number
-                            }
+                            .clickable { selectedNumber = group.number }
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -178,43 +192,108 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
                                 selected = if (checked) selected + group.number else selected - group.number
                             }
                         )
-                        if (isBlocked) {
-                            Icon(
-                                Icons.Filled.Block,
-                                contentDescription = "Blocked",
-                                tint = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-                        }
-                        if (isAllowed) {
-                            Icon(
-                                Icons.Filled.CheckCircle,
-                                contentDescription = "Allowed",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(end = 8.dp)
-                            )
-                        }
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(group.name ?: group.number, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    group.name ?: group.number,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false)
+                                )
+                                StatusBadge(status, modifier = Modifier.padding(start = 8.dp))
+                            }
                             val countSuffix = if (group.calls.size > 1) " · ${group.calls.size} calls" else ""
                             Text(
-                                "${group.number} · " +
-                                    "${DateFormat.getDateTimeInstance().format(Date(group.latestTimestamp))}" +
-                                    countSuffix,
+                                "${DateFormat.getDateTimeInstance().format(Date(group.latestTimestamp))} · " +
+                                    CallLogUtil.callTypeLabel(latestCall.type) + countSuffix,
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
                     }
-                    if (isExpanded && group.calls.size > 1) {
-                        Column(modifier = Modifier.padding(start = 56.dp, end = 16.dp, bottom = 8.dp)) {
-                            group.calls.forEach { call ->
-                                Text(
-                                    DateFormat.getDateTimeInstance().format(Date(call.timestamp)),
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-                    }
+                }
+                HorizontalDivider()
+            }
+        }
+    }
+}
+
+private fun statusOf(number: String, blockedNumbers: Set<String>, allowedNumbers: Set<String>): NumberStatus = when {
+    blockedNumbers.contains(number) -> NumberStatus.BLOCKED
+    allowedNumbers.contains(number) -> NumberStatus.ALLOWED
+    else -> NumberStatus.NONE
+}
+
+@Composable
+private fun StatusBadge(status: NumberStatus, modifier: Modifier = Modifier) {
+    val (label, color) = when (status) {
+        NumberStatus.BLOCKED -> "Blocked" to MaterialTheme.colorScheme.error
+        NumberStatus.ALLOWED -> "Allowed" to MaterialTheme.colorScheme.primary
+        NumberStatus.NONE -> return
+    }
+    Text(
+        label,
+        style = MaterialTheme.typography.labelSmall,
+        color = color,
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun CallDetailScreen(
+    viewModel: MainViewModel,
+    group: RecentCallGroup,
+    status: NumberStatus,
+    onBack: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+            Column(modifier = Modifier.padding(start = 8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(group.name ?: group.number, style = MaterialTheme.typography.titleMedium)
+                    StatusBadge(status, modifier = Modifier.padding(start = 8.dp))
+                }
+                if (group.name != null) {
+                    Text(group.number, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                modifier = Modifier.weight(1f),
+                onClick = { viewModel.toggleAllow(group.number, group.name) }
+            ) {
+                Text(if (status == NumberStatus.ALLOWED) "Remove from allow list" else "Add to allow list")
+            }
+            OutlinedButton(
+                modifier = Modifier.weight(1f),
+                onClick = { viewModel.toggleBlock(group.number, group.name) }
+            ) {
+                Text(if (status == NumberStatus.BLOCKED) "Unblock" else "Block")
+            }
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        Text(
+            "Call history",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        LazyColumn {
+            items(group.calls, key = { it.timestamp }) { call ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(DateFormat.getDateTimeInstance().format(Date(call.timestamp)))
+                    Text(CallLogUtil.callTypeLabel(call.type), style = MaterialTheme.typography.bodySmall)
                 }
                 HorizontalDivider()
             }

@@ -1,9 +1,19 @@
 package com.matheus.callmanager.util
 
+import android.provider.CallLog
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class CallLogUtilTest {
+
+    @Test
+    fun `call type label describes the outcome of a call`() {
+        assertEquals("Incoming", CallLogUtil.callTypeLabel(CallLog.Calls.INCOMING_TYPE))
+        assertEquals("Outgoing", CallLogUtil.callTypeLabel(CallLog.Calls.OUTGOING_TYPE))
+        assertEquals("Missed", CallLogUtil.callTypeLabel(CallLog.Calls.MISSED_TYPE))
+        assertEquals("Rejected", CallLogUtil.callTypeLabel(CallLog.Calls.REJECTED_TYPE))
+        assertEquals("Blocked", CallLogUtil.callTypeLabel(CallLog.Calls.BLOCKED_TYPE))
+    }
 
     @Test
     fun `calls from the same number are grouped into one entry`() {

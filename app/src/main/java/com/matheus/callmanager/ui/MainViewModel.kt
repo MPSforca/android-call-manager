@@ -82,6 +82,22 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { repository.unallow(entry) }
     }
 
+    /** Toggles a single number's block-list membership (used by the call-detail screen). */
+    fun toggleBlock(number: String, name: String?) {
+        viewModelScope.launch {
+            val existing = blockList.value.firstOrNull { it.number == number }
+            if (existing != null) repository.unblock(existing) else repository.blockNumbers(listOf(number to name))
+        }
+    }
+
+    /** Toggles a single number's allow-list membership (used by the call-detail screen). */
+    fun toggleAllow(number: String, name: String?) {
+        viewModelScope.launch {
+            val existing = allowList.value.firstOrNull { it.number == number }
+            if (existing != null) repository.unallow(existing) else repository.allowNumbers(listOf(number to name))
+        }
+    }
+
     /** Runs the same rule evaluation the real CallScreeningService would, without needing an actual call. */
     fun simulateIncomingCall(number: String) {
         viewModelScope.launch {
