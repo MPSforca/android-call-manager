@@ -1,5 +1,7 @@
 package com.matheus.callmanager.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.matheus.callmanager.BuildConfig
 import com.matheus.callmanager.data.BlockedCallAction
+import com.matheus.callmanager.util.CallLogUtil
 import java.text.DateFormat
 import java.util.Date
 
@@ -112,41 +115,105 @@ fun CallManagerApp(
 @Composable
 private fun RecentCallsScreen(viewModel: MainViewModel) {
     val calls by viewModel.recentCalls.collectAsState()
+    val blockList by viewModel.blockList.collectAsState()
+    val allowList by viewModel.allowList.collectAsState()
     var selected by remember { mutableStateOf(setOf<String>()) }
+    var expanded by remember { mutableStateOf(setOf<String>()) }
+
+    val groups = remember(calls) { CallLogUtil.groupByNumber(calls) }
+    val blockedNumbers = remember(blockList) { blockList.map { it.number }.toSet() }
+    val allowedNumbers = remember(allowList) { allowList.map { it.number }.toSet() }
 
     Column {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Select calls to block in bulk")
+            Text("Select calls to block or allow in bulk")
             if (selected.isNotEmpty()) {
-                FloatingActionButton(onClick = {
-                    viewModel.blockNumbers(selected)
-                    selected = emptySet()
-                }) {
-                    Icon(Icons.Filled.Block, contentDescription = "Block selected")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FloatingActionButton(onClick = {
+                        viewModel.allowNumbers(selected)
+                        selected = emptySet()
+                    }) {
+                        Icon(Icons.Filled.CheckCircle, contentDescription = "Allow selected")
+                    }
+                    FloatingActionButton(onClick = {
+                        viewModel.blockNumbers(selected)
+                        selected = emptySet()
+                    }) {
+                        Icon(Icons.Filled.Block, contentDescription = "Block selected")
+                    }
                 }
             }
         }
         LazyColumn {
-            items(calls, key = { it.timestamp }) { call ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = selected.contains(call.number),
-                        onCheckedChange = { checked ->
-                            selected = if (checked) selected + call.number else selected - call.number
-                        }
-                    )
-                    Column {
-                        Text(call.name ?: call.number, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(
-                            "${call.number} · ${DateFormat.getDateTimeInstance().format(Date(call.timestamp))}",
-                            style = MaterialTheme.typography.bodySmall
+            items(groups, key = { it.number }) { group ->
+                val isBlocked = blockedNumbers.contains(group.number)
+                val isAllowed = allowedNumbers.contains(group.number)
+                val isExpanded = expanded.contains(group.number)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            when {
+                                isBlocked -> MaterialTheme.colorScheme.errorContainer
+                                isAllowed -> MaterialTheme.colorScheme.primaryContainer
+                                else -> MaterialTheme.colorScheme.surface
+                            }
                         )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                expanded = if (isExpanded) expanded - group.number else expanded + group.number
+                            }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = selected.contains(group.number),
+                            onCheckedChange = { checked ->
+                                selected = if (checked) selected + group.number else selected - group.number
+                            }
+                        )
+                        if (isBlocked) {
+                            Icon(
+                                Icons.Filled.Block,
+                                contentDescription = "Blocked",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
+                        if (isAllowed) {
+                            Icon(
+                                Icons.Filled.CheckCircle,
+                                contentDescription = "Allowed",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(group.name ?: group.number, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            val countSuffix = if (group.calls.size > 1) " · ${group.calls.size} calls" else ""
+                            Text(
+                                "${group.number} · " +
+                                    "${DateFormat.getDateTimeInstance().format(Date(group.latestTimestamp))}" +
+                                    countSuffix,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                    if (isExpanded && group.calls.size > 1) {
+                        Column(modifier = Modifier.padding(start = 56.dp, end = 16.dp, bottom = 8.dp)) {
+                            group.calls.forEach { call ->
+                                Text(
+                                    DateFormat.getDateTimeInstance().format(Date(call.timestamp)),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
                     }
                 }
                 HorizontalDivider()

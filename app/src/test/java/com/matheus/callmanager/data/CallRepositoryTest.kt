@@ -127,6 +127,26 @@ class CallRepositoryTest {
     }
 
     @Test
+    fun `blocking a number with no name falls back to the contact's name`() = runTest {
+        contactsLookup.contacts["+15559999999"] = "Known Caller"
+
+        repository.blockNumbers(listOf("+15559999999" to null))
+
+        val entry = repository.observeBlockList().first().first()
+        assertEquals("Known Caller", entry.displayName)
+    }
+
+    @Test
+    fun `allowing a number with no name falls back to the contact's name`() = runTest {
+        contactsLookup.contacts["+15550101010"] = "Known Caller"
+
+        repository.allowNumbers(listOf("+15550101010" to null))
+
+        val entry = repository.observeAllowList().first().first()
+        assertEquals("Known Caller", entry.displayName)
+    }
+
+    @Test
     fun `rejecting a call logs it so it stays visible in the app`() = runTest {
         repository.blockNumbers(listOf("+15558888888" to "Spammer"))
         val decision = repository.evaluate("+15558888888") as ScreeningDecision.Reject

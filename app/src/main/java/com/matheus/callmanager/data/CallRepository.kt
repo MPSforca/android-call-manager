@@ -30,7 +30,9 @@ class CallRepository(
 
     suspend fun blockNumbers(numbers: List<Pair<String, String?>>) {
         val now = System.currentTimeMillis()
-        blockListDao.insertAll(numbers.map { (number, name) -> BlockListEntry(number, name, now) })
+        blockListDao.insertAll(numbers.map { (number, name) ->
+            BlockListEntry(number, name ?: contactsLookup.displayName(number), now)
+        })
         // Blocking a number should take precedence over any existing allow entry for it.
         numbers.forEach { (number, _) ->
             allowListDao.getIfExists(number)?.let { allowListDao.delete(it) }
@@ -41,7 +43,9 @@ class CallRepository(
 
     suspend fun allowNumbers(numbers: List<Pair<String, String?>>) {
         val now = System.currentTimeMillis()
-        allowListDao.insertAll(numbers.map { (number, name) -> AllowListEntry(number, name, now) })
+        allowListDao.insertAll(numbers.map { (number, name) ->
+            AllowListEntry(number, name ?: contactsLookup.displayName(number), now)
+        })
         numbers.forEach { (number, _) ->
             blockListDao.getIfExists(number)?.let { blockListDao.delete(it) }
         }

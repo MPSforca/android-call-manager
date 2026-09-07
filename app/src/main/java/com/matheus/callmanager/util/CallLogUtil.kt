@@ -11,6 +11,15 @@ data class RecentCall(
     val type: Int
 )
 
+/** One row in the Recent tab: every [RecentCall] from the same number, newest first. */
+data class RecentCallGroup(
+    val number: String,
+    val name: String?,
+    val calls: List<RecentCall>
+) {
+    val latestTimestamp: Long get() = calls.first().timestamp
+}
+
 data class SystemBlockedCall(
     val number: String,
     val name: String?,
@@ -94,6 +103,21 @@ object CallLogUtil {
             }
         }
         return results
+    }
+
+    /** Groups calls by number (newest call per group first, groups ordered by their newest call). */
+    fun groupByNumber(calls: List<RecentCall>): List<RecentCallGroup> {
+        return calls
+            .groupBy { it.number }
+            .map { (number, callsForNumber) ->
+                val sorted = callsForNumber.sortedByDescending { it.timestamp }
+                RecentCallGroup(
+                    number = number,
+                    name = sorted.firstNotNullOfOrNull { it.name },
+                    calls = sorted
+                )
+            }
+            .sortedByDescending { it.latestTimestamp }
     }
 
     private fun blockReasonLabel(reason: Int): String = when (reason) {

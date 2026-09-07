@@ -61,6 +61,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { repository.blockNumbers(numbers.map { it to null }) }
     }
 
+    fun allowNumbers(numbers: Set<String>) {
+        if (numbers.isEmpty()) return
+        viewModelScope.launch { repository.allowNumbers(numbers.map { it to null }) }
+    }
+
     fun blockContact(number: String, name: String?) {
         viewModelScope.launch { repository.blockNumbers(listOf(number to name)) }
     }
