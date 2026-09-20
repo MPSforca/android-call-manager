@@ -120,6 +120,18 @@ object CallLogUtil {
             .sortedByDescending { it.latestTimestamp }
     }
 
+    /** Human-readable label for a CallLog.Calls.TYPE value, for showing call outcome in the UI. */
+    fun callTypeLabel(type: Int): String = when (type) {
+        CallLog.Calls.INCOMING_TYPE -> "Incoming"
+        CallLog.Calls.OUTGOING_TYPE -> "Outgoing"
+        CallLog.Calls.MISSED_TYPE -> "Missed"
+        CallLog.Calls.VOICEMAIL_TYPE -> "Voicemail"
+        CallLog.Calls.REJECTED_TYPE -> "Rejected"
+        CallLog.Calls.BLOCKED_TYPE -> "Blocked"
+        CallLog.Calls.ANSWERED_EXTERNALLY_TYPE -> "Answered elsewhere"
+        else -> "Call"
+    }
+
     private fun blockReasonLabel(reason: Int): String = when (reason) {
         CallLog.Calls.BLOCK_REASON_BLOCKED_NUMBER -> "Android's block list"
         CallLog.Calls.BLOCK_REASON_DIRECT_TO_VOICEMAIL -> "Sent to voicemail"
