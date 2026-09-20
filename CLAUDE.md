@@ -87,11 +87,14 @@ falls back to a full reject. The user can switch to REJECT everywhere via a Rule
 - The in-app Debug tab (debug builds only) runs the real `CallRepository.evaluate()` against a typed
   number — useful for interactive testing beyond the automated suite. See README for adb-based
   fixtures (seeding contacts, simulating incoming calls).
+- `CallLogUtil`'s `recentCalls`/`systemBlockedCalls` (raw `CallLog.Calls.CONTENT_URI` queries,
+  including their LIMIT/OFFSET paging) are **not** Robolectric-testable — confirmed experimentally:
+  Robolectric's `CallLog` shadow doesn't back a real queryable table, so even a plain insert-then-
+  query returns 0 rows. Only the pure post-processing helpers (`groupByNumber`, `callTypeLabel`) are
+  unit tested; the query methods are manual/adb-tested like `AndroidContactsLookup`, see README.
 
 ## Known limitations / things not implemented
 
-- No pagination on Recent Calls or the blocked-call merge — capped at 500 entries each. Fine for
-  now; revisit if this becomes a real device with a huge call history.
 - Android's native block list itself still can't be *listed* by this app (needs default-dialer role,
   not requested) — only individual blocked calls surfaced via the call log, and single-number checks
   via `BlockedNumberContract.isBlocked()` if ever needed.

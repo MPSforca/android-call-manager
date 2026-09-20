@@ -120,6 +120,7 @@ private enum class NumberStatus { BLOCKED, ALLOWED, NONE }
 @Composable
 private fun RecentCallsScreen(viewModel: MainViewModel) {
     val calls by viewModel.recentCalls.collectAsState()
+    val hasMoreCalls by viewModel.hasMoreRecentCalls.collectAsState()
     val blockList by viewModel.blockList.collectAsState()
     val allowList by viewModel.allowList.collectAsState()
     var selected by remember { mutableStateOf(setOf<String>()) }
@@ -212,6 +213,14 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
                     }
                 }
                 HorizontalDivider()
+            }
+            if (hasMoreCalls) {
+                item {
+                    OutlinedButton(
+                        onClick = { viewModel.loadMoreRecentCalls() },
+                        modifier = Modifier.fillMaxWidth().padding(16.dp)
+                    ) { Text("Load more") }
+                }
             }
         }
     }
@@ -310,6 +319,7 @@ private fun ListsScreen(
     val blockList by viewModel.blockList.collectAsState()
     val allowList by viewModel.allowList.collectAsState()
     val blockedCalls by viewModel.blockedCalls.collectAsState()
+    val hasMoreBlockedCalls by viewModel.hasMoreBlockedCalls.collectAsState()
     var manualNumber by remember { mutableStateOf("") }
 
     LazyColumn(modifier = Modifier.padding(16.dp)) {
@@ -403,6 +413,14 @@ private fun ListsScreen(
                     "${entry.reason} · ${entry.source} · ${DateFormat.getDateTimeInstance().format(Date(entry.timestamp))}",
                     style = MaterialTheme.typography.bodySmall
                 )
+            }
+        }
+        if (hasMoreBlockedCalls) {
+            item {
+                OutlinedButton(
+                    onClick = { viewModel.loadMoreBlockedCalls() },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                ) { Text("Load more") }
             }
         }
     }

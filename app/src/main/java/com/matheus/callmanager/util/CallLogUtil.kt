@@ -29,12 +29,20 @@ data class SystemBlockedCall(
 )
 
 object CallLogUtil {
+    /** Default page size for [recentCalls] and [systemBlockedCalls] when the caller doesn't override it. */
+    const val DEFAULT_PAGE_SIZE = 200
+
     /**
-     * Reads from Android's system call log (CallLog.Calls.CONTENT_URI), which is the device's
-     * persistent call history — not app-local state. It includes every call regardless of
-     * whether this app was running when the call happened.
+     * Reads one page from Android's system call log (CallLog.Calls.CONTENT_URI), which is the
+     * device's persistent call history — not app-local state. It includes every call regardless
+     * of whether this app was running when the call happened.
+     *
+     * A page shorter than [pageSize] means there are no more calls after it. The LIMIT/OFFSET
+     * suffix on [sortOrder] is a standard trick for provider-backed SQLite queries: the framework
+     * passes the sort order straight into the underlying `ORDER BY`, which SQLite lets you follow
+     * with `LIMIT`/`OFFSET`.
      */
-    fun recentCalls(context: Context, limit: Int = 500): List<RecentCall> {
+    fun recentCalls(context: Context, pageSize: Int = DEFAULT_PAGE_SIZE, offset: Int = 0): List<RecentCall> {
         val projection = arrayOf(
             CallLog.Calls.NUMBER,
             CallLog.Calls.CACHED_NAME,
@@ -47,13 +55,13 @@ object CallLogUtil {
             projection,
             null,
             null,
-            "${CallLog.Calls.DATE} DESC"
+            "${CallLog.Calls.DATE} DESC LIMIT $pageSize OFFSET $offset"
         )?.use { cursor ->
             val numberIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
             val nameIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)
             val dateIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.DATE)
             val typeIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.TYPE)
-            while (cursor.moveToNext() && results.size < limit) {
+            while (cursor.moveToNext()) {
                 results += RecentCall(
                     number = cursor.getString(numberIdx) ?: continue,
                     name = cursor.getString(nameIdx),
@@ -66,12 +74,14 @@ object CallLogUtil {
     }
 
     /**
-     * Every call the system call log tagged as blocked (CallLog.Calls.BLOCKED_TYPE), regardless of
-     * who blocked it: this app, Android's own "Blocked numbers" list, the carrier, or another
-     * call-screening app. Third-party apps can't enumerate Android's native block list directly
-     * (that requires the default-dialer role), but every blocked call still lands here.
+     * Reads one page of calls the system call log tagged as blocked (CallLog.Calls.BLOCKED_TYPE),
+     * regardless of who blocked it: this app, Android's own "Blocked numbers" list, the carrier,
+     * or another call-screening app. Third-party apps can't enumerate Android's native block list
+     * directly (that requires the default-dialer role), but every blocked call still lands here.
+     *
+     * A page shorter than [pageSize] means there are no more blocked calls after it.
      */
-    fun systemBlockedCalls(context: Context, limit: Int = 500): List<SystemBlockedCall> {
+    fun systemBlockedCalls(context: Context, pageSize: Int = DEFAULT_PAGE_SIZE, offset: Int = 0): List<SystemBlockedCall> {
         val hasBlockReasonColumn = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         val projection = buildList {
             add(CallLog.Calls.NUMBER)
@@ -86,13 +96,13 @@ object CallLogUtil {
             projection,
             "${CallLog.Calls.TYPE} = ?",
             arrayOf(CallLog.Calls.BLOCKED_TYPE.toString()),
-            "${CallLog.Calls.DATE} DESC"
+            "${CallLog.Calls.DATE} DESC LIMIT $pageSize OFFSET $offset"
         )?.use { cursor ->
             val numberIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
             val nameIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)
             val dateIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.DATE)
             val reasonIdx = if (hasBlockReasonColumn) cursor.getColumnIndex(CallLog.Calls.BLOCK_REASON) else -1
-            while (cursor.moveToNext() && results.size < limit) {
+            while (cursor.moveToNext()) {
                 val reason = if (reasonIdx >= 0) blockReasonLabel(cursor.getInt(reasonIdx)) else "Blocked by Android"
                 results += SystemBlockedCall(
                     number = cursor.getString(numberIdx) ?: continue,

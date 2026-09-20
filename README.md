@@ -183,6 +183,22 @@ To clear it back out: `adb shell content delete --uri content://call_log/calls`.
 *entire* device call log, real entries included — only use it on an emulator or a throwaway test
 device.
 
+**7. Testing pagination in the Recent/Blocked tabs**
+
+Both tabs page through the system call log in batches of `CallLogUtil.DEFAULT_PAGE_SIZE` (200), with
+a "Load more" button that appears when a full page was returned. To exercise it without waiting for
+real call history to accumulate, seed more than one page's worth in a loop:
+
+```bash
+for i in $(seq 1 220); do
+  ./scripts/seed_call_log.sh +1555000$(printf '%04d' "$i") 1
+done
+```
+
+Open the Recent tab: it should show the first 200 grouped rows plus a "Load more" button; tapping it
+should fetch the rest with no duplicates or gaps. Mark some of the seeded numbers `type:i:6`
+(`BLOCKED_TYPE`, see above) to test the same "Load more" behavior on the Blocked tab.
+
 ## Troubleshooting
 
 - **`./gradlew` fails immediately with a Java version error** — your default `java` is likely newer

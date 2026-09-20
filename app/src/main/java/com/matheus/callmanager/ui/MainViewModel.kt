@@ -24,8 +24,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _recentCalls = MutableStateFlow<List<RecentCall>>(emptyList())
     val recentCalls: StateFlow<List<RecentCall>> = _recentCalls.asStateFlow()
+    private val _hasMoreRecentCalls = MutableStateFlow(true)
+    val hasMoreRecentCalls: StateFlow<Boolean> = _hasMoreRecentCalls.asStateFlow()
 
     private val _systemBlockedCalls = MutableStateFlow<List<SystemBlockedCall>>(emptyList())
+    private val _hasMoreBlockedCalls = MutableStateFlow(true)
+    val hasMoreBlockedCalls: StateFlow<Boolean> = _hasMoreBlockedCalls.asStateFlow()
 
     val blockList: StateFlow<List<BlockListEntry>> = stateFlowFrom(repository.observeBlockList(), emptyList())
     val allowList: StateFlow<List<AllowListEntry>> = stateFlowFrom(repository.observeAllowList(), emptyList())
@@ -49,11 +53,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val simulationResult: StateFlow<String?> = _simulationResult.asStateFlow()
 
     fun refreshRecentCalls() {
-        _recentCalls.value = CallLogUtil.recentCalls(getApplication())
+        val page = CallLogUtil.recentCalls(getApplication(), offset = 0)
+        _recentCalls.value = page
+        _hasMoreRecentCalls.value = page.size == CallLogUtil.DEFAULT_PAGE_SIZE
+    }
+
+    /** Appends the next page of recent calls, if there is one. */
+    fun loadMoreRecentCalls() {
+        if (!_hasMoreRecentCalls.value) return
+        val page = CallLogUtil.recentCalls(getApplication(), offset = _recentCalls.value.size)
+        _recentCalls.value = _recentCalls.value + page
+        _hasMoreRecentCalls.value = page.size == CallLogUtil.DEFAULT_PAGE_SIZE
     }
 
     fun refreshSystemBlockedCalls() {
-        _systemBlockedCalls.value = CallLogUtil.systemBlockedCalls(getApplication())
+        val page = CallLogUtil.systemBlockedCalls(getApplication(), offset = 0)
+        _systemBlockedCalls.value = page
+        _hasMoreBlockedCalls.value = page.size == CallLogUtil.DEFAULT_PAGE_SIZE
+    }
+
+    /** Appends the next page of system-blocked calls, if there is one. */
+    fun loadMoreBlockedCalls() {
+        if (!_hasMoreBlockedCalls.value) return
+        val page = CallLogUtil.systemBlockedCalls(getApplication(), offset = _systemBlockedCalls.value.size)
+        _systemBlockedCalls.value = _systemBlockedCalls.value + page
+        _hasMoreBlockedCalls.value = page.size == CallLogUtil.DEFAULT_PAGE_SIZE
     }
 
     fun blockNumbers(numbers: Set<String>) {
