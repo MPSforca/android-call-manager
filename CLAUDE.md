@@ -92,8 +92,6 @@ falls back to a full reject. The user can switch to REJECT everywhere via a Rule
 
 - No pagination on Recent Calls or the blocked-call merge — capped at 500 entries each. Fine for
   now; revisit if this becomes a real device with a huge call history.
-- `BlockedCallMerger`'s dedup matches on exact number string equality, which can miss dupes if the
-  same call is formatted differently by two log sources (e.g. `+15551234567` vs `5551234567`).
 - Android's native block list itself still can't be *listed* by this app (needs default-dialer role,
   not requested) — only individual blocked calls surfaced via the call log, and single-number checks
   via `BlockedNumberContract.isBlocked()` if ever needed.

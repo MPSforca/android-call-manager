@@ -51,6 +51,27 @@ class BlockedCallMergerTest {
     }
 
     @Test
+    fun `a call logged with different number formatting still dedupes`() {
+        val own = listOf(BlockedCallLog(number = "+15557777777", callerName = null, timestamp = 20_000, reason = "On your block list"))
+        val system = listOf(SystemBlockedCall(number = "5557777777", name = null, timestamp = 20_200, source = "A call-screening app"))
+
+        val merged = BlockedCallMerger.merge(own, system)
+
+        assertEquals(1, merged.size)
+        assertEquals("Call Manager", merged.first().source)
+    }
+
+    @Test
+    fun `numbers that share a suffix but differ in area code are not deduped`() {
+        val own = listOf(BlockedCallLog(number = "+14155557777", callerName = null, timestamp = 30_000, reason = "On your block list"))
+        val system = listOf(SystemBlockedCall(number = "+12125557777", name = null, timestamp = 30_200, source = "A call-screening app"))
+
+        val merged = BlockedCallMerger.merge(own, system)
+
+        assertEquals(2, merged.size)
+    }
+
+    @Test
     fun `results are sorted most recent first`() {
         val own = listOf(BlockedCallLog(number = "+15555555555", callerName = null, timestamp = 1_000, reason = "reason"))
         val system = listOf(SystemBlockedCall(number = "+15556666666", name = null, timestamp = 2_000, source = "Android's block list"))
