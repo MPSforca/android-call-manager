@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
@@ -562,7 +564,7 @@ private fun RulesScreen(
     var blockedCallAction by remember { mutableStateOf(settings.blockedCallAction) }
     var showRejectedNotification by remember { mutableStateOf(settings.showRejectedCallNotification) }
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
         if (!isIgnoringBatteryOptimizations) {
             Column(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
                 Text("Call screening can be silently killed", style = MaterialTheme.typography.titleSmall)
