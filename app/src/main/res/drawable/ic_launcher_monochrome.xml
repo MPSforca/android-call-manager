@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Single-colour version for Android 13+ themed icons: the system tints every opaque pixel. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Shield with the phone handset punched out (even-odd) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M54,24L78,33L78,51C78,67 68,77 54,83C40,77 30,67 30,51L30,33Z M59.811 53.718c-1.353 0 -2.662 -0.22 -3.883 -0.616c-0.385 -0.132 -0.814 -0.033 -1.111 0.264l-1.727 2.167c-3.113 -1.485 -6.028 -4.29 -7.579 -7.513l2.145 -1.826c0.297 -0.308 0.385 -0.737 0.264 -1.122c-0.407 -1.221 -0.616 -2.53 -0.616 -3.883c0 -0.594 -0.495 -1.089 -1.089 -1.089H42.409C41.815 40.1 41.1 40.364 41.1 41.189C41.1 51.408 49.603 59.9 59.811 59.9c0.781 0 1.089 -0.693 1.089 -1.298v-3.795c0 -0.594 -0.495 -1.089 -1.089 -1.089z" />
+
+    <!-- Blocked badge: solid disc with the bar punched out -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M59,68a9,9 0 1,0 18,0a9,9 0 1,0 -18,0z M63,66.5h10v3h-10z" />
+</vector>
