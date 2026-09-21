@@ -127,6 +127,38 @@ object CallLogUtil {
         return results
     }
 
+    /**
+     * Numbers of every outgoing call placed at or after [sinceMillis], newest first. The window is
+     * bounded by the user's "allow for X days" setting, so this stays a small query and needs no paging.
+     * Like [recentCalls], this reads the system call log and can't be exercised under Robolectric.
+     */
+    fun outgoingNumbersSince(context: Context, sinceMillis: Long): List<String> {
+        val queryArgs = Bundle().apply {
+            putString(
+                ContentResolver.QUERY_ARG_SQL_SELECTION,
+                "${CallLog.Calls.TYPE} = ? AND ${CallLog.Calls.DATE} >= ?"
+            )
+            putStringArray(
+                ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS,
+                arrayOf(CallLog.Calls.OUTGOING_TYPE.toString(), sinceMillis.toString())
+            )
+            putString(ContentResolver.QUERY_ARG_SQL_SORT_ORDER, "${CallLog.Calls.DATE} DESC")
+        }
+        val results = mutableListOf<String>()
+        context.contentResolver.query(
+            CallLog.Calls.CONTENT_URI,
+            arrayOf(CallLog.Calls.NUMBER),
+            queryArgs,
+            null
+        )?.use { cursor ->
+            val numberIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
+            while (cursor.moveToNext()) {
+                cursor.getString(numberIdx)?.takeIf { it.isNotBlank() }?.let { results += it }
+            }
+        }
+        return results
+    }
+
     /** Groups calls by number (newest call per group first, groups ordered by their newest call). */
     fun groupByNumber(calls: List<RecentCall>): List<RecentCallGroup> {
         return calls

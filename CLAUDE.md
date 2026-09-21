@@ -71,6 +71,14 @@ Tried and reverted: rejecting silenced calls outright (`setDisallowCall`/`setRej
 `setSkipNotification(false)`) does avoid the full-screen UI, but it also stops the call from
 ringing/being answerable at all, which is not what "silence" is supposed to mean here.
 
+**"Recently called" reads the system call log; "recently accepted" uses our own table.** Accepted
+callers are recorded by `PhoneStateReceiver` into Room (`accepted_callers`) because Android has no
+"answered" record we can query. Outgoing calls, by contrast, are already in the system call log
+(`OUTGOING_TYPE`), so `AndroidRecentOutgoingLookup` queries that at screening time — no receiver, no
+table, no migration, and it covers calls made before install. Behind the `RecentOutgoingLookup`
+interface for unit testing. Numbers are matched with `PhoneNumberUtils.compare` since the call log
+stores them as dialed while incoming ones arrive as E.164.
+
 **Contacts access is behind an interface.** `ContactsLookup`/`AndroidContactsLookup` exist purely so
 `CallRepository`'s rule logic can be unit tested with a fake instead of a real `ContentResolver`.
 
@@ -99,7 +107,7 @@ ringing/being answerable at all, which is not what "silence" is supposed to mean
 - The in-app Debug tab (debug builds only) runs the real `CallRepository.evaluate()` against a typed
   number — useful for interactive testing beyond the automated suite. See README for adb-based
   fixtures (seeding contacts, simulating incoming calls).
-- `CallLogUtil`'s `recentCalls`/`systemBlockedCalls` (raw `CallLog.Calls.CONTENT_URI` queries,
+- `CallLogUtil`'s `recentCalls`/`systemBlockedCalls`/`outgoingNumbersSince` (raw `CallLog.Calls.CONTENT_URI` queries,
   including their LIMIT/OFFSET paging) are **not** Robolectric-testable — confirmed experimentally:
   Robolectric's `CallLog` shadow doesn't back a real queryable table, so even a plain insert-then-
   query returns 0 rows. Only the pure post-processing helpers (`groupByNumber`, `callTypeLabel`) are
