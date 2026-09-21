@@ -8,6 +8,7 @@ import com.matheus.callmanager.data.CallRepository
 import com.matheus.callmanager.data.ScreeningAction
 import com.matheus.callmanager.data.ScreeningDecision
 import com.matheus.callmanager.data.ScreeningPolicy
+import com.matheus.callmanager.util.RejectedCallNotifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -44,7 +45,12 @@ class RuleBasedCallScreeningService : CallScreeningService() {
             val action = ScreeningPolicy.determineAction(decision, repository.settings.blockedCallAction)
             respondToCall(callDetails, buildResponse(action))
             if (decision is ScreeningDecision.Reject) {
-                repository.logBlockedCall(number, decision.reason)
+                val contactName = repository.logBlockedCall(number, decision.reason)
+                if (repository.settings.showRejectedCallNotification &&
+                    ScreeningPolicy.shouldNotifyRejected(action, Build.VERSION.SDK_INT)
+                ) {
+                    RejectedCallNotifier.notify(this@RuleBasedCallScreeningService, contactName, number, decision.reason)
+                }
             }
         }
     }

@@ -54,6 +54,32 @@ object PhoneNumberFormatter {
     }
 
     /**
+     * Formats [rawNumber] as "+{country code} (area code)-{subscriber number}" (e.g.
+     * "+1 (213)-3734253"), for contexts (like a notification) that want the country code visibly
+     * separated from the rest of the number regardless of whether it's "local". Falls back to
+     * [format] when the region has no concept of an area code (e.g. many mobile-first countries),
+     * and to [rawNumber] unchanged if it doesn't parse as a valid number at all.
+     */
+    fun formatWithAreaCode(context: Context, rawNumber: String, defaultRegion: String): String {
+        val util = phoneUtil(context)
+        return try {
+            val parsed = util.parse(rawNumber, defaultRegion)
+            if (!util.isValidNumber(parsed)) return rawNumber
+            val national = util.getNationalSignificantNumber(parsed)
+            val areaCodeLength = util.getLengthOfGeographicalAreaCode(parsed)
+            if (areaCodeLength in 1 until national.length) {
+                val areaCode = national.substring(0, areaCodeLength)
+                val subscriberNumber = national.substring(areaCodeLength)
+                "+${parsed.countryCode} ($areaCode)-$subscriberNumber"
+            } else {
+                "+${parsed.countryCode} $national"
+            }
+        } catch (e: NumberParseException) {
+            rawNumber
+        }
+    }
+
+    /**
      * Normalizes a manually-typed number for storage/matching: assumes [defaultRegion] (the user's
      * own location) when the number has no country code of its own, so e.g. a Brazilian user typing
      * "19 99999-9999" is stored as "+5519999999999" — matching the E.164 form Telecom hands

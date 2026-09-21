@@ -37,11 +37,17 @@ class SettingsStore(context: Context) {
         get() = BlockedCallAction.valueOf(prefs.getString(KEY_BLOCKED_ACTION, BlockedCallAction.SILENCE.name)!!)
         set(value) = prefs.edit().putString(KEY_BLOCKED_ACTION, value.name).apply()
 
+    /** Whether an outright-rejected call posts a notification bar heads-up. Defaults to on. */
+    var showRejectedCallNotification: Boolean
+        get() = prefs.getBoolean(KEY_SHOW_REJECTED_NOTIFICATION, true)
+        set(value) = prefs.edit().putBoolean(KEY_SHOW_REJECTED_NOTIFICATION, value).apply()
+
     private companion object {
         const val KEY_ALLOW_CONTACTS = "allow_contacts"
         const val KEY_RECENT_DAYS = "recent_accepted_days"
         const val KEY_RECENT_ENABLED = "recent_accepted_enabled"
         const val KEY_BLOCK_UNKNOWN = "block_unknown_numbers"
         const val KEY_BLOCKED_ACTION = "blocked_call_action"
+        const val KEY_SHOW_REJECTED_NOTIFICATION = "show_rejected_call_notification"
     }
 }

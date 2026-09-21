@@ -558,6 +558,7 @@ private fun RulesScreen(
     var recentDays by remember { mutableStateOf(settings.allowRecentAcceptedDays.toFloat()) }
     var blockUnknown by remember { mutableStateOf(settings.blockUnknownNumbers) }
     var blockedCallAction by remember { mutableStateOf(settings.blockedCallAction) }
+    var showRejectedNotification by remember { mutableStateOf(settings.showRejectedCallNotification) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         if (!isIgnoringBatteryOptimizations) {
@@ -653,6 +654,17 @@ private fun RulesScreen(
                     Text(label, modifier = Modifier.padding(start = 8.dp))
                 }
             }
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("Notify when a call is rejected")
+            Switch(checked = showRejectedNotification, onCheckedChange = {
+                showRejectedNotification = it
+                settings.showRejectedCallNotification = it
+            })
         }
     }
 }

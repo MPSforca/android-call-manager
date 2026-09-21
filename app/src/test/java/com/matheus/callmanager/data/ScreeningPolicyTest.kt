@@ -44,4 +44,23 @@ class ScreeningPolicyTest {
             ScreeningPolicy.determineAction(decision, BlockedCallAction.REJECT)
         )
     }
+
+    @Test
+    fun `an outright reject always warrants a notification`() {
+        assertEquals(true, ScreeningPolicy.shouldNotifyRejected(ScreeningAction.REJECT, sdkInt = 34))
+        assertEquals(true, ScreeningPolicy.shouldNotifyRejected(ScreeningAction.REJECT, sdkInt = 28))
+    }
+
+    @Test
+    fun `a silenced call warrants a notification only when it actually fell back to a full reject`() {
+        // Below API 29 there's no silence primitive, so SILENCE falls back to a full reject (see
+        // RuleBasedCallScreeningService.buildResponse) and should notify like any other reject.
+        assertEquals(false, ScreeningPolicy.shouldNotifyRejected(ScreeningAction.SILENCE, sdkInt = 29))
+        assertEquals(true, ScreeningPolicy.shouldNotifyRejected(ScreeningAction.SILENCE, sdkInt = 28))
+    }
+
+    @Test
+    fun `an allowed call never warrants a notification`() {
+        assertEquals(false, ScreeningPolicy.shouldNotifyRejected(ScreeningAction.ALLOW, sdkInt = 34))
+    }
 }

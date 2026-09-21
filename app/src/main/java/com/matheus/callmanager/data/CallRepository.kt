@@ -97,11 +97,13 @@ class CallRepository(
         }
     }
 
-    suspend fun logBlockedCall(number: String, reason: String) {
+    /** Returns the caller's contact name, if any, so callers can reuse it (e.g. for a notification). */
+    suspend fun logBlockedCall(number: String, reason: String): String? {
         val name = contactsLookup.displayName(number)
         blockedCallLogDao.insert(
             BlockedCallLog(number = number, callerName = name, timestamp = System.currentTimeMillis(), reason = reason)
         )
+        return name
     }
 
     companion object {
