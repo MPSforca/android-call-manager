@@ -4,7 +4,7 @@ package com.matheus.callmanager.data
 enum class ScreeningAction {
     /** Ring/vibrate as normal. */
     ALLOW,
-    /** Still shows as an incoming call (screen + notification) but never rings or vibrates. */
+    /** Still allowed through (answerable) but muted: no ringtone/vibration. */
     SILENCE,
     /** Rejected outright; never surfaces as an incoming call. */
     REJECT

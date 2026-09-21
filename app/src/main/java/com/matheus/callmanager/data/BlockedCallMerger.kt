@@ -49,4 +49,15 @@ object BlockedCallMerger {
             .map { UnifiedBlockedCall(it.number, it.name, it.timestamp, it.source, "Android") }
         return (ownEntries + systemOnly).sortedByDescending { it.timestamp }
     }
+
+    /**
+     * Whether a call log entry (given its number and timestamp) matches an entry in [blockedCalls].
+     * Needed because the system call log only tags a call `BLOCKED_TYPE` when Telecom actually
+     * rejected it — a call this app silenced (allowed through, muted) never gets that tag, even
+     * though it's correctly recorded in our own [BlockedCallLog]. Matching against the merged list
+     * directly, rather than trusting the system TYPE column, is what lets the UI show "Blocked" for
+     * silenced calls too.
+     */
+    fun wasBlocked(number: String, timestamp: Long, blockedCalls: List<UnifiedBlockedCall>): Boolean =
+        blockedCalls.any { sameNumber(it.number, number) && abs(it.timestamp - timestamp) < DEDUPE_WINDOW_MILLIS }
 }

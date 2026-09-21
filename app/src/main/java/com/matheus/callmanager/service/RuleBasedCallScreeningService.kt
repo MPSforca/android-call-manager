@@ -52,8 +52,10 @@ class RuleBasedCallScreeningService : CallScreeningService() {
     private fun buildResponse(action: ScreeningAction): CallResponse = when (action) {
         ScreeningAction.ALLOW -> CallResponse.Builder().build()
 
-        // Still shows on screen/notification, never rings or vibrates. Needs API 29+; older
-        // platforms have no silence primitive, so fall back to a full reject instead.
+        // Call is still allowed through (answerable) but muted: no ringtone/vibration. Needs
+        // API 29+; older platforms have no silence primitive, so fall back to a full reject.
+        // NOTE: whether this renders full-screen or notification-only is decided by the default
+        // Dialer/InCallService app, not by this CallScreeningService — see CLAUDE.md.
         ScreeningAction.SILENCE -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             CallResponse.Builder().setSilenceCall(true).build()
         } else {
@@ -64,6 +66,8 @@ class RuleBasedCallScreeningService : CallScreeningService() {
                 .build()
         }
 
+        // Fully hidden: rejected with no notification at all; only visible via this app's own
+        // Blocked tab (reading the system call log's BLOCKED_TYPE entries).
         ScreeningAction.REJECT -> CallResponse.Builder()
             .setDisallowCall(true)
             .setRejectCall(true)

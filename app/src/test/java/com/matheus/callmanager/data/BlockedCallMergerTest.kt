@@ -72,6 +72,25 @@ class BlockedCallMergerTest {
     }
 
     @Test
+    fun `wasBlocked matches a silenced call that the system never tagged BLOCKED_TYPE`() {
+        val blocked = listOf(
+            UnifiedBlockedCall(number = "+15558888888", name = null, timestamp = 40_000, reason = "On your block list", source = "Call Manager")
+        )
+
+        assertEquals(true, BlockedCallMerger.wasBlocked("+15558888888", 40_100, blocked))
+    }
+
+    @Test
+    fun `wasBlocked ignores calls far apart in time or from a different number`() {
+        val blocked = listOf(
+            UnifiedBlockedCall(number = "+15558888888", name = null, timestamp = 40_000, reason = "On your block list", source = "Call Manager")
+        )
+
+        assertEquals(false, BlockedCallMerger.wasBlocked("+15558888888", 100_000, blocked))
+        assertEquals(false, BlockedCallMerger.wasBlocked("+15559999999", 40_100, blocked))
+    }
+
+    @Test
     fun `results are sorted most recent first`() {
         val own = listOf(BlockedCallLog(number = "+15555555555", callerName = null, timestamp = 1_000, reason = "reason"))
         val system = listOf(SystemBlockedCall(number = "+15556666666", name = null, timestamp = 2_000, source = "Android's block list"))

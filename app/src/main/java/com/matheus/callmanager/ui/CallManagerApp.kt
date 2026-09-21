@@ -62,8 +62,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.matheus.callmanager.BuildConfig
 import com.matheus.callmanager.data.BlockedCallAction
+import com.matheus.callmanager.data.BlockedCallMerger
+import com.matheus.callmanager.data.UnifiedBlockedCall
 import com.matheus.callmanager.util.CallLogUtil
 import com.matheus.callmanager.util.PhoneNumberFormatter
+import com.matheus.callmanager.util.RecentCall
 import com.matheus.callmanager.util.RecentCallGroup
 import java.text.DateFormat
 import java.util.Date
@@ -136,6 +139,7 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
     val hasMoreCalls by viewModel.hasMoreRecentCalls.collectAsState()
     val blockList by viewModel.blockList.collectAsState()
     val allowList by viewModel.allowList.collectAsState()
+    val blockedCalls by viewModel.blockedCalls.collectAsState()
     var selected by remember { mutableStateOf(setOf<String>()) }
     var selectedNumber by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
@@ -152,6 +156,7 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
             viewModel = viewModel,
             group = detailGroup,
             status = statusOf(detailGroup.number, blockedNumbers, allowedNumbers),
+            blockedCalls = blockedCalls,
             defaultRegion = defaultRegion,
             onBack = { selectedNumber = null }
         )
@@ -222,7 +227,7 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
                             }
                             Text(
                                 "${DateFormat.getDateTimeInstance().format(Date(group.latestTimestamp))} · " +
-                                    CallLogUtil.callTypeLabel(latestCall.type) + countSuffix
+                                    callOutcomeLabel(latestCall, blockedCalls) + countSuffix
                             )
                         }
                     },
@@ -257,6 +262,20 @@ private fun statusOf(number: String, blockedNumbers: Set<String>, allowedNumbers
     else -> NumberStatus.NONE
 }
 
+/**
+ * Outcome label for one call, e.g. "Blocked" or "Missed". Prefers matching against this app's own
+ * blocked-call record over the system CallLog.Calls.TYPE column: a call this app silenced (allowed
+ * through, muted, per the default SILENCE policy) is never tagged BLOCKED_TYPE by the system — it
+ * just looks like a normal missed/incoming call there — but it IS correctly recorded as blocked in
+ * our own log, so that's the source of truth for "was this call actually blocked".
+ */
+private fun callOutcomeLabel(call: RecentCall, blockedCalls: List<UnifiedBlockedCall>): String =
+    if (BlockedCallMerger.wasBlocked(call.number, call.timestamp, blockedCalls)) {
+        "Blocked"
+    } else {
+        CallLogUtil.callTypeLabel(call.type)
+    }
+
 @Composable
 private fun StatusBadge(status: NumberStatus, modifier: Modifier = Modifier) {
     val (label, color) = when (status) {
@@ -277,6 +296,7 @@ private fun CallDetailScreen(
     viewModel: MainViewModel,
     group: RecentCallGroup,
     status: NumberStatus,
+    blockedCalls: List<UnifiedBlockedCall>,
     defaultRegion: String,
     onBack: () -> Unit
 ) {
@@ -327,10 +347,16 @@ private fun CallDetailScreen(
         )
         LazyColumn {
             items(group.calls, key = { it.timestamp }) { call ->
+                val wasBlocked = BlockedCallMerger.wasBlocked(call.number, call.timestamp, blockedCalls)
                 ListItem(
-                    leadingContent = { Icon(callTypeIcon(call.type), contentDescription = null) },
+                    leadingContent = {
+                        Icon(
+                            if (wasBlocked) Icons.Filled.Block else callTypeIcon(call.type),
+                            contentDescription = null
+                        )
+                    },
                     headlineContent = { Text(DateFormat.getDateTimeInstance().format(Date(call.timestamp))) },
-                    supportingContent = { Text(CallLogUtil.callTypeLabel(call.type)) }
+                    supportingContent = { Text(callOutcomeLabel(call, blockedCalls)) }
                 )
                 HorizontalDivider()
             }
@@ -601,7 +627,7 @@ private fun RulesScreen(
         )
         Column(modifier = Modifier.padding(top = 8.dp)) {
             listOf(
-                BlockedCallAction.SILENCE to "Show it silently — appears on screen/notifications, never rings",
+                BlockedCallAction.SILENCE to "Show it silently — you can still answer, it just never rings",
                 BlockedCallAction.REJECT to "Reject it outright — never surfaces as an incoming call"
             ).forEach { (action, label) ->
                 Row(

@@ -59,6 +59,18 @@ stay visible on-screen/in-notifications but suppresses ringtone/vibration — th
 behavior for anything that fails the allow rules. Below API 29, silencing isn't available, so it
 falls back to a full reject. The user can switch to REJECT everywhere via a Rules-tab setting.
 
+**Full-screen vs notification-only rendering of a silenced call is out of this app's control.**
+`CallScreeningService` (what this app implements) only gets to pick ALLOW/SILENCE/REJECT — it does
+not draw the incoming-call UI. Whether a live (non-rejected) call shows full-screen or as a plain
+notification is decided entirely by whichever app holds the **default Dialer / InCallService**
+role (stock Phone app or the OEM dialer), based on device state (locked vs. in-use) and its own UI
+logic, not by anything a `CallScreeningService` sets on `CallResponse`. Getting "silenced but
+notification-only, still answerable" would require this app to become the default dialer and render
+its own InCallUI — a deliberately unrequested scope, see the block-list-visibility decision above.
+Tried and reverted: rejecting silenced calls outright (`setDisallowCall`/`setRejectCall` +
+`setSkipNotification(false)`) does avoid the full-screen UI, but it also stops the call from
+ringing/being answerable at all, which is not what "silence" is supposed to mean here.
+
 **Contacts access is behind an interface.** `ContactsLookup`/`AndroidContactsLookup` exist purely so
 `CallRepository`'s rule logic can be unit tested with a fake instead of a real `ContentResolver`.
 
