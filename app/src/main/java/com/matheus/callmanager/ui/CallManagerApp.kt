@@ -556,6 +556,8 @@ private fun RulesScreen(
     var allowContacts by remember { mutableStateOf(settings.allowContacts) }
     var recentEnabled by remember { mutableStateOf(settings.recentAcceptedRuleEnabled) }
     var recentDays by remember { mutableStateOf(settings.allowRecentAcceptedDays.toFloat()) }
+    var outgoingEnabled by remember { mutableStateOf(settings.recentOutgoingRuleEnabled) }
+    var outgoingDays by remember { mutableStateOf(settings.allowRecentOutgoingDays.toFloat()) }
     var blockUnknown by remember { mutableStateOf(settings.blockUnknownNumbers) }
     var blockedCallAction by remember { mutableStateOf(settings.blockedCallAction) }
     var showRejectedNotification by remember { mutableStateOf(settings.showRejectedCallNotification) }
@@ -606,6 +608,26 @@ private fun RulesScreen(
                 value = recentDays,
                 onValueChange = { recentDays = it },
                 onValueChangeFinished = { settings.allowRecentAcceptedDays = recentDays.toInt() },
+                valueRange = 1f..90f
+            )
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("Allow recently called numbers")
+            Switch(checked = outgoingEnabled, onCheckedChange = {
+                outgoingEnabled = it
+                settings.recentOutgoingRuleEnabled = it
+            })
+        }
+        if (outgoingEnabled) {
+            Text("Allow for ${outgoingDays.toInt()} days after you call them")
+            Slider(
+                value = outgoingDays,
+                onValueChange = { outgoingDays = it },
+                onValueChangeFinished = { settings.allowRecentOutgoingDays = outgoingDays.toInt() },
                 valueRange = 1f..90f
             )
         }

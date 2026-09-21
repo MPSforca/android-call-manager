@@ -10,13 +10,14 @@ sealed class ScreeningDecision {
 }
 
 /**
- * Central place where the block-list, allow-list, contacts and "recently accepted" rules are evaluated.
- * [database] and [contactsLookup] are injectable so this can be unit tested without a real device.
+ * Central place where the block-list, allow-list, contacts, "recently accepted" and "recently called" rules are evaluated.
+ * [database], [contactsLookup] and [recentOutgoingLookup] are injectable so this can be unit tested without a real device.
  */
 class CallRepository(
     context: Context,
     private val database: CallManagerDatabase = CallManagerDatabase.get(context),
-    private val contactsLookup: ContactsLookup = AndroidContactsLookup(context)
+    private val contactsLookup: ContactsLookup = AndroidContactsLookup(context),
+    private val recentOutgoingLookup: RecentOutgoingLookup = AndroidRecentOutgoingLookup(context)
 ) {
     private val blockListDao = database.blockListDao()
     private val allowListDao = database.allowListDao()
@@ -88,6 +89,13 @@ class CallRepository(
             val cutoff = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(settings.allowRecentAcceptedDays.toLong())
             if (accepted != null && accepted.lastAcceptedAt >= cutoff) {
                 return ScreeningDecision.Allow("Accepted within the last ${settings.allowRecentAcceptedDays} days")
+            }
+        }
+        if (settings.recentOutgoingRuleEnabled) {
+            val days = settings.allowRecentOutgoingDays
+            val cutoff = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days.toLong())
+            if (recentOutgoingLookup.hasOutgoingCallSince(number, cutoff)) {
+                return ScreeningDecision.Allow("You called them within the last $days days")
             }
         }
         return if (settings.blockUnknownNumbers) {

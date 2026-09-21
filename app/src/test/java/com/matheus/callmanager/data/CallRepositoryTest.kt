@@ -20,11 +20,19 @@ private class FakeContactsLookup : ContactsLookup {
     override fun displayName(number: String): String? = contacts[number]
 }
 
+private class FakeRecentOutgoingLookup : RecentOutgoingLookup {
+    /** number -> timestamp of the most recent outgoing call to it. */
+    val outgoingCalls = mutableMapOf<String, Long>()
+    override fun hasOutgoingCallSince(number: String, sinceMillis: Long): Boolean =
+        (outgoingCalls[number] ?: Long.MIN_VALUE) >= sinceMillis
+}
+
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class CallRepositoryTest {
     private lateinit var db: CallManagerDatabase
     private lateinit var contactsLookup: FakeContactsLookup
+    private lateinit var recentOutgoingLookup: FakeRecentOutgoingLookup
     private lateinit var repository: CallRepository
 
     @Before
@@ -34,7 +42,13 @@ class CallRepositoryTest {
             .allowMainThreadQueries()
             .build()
         contactsLookup = FakeContactsLookup()
-        repository = CallRepository(context, database = db, contactsLookup = contactsLookup)
+        recentOutgoingLookup = FakeRecentOutgoingLookup()
+        repository = CallRepository(
+            context,
+            database = db,
+            contactsLookup = contactsLookup,
+            recentOutgoingLookup = recentOutgoingLookup
+        )
     }
 
     @After
@@ -66,6 +80,63 @@ class CallRepositoryTest {
         val decision = repository.evaluate("+15552222222")
 
         assertTrue(decision is ScreeningDecision.Allow)
+    }
+
+    @Test
+    fun `number called within the configured window is allowed`() = runTest {
+        repository.settings.blockUnknownNumbers = true
+        repository.settings.recentOutgoingRuleEnabled = true
+        repository.settings.allowRecentOutgoingDays = 30
+        recentOutgoingLookup.outgoingCalls["+15558888888"] = System.currentTimeMillis()
+
+        val decision = repository.evaluate("+15558888888")
+
+        assertTrue(decision is ScreeningDecision.Allow)
+    }
+
+    @Test
+    fun `number called outside the configured window is not allowed`() = runTest {
+        repository.settings.blockUnknownNumbers = true
+        repository.settings.recentOutgoingRuleEnabled = true
+        repository.settings.allowRecentOutgoingDays = 1
+        val fiveDaysAgo = System.currentTimeMillis() - java.util.concurrent.TimeUnit.DAYS.toMillis(5)
+        recentOutgoingLookup.outgoingCalls["+15559999999"] = fiveDaysAgo
+
+        val decision = repository.evaluate("+15559999999")
+
+        assertTrue(decision is ScreeningDecision.Reject)
+    }
+
+    @Test
+    fun `recently called rule is ignored when disabled`() = runTest {
+        repository.settings.blockUnknownNumbers = true
+        repository.settings.recentOutgoingRuleEnabled = false
+        recentOutgoingLookup.outgoingCalls["+15550001111"] = System.currentTimeMillis()
+
+        val decision = repository.evaluate("+15550001111")
+
+        assertTrue(decision is ScreeningDecision.Reject)
+    }
+
+    @Test
+    fun `number never called falls through to block-unknown`() = runTest {
+        repository.settings.blockUnknownNumbers = true
+        repository.settings.recentOutgoingRuleEnabled = true
+
+        val decision = repository.evaluate("+15550002222")
+
+        assertTrue(decision is ScreeningDecision.Reject)
+    }
+
+    @Test
+    fun `block list still wins over a recently called number`() = runTest {
+        repository.settings.recentOutgoingRuleEnabled = true
+        recentOutgoingLookup.outgoingCalls["+15550003333"] = System.currentTimeMillis()
+        repository.blockNumbers(listOf("+15550003333" to "Blocked Later"))
+
+        val decision = repository.evaluate("+15550003333")
+
+        assertTrue(decision is ScreeningDecision.Reject)
     }
 
     @Test
