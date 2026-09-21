@@ -22,11 +22,19 @@ class CallRepository(
     private val allowListDao = database.allowListDao()
     private val acceptedCallerDao = database.acceptedCallerDao()
     private val blockedCallLogDao = database.blockedCallLogDao()
+    private val allowedNamePatternDao = database.allowedNamePatternDao()
     val settings = SettingsStore(context)
 
     fun observeBlockList(): Flow<List<BlockListEntry>> = blockListDao.observeAll()
     fun observeAllowList(): Flow<List<AllowListEntry>> = allowListDao.observeAll()
     fun observeBlockedCallLog(): Flow<List<BlockedCallLog>> = blockedCallLogDao.observeAll()
+    fun observeAllowedNamePatterns(): Flow<List<AllowedNamePattern>> = allowedNamePatternDao.observeAll()
+
+    suspend fun addAllowedNamePattern(pattern: String) {
+        allowedNamePatternDao.insert(AllowedNamePattern(pattern, System.currentTimeMillis()))
+    }
+
+    suspend fun removeAllowedNamePattern(entry: AllowedNamePattern) = allowedNamePatternDao.delete(entry)
 
     suspend fun blockNumbers(numbers: List<Pair<String, String?>>) {
         val now = System.currentTimeMillis()
@@ -58,13 +66,19 @@ class CallRepository(
         acceptedCallerDao.upsert(AcceptedCaller(number, System.currentTimeMillis()))
     }
 
-    /** Evaluates all configured rules for an incoming [number]. */
-    suspend fun evaluate(number: String): ScreeningDecision {
+    /**
+     * Evaluates all configured rules for an incoming [number]. [callerName] is the carrier-supplied
+     * caller ID name (CNAM), when Telecom provides one — not always available, so it's nullable.
+     */
+    suspend fun evaluate(number: String, callerName: String? = null): ScreeningDecision {
         if (blockListDao.isBlocked(number)) {
             return ScreeningDecision.Reject("On your block list")
         }
         if (allowListDao.isAllowed(number)) {
             return ScreeningDecision.Allow("On your allow list")
+        }
+        if (NameAllowMatcher.matches(callerName, allowedNamePatternDao.getAllPatterns())) {
+            return ScreeningDecision.Allow("Caller name matches an allow pattern")
         }
         if (settings.allowContacts && contactsLookup.isContact(number)) {
             return ScreeningDecision.Allow("Known contact")

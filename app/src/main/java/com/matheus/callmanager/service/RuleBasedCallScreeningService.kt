@@ -40,7 +40,7 @@ class RuleBasedCallScreeningService : CallScreeningService() {
         }
 
         scope.launch {
-            val decision = repository.evaluate(number)
+            val decision = repository.evaluate(number, callDetails.callerDisplayName)
             val action = ScreeningPolicy.determineAction(decision, repository.settings.blockedCallAction)
             respondToCall(callDetails, buildResponse(action))
             if (decision is ScreeningDecision.Reject) {

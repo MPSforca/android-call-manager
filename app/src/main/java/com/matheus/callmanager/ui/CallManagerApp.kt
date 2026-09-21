@@ -163,7 +163,10 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Tap a number for details, or select to block/allow in bulk")
+            Text(
+                "Tap a number for details, or select to block/allow in bulk",
+                modifier = Modifier.weight(1f)
+            )
             if (selected.isNotEmpty()) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FloatingActionButton(onClick = {
@@ -354,9 +357,11 @@ private fun ListsScreen(
 ) {
     val blockList by viewModel.blockList.collectAsState()
     val allowList by viewModel.allowList.collectAsState()
+    val allowedNamePatterns by viewModel.allowedNamePatterns.collectAsState()
     val blockedCalls by viewModel.blockedCalls.collectAsState()
     val hasMoreBlockedCalls by viewModel.hasMoreBlockedCalls.collectAsState()
     var manualNumber by remember { mutableStateOf("") }
+    var manualNamePattern by remember { mutableStateOf("") }
     val context = LocalContext.current
     val defaultRegion = remember(context) { PhoneNumberFormatter.defaultRegion(context) }
     val asYouTypeFormatter = remember(context, defaultRegion) {
@@ -440,6 +445,47 @@ private fun ListsScreen(
                 headlineContent = { Text(entry.displayName ?: PhoneNumberFormatter.format(context, entry.number, defaultRegion)) },
                 trailingContent = {
                     IconButton(onClick = { viewModel.unallow(entry) }) {
+                        Icon(Icons.Filled.Delete, contentDescription = "Remove")
+                    }
+                }
+            )
+        }
+
+        item { HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp)) }
+        item {
+            Text("Allow calls by caller name", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Matches the caller ID name your carrier shows for the call (e.g. \"PagerDuty\") — " +
+                    "useful for callers whose number rotates but whose name stays the same. Not " +
+                    "every carrier or call provides a name.",
+                style = MaterialTheme.typography.bodySmall
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = manualNamePattern,
+                    onValueChange = { manualNamePattern = it },
+                    label = { Text("Name contains") },
+                    placeholder = { Text("e.g. PagerDuty") },
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedButton(
+                    onClick = {
+                        viewModel.addAllowedNamePattern(manualNamePattern)
+                        manualNamePattern = ""
+                    },
+                    enabled = manualNamePattern.isNotBlank()
+                ) { Text("Add") }
+            }
+        }
+        items(allowedNamePatterns, key = { it.pattern }) { entry ->
+            ListItem(
+                leadingContent = { Icon(Icons.Filled.Person, contentDescription = null) },
+                headlineContent = { Text(entry.pattern) },
+                trailingContent = {
+                    IconButton(onClick = { viewModel.removeAllowedNamePattern(entry) }) {
                         Icon(Icons.Filled.Delete, contentDescription = "Remove")
                     }
                 }
@@ -589,6 +635,7 @@ private fun RulesScreen(
 @Composable
 private fun DebugScreen(viewModel: MainViewModel) {
     var number by remember { mutableStateOf("") }
+    var callerName by remember { mutableStateOf("") }
     val result by viewModel.simulationResult.collectAsState()
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -602,8 +649,15 @@ private fun DebugScreen(viewModel: MainViewModel) {
             label = { Text("Phone number") },
             modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
         )
+        OutlinedTextField(
+            value = callerName,
+            onValueChange = { callerName = it },
+            label = { Text("Caller ID name (optional)") },
+            placeholder = { Text("e.g. PagerDuty Outgoing Numbers") },
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+        )
         Button(
-            onClick = { viewModel.simulateIncomingCall(number) },
+            onClick = { viewModel.simulateIncomingCall(number, callerName.ifBlank { null }) },
             enabled = number.isNotBlank(),
             modifier = Modifier.padding(top = 12.dp)
         ) {

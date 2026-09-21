@@ -147,6 +147,48 @@ class CallRepositoryTest {
     }
 
     @Test
+    fun `caller whose display name matches an allow-name pattern is allowed even when block-unknown is on`() = runTest {
+        repository.settings.blockUnknownNumbers = true
+        repository.addAllowedNamePattern("PagerDuty")
+
+        val decision = repository.evaluate("+15550101011", "PagerDuty Outgoing Numbers")
+
+        assertTrue(decision is ScreeningDecision.Allow)
+    }
+
+    @Test
+    fun `caller display name that does not match any allow-name pattern falls through to block-unknown`() = runTest {
+        repository.settings.blockUnknownNumbers = true
+        repository.addAllowedNamePattern("PagerDuty")
+
+        val decision = repository.evaluate("+15550101012", "Some Spammer")
+
+        assertTrue(decision is ScreeningDecision.Reject)
+    }
+
+    @Test
+    fun `missing caller display name falls through to block-unknown even with allow-name patterns configured`() = runTest {
+        repository.settings.blockUnknownNumbers = true
+        repository.addAllowedNamePattern("PagerDuty")
+
+        val decision = repository.evaluate("+15550101013", null)
+
+        assertTrue(decision is ScreeningDecision.Reject)
+    }
+
+    @Test
+    fun `removing an allow-name pattern stops it from matching`() = runTest {
+        repository.settings.blockUnknownNumbers = true
+        repository.addAllowedNamePattern("PagerDuty")
+        val entry = repository.observeAllowedNamePatterns().first().first()
+
+        repository.removeAllowedNamePattern(entry)
+
+        val decision = repository.evaluate("+15550101014", "PagerDuty Outgoing Numbers")
+        assertTrue(decision is ScreeningDecision.Reject)
+    }
+
+    @Test
     fun `rejecting a call logs it so it stays visible in the app`() = runTest {
         repository.blockNumbers(listOf("+15558888888" to "Spammer"))
         val decision = repository.evaluate("+15558888888") as ScreeningDecision.Reject

@@ -17,10 +17,25 @@ android {
         versionName = "1.0"
     }
 
+    signingConfigs {
+        create("release") {
+            val storeFilePath = providers.gradleProperty("CALLMANAGER_RELEASE_STORE_FILE").orNull
+            if (storeFilePath != null) {
+                storeFile = file(storeFilePath)
+                storePassword = providers.gradleProperty("CALLMANAGER_RELEASE_STORE_PASSWORD").get()
+                keyAlias = providers.gradleProperty("CALLMANAGER_RELEASE_KEY_ALIAS").get()
+                keyPassword = providers.gradleProperty("CALLMANAGER_RELEASE_KEY_PASSWORD").get()
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (providers.gradleProperty("CALLMANAGER_RELEASE_STORE_FILE").isPresent) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

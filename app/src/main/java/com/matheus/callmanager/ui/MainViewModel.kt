@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.callmanager.data.AllowListEntry
+import com.matheus.callmanager.data.AllowedNamePattern
 import com.matheus.callmanager.data.BlockListEntry
 import com.matheus.callmanager.data.BlockedCallMerger
 import com.matheus.callmanager.data.CallRepository
@@ -33,6 +34,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val blockList: StateFlow<List<BlockListEntry>> = stateFlowFrom(repository.observeBlockList(), emptyList())
     val allowList: StateFlow<List<AllowListEntry>> = stateFlowFrom(repository.observeAllowList(), emptyList())
+    val allowedNamePatterns: StateFlow<List<AllowedNamePattern>> =
+        stateFlowFrom(repository.observeAllowedNamePatterns(), emptyList())
 
     /**
      * Merges this app's own block log with every call the system call log tagged BLOCKED_TYPE —
@@ -106,6 +109,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { repository.unallow(entry) }
     }
 
+    fun addAllowedNamePattern(pattern: String) {
+        if (pattern.isBlank()) return
+        viewModelScope.launch { repository.addAllowedNamePattern(pattern) }
+    }
+
+    fun removeAllowedNamePattern(entry: AllowedNamePattern) {
+        viewModelScope.launch { repository.removeAllowedNamePattern(entry) }
+    }
+
     /** Toggles a single number's block-list membership (used by the call-detail screen). */
     fun toggleBlock(number: String, name: String?) {
         viewModelScope.launch {
@@ -123,9 +135,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /** Runs the same rule evaluation the real CallScreeningService would, without needing an actual call. */
-    fun simulateIncomingCall(number: String) {
+    fun simulateIncomingCall(number: String, callerName: String? = null) {
         viewModelScope.launch {
-            val decision = repository.evaluate(number)
+            val decision = repository.evaluate(number, callerName)
             _simulationResult.value = when (decision) {
                 is ScreeningDecision.Allow -> "ALLOWED — ${decision.reason}"
                 is ScreeningDecision.Reject -> {

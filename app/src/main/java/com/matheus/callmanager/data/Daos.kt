@@ -44,6 +44,21 @@ interface AllowListDao {
 }
 
 @Dao
+interface AllowedNamePatternDao {
+    @Query("SELECT * FROM allowed_name_patterns ORDER BY addedAt DESC")
+    fun observeAll(): Flow<List<AllowedNamePattern>>
+
+    @Query("SELECT pattern FROM allowed_name_patterns")
+    suspend fun getAllPatterns(): List<String>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(entry: AllowedNamePattern)
+
+    @Delete
+    suspend fun delete(entry: AllowedNamePattern)
+}
+
+@Dao
 interface AcceptedCallerDao {
     @Query("SELECT * FROM accepted_callers WHERE number = :number LIMIT 1")
     suspend fun get(number: String): AcceptedCaller?
