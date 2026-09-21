@@ -50,7 +50,7 @@ object ContactsUtil {
             null, null, null
         )?.use { cursor ->
             if (cursor.moveToFirst()) {
-                return cursor.getString(0)
+                return cursor.getString(0)?.takeIf { it.isNotBlank() }
             }
         }
         return null

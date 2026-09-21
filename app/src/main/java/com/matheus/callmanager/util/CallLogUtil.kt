@@ -1,7 +1,9 @@
 package com.matheus.callmanager.util
 
+import android.content.ContentResolver
 import android.content.Context
 import android.os.Build
+import android.os.Bundle
 import android.provider.CallLog
 
 data class RecentCall(
@@ -37,10 +39,10 @@ object CallLogUtil {
      * device's persistent call history — not app-local state. It includes every call regardless
      * of whether this app was running when the call happened.
      *
-     * A page shorter than [pageSize] means there are no more calls after it. The LIMIT/OFFSET
-     * suffix on [sortOrder] is a standard trick for provider-backed SQLite queries: the framework
-     * passes the sort order straight into the underlying `ORDER BY`, which SQLite lets you follow
-     * with `LIMIT`/`OFFSET`.
+     * A page shorter than [pageSize] means there are no more calls after it. Pagination is done via
+     * the query-args [Bundle] (QUERY_ARG_LIMIT/OFFSET), not by appending `LIMIT`/`OFFSET` text to
+     * the sortOrder string — the call log provider validates sortOrder and throws
+     * `IllegalArgumentException: Invalid token LIMIT` if you try that.
      */
     fun recentCalls(context: Context, pageSize: Int = DEFAULT_PAGE_SIZE, offset: Int = 0): List<RecentCall> {
         val projection = arrayOf(
@@ -49,13 +51,17 @@ object CallLogUtil {
             CallLog.Calls.DATE,
             CallLog.Calls.TYPE
         )
+        val queryArgs = Bundle().apply {
+            putString(ContentResolver.QUERY_ARG_SQL_SORT_ORDER, "${CallLog.Calls.DATE} DESC")
+            putInt(ContentResolver.QUERY_ARG_LIMIT, pageSize)
+            putInt(ContentResolver.QUERY_ARG_OFFSET, offset)
+        }
         val results = mutableListOf<RecentCall>()
         context.contentResolver.query(
             CallLog.Calls.CONTENT_URI,
             projection,
-            null,
-            null,
-            "${CallLog.Calls.DATE} DESC LIMIT $pageSize OFFSET $offset"
+            queryArgs,
+            null
         )?.use { cursor ->
             val numberIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
             val nameIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)
@@ -64,7 +70,7 @@ object CallLogUtil {
             while (cursor.moveToNext()) {
                 results += RecentCall(
                     number = cursor.getString(numberIdx) ?: continue,
-                    name = cursor.getString(nameIdx),
+                    name = cursor.getString(nameIdx)?.takeIf { it.isNotBlank() },
                     timestamp = cursor.getLong(dateIdx),
                     type = cursor.getInt(typeIdx)
                 )
@@ -90,13 +96,19 @@ object CallLogUtil {
             if (hasBlockReasonColumn) add(CallLog.Calls.BLOCK_REASON)
         }.toTypedArray()
 
+        val queryArgs = Bundle().apply {
+            putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${CallLog.Calls.TYPE} = ?")
+            putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(CallLog.Calls.BLOCKED_TYPE.toString()))
+            putString(ContentResolver.QUERY_ARG_SQL_SORT_ORDER, "${CallLog.Calls.DATE} DESC")
+            putInt(ContentResolver.QUERY_ARG_LIMIT, pageSize)
+            putInt(ContentResolver.QUERY_ARG_OFFSET, offset)
+        }
         val results = mutableListOf<SystemBlockedCall>()
         context.contentResolver.query(
             CallLog.Calls.CONTENT_URI,
             projection,
-            "${CallLog.Calls.TYPE} = ?",
-            arrayOf(CallLog.Calls.BLOCKED_TYPE.toString()),
-            "${CallLog.Calls.DATE} DESC LIMIT $pageSize OFFSET $offset"
+            queryArgs,
+            null
         )?.use { cursor ->
             val numberIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
             val nameIdx = cursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)
@@ -106,7 +118,7 @@ object CallLogUtil {
                 val reason = if (reasonIdx >= 0) blockReasonLabel(cursor.getInt(reasonIdx)) else "Blocked by Android"
                 results += SystemBlockedCall(
                     number = cursor.getString(numberIdx) ?: continue,
-                    name = cursor.getString(nameIdx),
+                    name = cursor.getString(nameIdx)?.takeIf { it.isNotBlank() },
                     timestamp = cursor.getLong(dateIdx),
                     source = reason
                 )

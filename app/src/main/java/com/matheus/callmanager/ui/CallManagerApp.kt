@@ -1,7 +1,7 @@
 package com.matheus.callmanager.ui
 
+import android.provider.CallLog
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,13 +13,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.CallMade
+import androidx.compose.material.icons.automirrored.filled.CallMissed
+import androidx.compose.material.icons.automirrored.filled.CallReceived
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.PhoneForwarded
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.PhoneDisabled
 import androidx.compose.material.icons.filled.Rule
+import androidx.compose.material.icons.filled.Voicemail
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +36,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -46,11 +57,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.matheus.callmanager.BuildConfig
 import com.matheus.callmanager.data.BlockedCallAction
 import com.matheus.callmanager.util.CallLogUtil
+import com.matheus.callmanager.util.PhoneNumberFormatter
 import com.matheus.callmanager.util.RecentCallGroup
 import java.text.DateFormat
 import java.util.Date
@@ -125,6 +138,8 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
     val allowList by viewModel.allowList.collectAsState()
     var selected by remember { mutableStateOf(setOf<String>()) }
     var selectedNumber by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val defaultRegion = remember(context) { PhoneNumberFormatter.defaultRegion(context) }
 
     val groups = remember(calls) { CallLogUtil.groupByNumber(calls) }
     val blockedNumbers = remember(blockList) { blockList.map { it.number }.toSet() }
@@ -137,6 +152,7 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
             viewModel = viewModel,
             group = detailGroup,
             status = statusOf(detailGroup.number, blockedNumbers, allowedNumbers),
+            defaultRegion = defaultRegion,
             onBack = { selectedNumber = null }
         )
         return
@@ -169,49 +185,55 @@ private fun RecentCallsScreen(viewModel: MainViewModel) {
             items(groups, key = { it.number }) { group ->
                 val status = statusOf(group.number, blockedNumbers, allowedNumbers)
                 val latestCall = group.calls.first()
-                Column(
+                val formattedNumber = remember(group.number, defaultRegion) {
+                    PhoneNumberFormatter.format(context, group.number, defaultRegion)
+                }
+                val countSuffix = if (group.calls.size > 1) " · ${group.calls.size} calls" else ""
+                ListItem(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            when (status) {
-                                NumberStatus.BLOCKED -> MaterialTheme.colorScheme.errorContainer
-                                NumberStatus.ALLOWED -> MaterialTheme.colorScheme.primaryContainer
-                                NumberStatus.NONE -> MaterialTheme.colorScheme.surface
-                            }
-                        )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { selectedNumber = group.number }
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                        .clickable { selectedNumber = group.number },
+                    leadingContent = {
                         Checkbox(
                             checked = selected.contains(group.number),
                             onCheckedChange = { checked ->
                                 selected = if (checked) selected + group.number else selected - group.number
                             }
                         )
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    group.name ?: group.number,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f, fill = false)
-                                )
-                                StatusBadge(status, modifier = Modifier.padding(start = 8.dp))
+                    },
+                    headlineContent = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                group.name ?: formattedNumber,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                            StatusBadge(status, modifier = Modifier.padding(start = 8.dp))
+                        }
+                    },
+                    supportingContent = {
+                        Column {
+                            if (group.name != null) {
+                                Text(formattedNumber, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
-                            val countSuffix = if (group.calls.size > 1) " · ${group.calls.size} calls" else ""
                             Text(
                                 "${DateFormat.getDateTimeInstance().format(Date(group.latestTimestamp))} · " +
-                                    CallLogUtil.callTypeLabel(latestCall.type) + countSuffix,
-                                style = MaterialTheme.typography.bodySmall
+                                    CallLogUtil.callTypeLabel(latestCall.type) + countSuffix
                             )
                         }
-                    }
-                }
+                    },
+                    trailingContent = {
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+                    },
+                    colors = ListItemDefaults.colors(
+                        containerColor = when (status) {
+                            NumberStatus.BLOCKED -> MaterialTheme.colorScheme.errorContainer
+                            NumberStatus.ALLOWED -> MaterialTheme.colorScheme.primaryContainer
+                            NumberStatus.NONE -> MaterialTheme.colorScheme.surface
+                        }
+                    )
+                )
                 HorizontalDivider()
             }
             if (hasMoreCalls) {
@@ -252,8 +274,13 @@ private fun CallDetailScreen(
     viewModel: MainViewModel,
     group: RecentCallGroup,
     status: NumberStatus,
+    defaultRegion: String,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val formattedNumber = remember(group.number, defaultRegion) {
+        PhoneNumberFormatter.format(context, group.number, defaultRegion)
+    }
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
@@ -264,11 +291,11 @@ private fun CallDetailScreen(
             }
             Column(modifier = Modifier.padding(start = 8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(group.name ?: group.number, style = MaterialTheme.typography.titleMedium)
+                    Text(group.name ?: formattedNumber, style = MaterialTheme.typography.titleMedium)
                     StatusBadge(status, modifier = Modifier.padding(start = 8.dp))
                 }
                 if (group.name != null) {
-                    Text(group.number, style = MaterialTheme.typography.bodySmall)
+                    Text(formattedNumber, style = MaterialTheme.typography.titleSmall)
                 }
             }
         }
@@ -297,17 +324,26 @@ private fun CallDetailScreen(
         )
         LazyColumn {
             items(group.calls, key = { it.timestamp }) { call ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(DateFormat.getDateTimeInstance().format(Date(call.timestamp)))
-                    Text(CallLogUtil.callTypeLabel(call.type), style = MaterialTheme.typography.bodySmall)
-                }
+                ListItem(
+                    leadingContent = { Icon(callTypeIcon(call.type), contentDescription = null) },
+                    headlineContent = { Text(DateFormat.getDateTimeInstance().format(Date(call.timestamp))) },
+                    supportingContent = { Text(CallLogUtil.callTypeLabel(call.type)) }
+                )
                 HorizontalDivider()
             }
         }
     }
+}
+
+private fun callTypeIcon(type: Int) = when (type) {
+    CallLog.Calls.INCOMING_TYPE -> Icons.AutoMirrored.Filled.CallReceived
+    CallLog.Calls.OUTGOING_TYPE -> Icons.AutoMirrored.Filled.CallMade
+    CallLog.Calls.MISSED_TYPE -> Icons.AutoMirrored.Filled.CallMissed
+    CallLog.Calls.VOICEMAIL_TYPE -> Icons.Filled.Voicemail
+    CallLog.Calls.REJECTED_TYPE -> Icons.Filled.PhoneDisabled
+    CallLog.Calls.BLOCKED_TYPE -> Icons.Filled.Block
+    CallLog.Calls.ANSWERED_EXTERNALLY_TYPE -> Icons.AutoMirrored.Filled.PhoneForwarded
+    else -> Icons.Filled.Call
 }
 
 @Composable
@@ -321,13 +357,19 @@ private fun ListsScreen(
     val blockedCalls by viewModel.blockedCalls.collectAsState()
     val hasMoreBlockedCalls by viewModel.hasMoreBlockedCalls.collectAsState()
     var manualNumber by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val defaultRegion = remember(context) { PhoneNumberFormatter.defaultRegion(context) }
+    val asYouTypeFormatter = remember(context, defaultRegion) {
+        PhoneNumberFormatter.newAsYouTypeFormatter(context, defaultRegion)
+    }
 
     LazyColumn(modifier = Modifier.padding(16.dp)) {
         item {
             OutlinedTextField(
                 value = manualNumber,
-                onValueChange = { manualNumber = it },
+                onValueChange = { manualNumber = PhoneNumberFormatter.formatAsYouType(asYouTypeFormatter, it) },
                 label = { Text("Add a number manually") },
+                placeholder = { Text("e.g. (19) 99999-9999 or +55 19 99999-9999") },
                 modifier = Modifier.fillMaxWidth()
             )
             Row(
@@ -335,11 +377,19 @@ private fun ListsScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedButton(
-                    onClick = { viewModel.blockContact(manualNumber, null); manualNumber = "" },
+                    onClick = {
+                        val normalized = PhoneNumberFormatter.normalizeForStorage(context, manualNumber, defaultRegion)
+                        viewModel.blockContact(normalized, null)
+                        manualNumber = ""
+                    },
                     enabled = manualNumber.isNotBlank()
                 ) { Text("Block it") }
                 OutlinedButton(
-                    onClick = { viewModel.allowContact(manualNumber, null); manualNumber = "" },
+                    onClick = {
+                        val normalized = PhoneNumberFormatter.normalizeForStorage(context, manualNumber, defaultRegion)
+                        viewModel.allowContact(normalized, null)
+                        manualNumber = ""
+                    },
                     enabled = manualNumber.isNotBlank()
                 ) { Text("Allow it") }
             }
@@ -359,16 +409,15 @@ private fun ListsScreen(
             }
         }
         items(blockList, key = { it.number }) { entry ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(entry.displayName ?: entry.number)
-                IconButton(onClick = { viewModel.unblock(entry) }) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Remove")
+            ListItem(
+                leadingContent = { Icon(Icons.Filled.Person, contentDescription = null) },
+                headlineContent = { Text(entry.displayName ?: PhoneNumberFormatter.format(context, entry.number, defaultRegion)) },
+                trailingContent = {
+                    IconButton(onClick = { viewModel.unblock(entry) }) {
+                        Icon(Icons.Filled.Delete, contentDescription = "Remove")
+                    }
                 }
-            }
+            )
         }
 
         item { HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp)) }
@@ -386,16 +435,15 @@ private fun ListsScreen(
             }
         }
         items(allowList, key = { it.number }) { entry ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(entry.displayName ?: entry.number)
-                IconButton(onClick = { viewModel.unallow(entry) }) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Remove")
+            ListItem(
+                leadingContent = { Icon(Icons.Filled.Person, contentDescription = null) },
+                headlineContent = { Text(entry.displayName ?: PhoneNumberFormatter.format(context, entry.number, defaultRegion)) },
+                trailingContent = {
+                    IconButton(onClick = { viewModel.unallow(entry) }) {
+                        Icon(Icons.Filled.Delete, contentDescription = "Remove")
+                    }
                 }
-            }
+            )
         }
 
         item { HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp)) }
@@ -407,13 +455,13 @@ private fun ListsScreen(
             )
         }
         items(blockedCalls, key = { "${it.number}-${it.timestamp}" }) { entry ->
-            Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                Text(entry.name ?: entry.number)
-                Text(
-                    "${entry.reason} · ${entry.source} · ${DateFormat.getDateTimeInstance().format(Date(entry.timestamp))}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+            ListItem(
+                leadingContent = { Icon(Icons.Filled.Block, contentDescription = null) },
+                headlineContent = { Text(entry.name ?: PhoneNumberFormatter.format(context, entry.number, defaultRegion)) },
+                supportingContent = {
+                    Text("${entry.reason} · ${entry.source} · ${DateFormat.getDateTimeInstance().format(Date(entry.timestamp))}")
+                }
+            )
         }
         if (hasMoreBlockedCalls) {
             item {
