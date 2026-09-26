@@ -64,6 +64,10 @@ android {
         abortOnError = true
         checkDependencies = true
         baseline = file("lint-baseline.xml")
+        // OldTargetApi compares targetSdk against whatever SDK happens to be installed on the
+        // machine running lint, not a real compatibility issue - it fires differently locally
+        // vs. on CI runners depending on which SDK platforms each has installed.
+        disable += "OldTargetApi"
     }
 }
 
