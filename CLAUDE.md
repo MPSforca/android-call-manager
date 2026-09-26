@@ -118,3 +118,32 @@ stores them as dialed while incoming ones arrive as E.164.
 - Android's native block list itself still can't be *listed* by this app (needs default-dialer role,
   not requested) — only individual blocked calls surfaced via the call log, and single-number checks
   via `BlockedNumberContract.isBlocked()` if ever needed.
+
+## Workflow directives
+
+**Always use a git worktree when starting a new task.** Never work directly on `main` (or on
+whatever branch happens to be checked out) for a new piece of work — create a dedicated worktree
+under `.worktrees/<name>` on its own branch, e.g.:
+
+```bash
+git worktree add .worktrees/<task-name> -b <type>/<task-name> origin/main
+```
+
+Before creating the worktree, fetch first (`git fetch origin`) so the branch point is current, not
+a stale local `main`. The worktree must start from `origin/main` HEAD, not whatever the local
+`main` ref happens to be — if local `main` is behind, branching from it silently reintroduces stale
+code.
+
+**Acceptance criteria for every task, before it's considered done:**
+
+1. **Lint and build pass locally.** Run `./gradlew ktlintCheck detekt lintDebug` (whichever of
+   these are configured) and `JAVA_HOME=$HOME/.sdkman/candidates/java/21.0.2-tem ./gradlew
+   assembleDebug testDebugUnitTest` — all green, in the worktree, before opening a PR.
+2. **≥90% code coverage on new/changed lines** in the files the task actually touches (not a
+   repo-wide bar). Check coverage for the specific lines added or modified — untouched files with
+   low coverage aren't this task's problem to fix.
+3. **Open the PR as a GitHub Draft PR** (`gh pr create --draft`) once implementation is complete —
+   never a ready-for-review PR by default. Then **babysit it**: poll CI status (`gh pr checks
+   --watch` or repeated `gh pr checks`) until every required check passes, and fix failures rather
+   than walking away with a red PR. Only mark it ready for review (`gh pr ready`) once explicitly
+   asked to.
