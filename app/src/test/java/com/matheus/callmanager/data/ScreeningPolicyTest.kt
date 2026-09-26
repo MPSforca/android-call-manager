@@ -10,18 +10,17 @@ import org.junit.Test
  * 2.1. The user can switch that to an outright, invisible reject instead.
  */
 class ScreeningPolicyTest {
-
     @Test
     fun `allowed calls ring normally regardless of blocked-call setting`() {
         val decision = ScreeningDecision.Allow("Known contact")
 
         assertEquals(
             ScreeningAction.ALLOW,
-            ScreeningPolicy.determineAction(decision, BlockedCallAction.SILENCE)
+            ScreeningPolicy.determineAction(decision, BlockedCallAction.SILENCE),
         )
         assertEquals(
             ScreeningAction.ALLOW,
-            ScreeningPolicy.determineAction(decision, BlockedCallAction.REJECT)
+            ScreeningPolicy.determineAction(decision, BlockedCallAction.REJECT),
         )
     }
 
@@ -31,7 +30,7 @@ class ScreeningPolicyTest {
 
         assertEquals(
             ScreeningAction.SILENCE,
-            ScreeningPolicy.determineAction(decision, BlockedCallAction.SILENCE)
+            ScreeningPolicy.determineAction(decision, BlockedCallAction.SILENCE),
         )
     }
 
@@ -41,7 +40,7 @@ class ScreeningPolicyTest {
 
         assertEquals(
             ScreeningAction.REJECT,
-            ScreeningPolicy.determineAction(decision, BlockedCallAction.REJECT)
+            ScreeningPolicy.determineAction(decision, BlockedCallAction.REJECT),
         )
     }
 

@@ -19,7 +19,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+class MainViewModel(
+    application: Application,
+) : AndroidViewModel(application) {
     private val repository = CallRepository.get(application)
     val settings get() = repository.settings
 
@@ -42,15 +44,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      * covering Android's native "Blocked numbers" list, the carrier, and other call-screening apps —
      * so the Blocked tab isn't limited to calls this app happened to be running for.
      */
-    val blockedCalls: StateFlow<List<UnifiedBlockedCall>> = run {
-        val state = MutableStateFlow<List<UnifiedBlockedCall>>(emptyList())
-        viewModelScope.launch {
-            combine(repository.observeBlockedCallLog(), _systemBlockedCalls) { ownLog, systemLog ->
-                BlockedCallMerger.merge(ownLog, systemLog)
-            }.collect { state.value = it }
+    val blockedCalls: StateFlow<List<UnifiedBlockedCall>> =
+        run {
+            val state = MutableStateFlow<List<UnifiedBlockedCall>>(emptyList())
+            viewModelScope.launch {
+                combine(repository.observeBlockedCallLog(), _systemBlockedCalls) { ownLog, systemLog ->
+                    BlockedCallMerger.merge(ownLog, systemLog)
+                }.collect { state.value = it }
+            }
+            state.asStateFlow()
         }
-        state.asStateFlow()
-    }
 
     private val _simulationResult = MutableStateFlow<String?>(null)
     val simulationResult: StateFlow<String?> = _simulationResult.asStateFlow()
@@ -93,7 +96,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { repository.allowNumbers(numbers.map { it to null }) }
     }
 
-    fun blockContact(number: String, name: String?) {
+    fun blockContact(
+        number: String,
+        name: String?,
+    ) {
         viewModelScope.launch { repository.blockNumbers(listOf(number to name)) }
     }
 
@@ -101,7 +107,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { repository.unblock(entry) }
     }
 
-    fun allowContact(number: String, name: String?) {
+    fun allowContact(
+        number: String,
+        name: String?,
+    ) {
         viewModelScope.launch { repository.allowNumbers(listOf(number to name)) }
     }
 
@@ -119,7 +128,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /** Toggles a single number's block-list membership (used by the call-detail screen). */
-    fun toggleBlock(number: String, name: String?) {
+    fun toggleBlock(
+        number: String,
+        name: String?,
+    ) {
         viewModelScope.launch {
             val existing = blockList.value.firstOrNull { it.number == number }
             if (existing != null) repository.unblock(existing) else repository.blockNumbers(listOf(number to name))
@@ -127,7 +139,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /** Toggles a single number's allow-list membership (used by the call-detail screen). */
-    fun toggleAllow(number: String, name: String?) {
+    fun toggleAllow(
+        number: String,
+        name: String?,
+    ) {
         viewModelScope.launch {
             val existing = allowList.value.firstOrNull { it.number == number }
             if (existing != null) repository.unallow(existing) else repository.allowNumbers(listOf(number to name))
@@ -135,16 +150,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /** Runs the same rule evaluation the real CallScreeningService would, without needing an actual call. */
-    fun simulateIncomingCall(number: String, callerName: String? = null) {
+    fun simulateIncomingCall(
+        number: String,
+        callerName: String? = null,
+    ) {
         viewModelScope.launch {
             val decision = repository.evaluate(number, callerName)
-            _simulationResult.value = when (decision) {
-                is ScreeningDecision.Allow -> "ALLOWED — ${decision.reason}"
-                is ScreeningDecision.Reject -> {
-                    repository.logBlockedCall(number, decision.reason)
-                    "REJECTED — ${decision.reason}"
+            _simulationResult.value =
+                when (decision) {
+                    is ScreeningDecision.Allow -> "ALLOWED — ${decision.reason}"
+                    is ScreeningDecision.Reject -> {
+                        repository.logBlockedCall(number, decision.reason)
+                        "REJECTED — ${decision.reason}"
+                    }
                 }
-            }
         }
     }
 
@@ -152,7 +171,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _simulationResult.value = null
     }
 
-    private fun <T> stateFlowFrom(flow: kotlinx.coroutines.flow.Flow<T>, initial: T): StateFlow<T> {
+    private fun <T> stateFlowFrom(
+        flow: kotlinx.coroutines.flow.Flow<T>,
+        initial: T,
+    ): StateFlow<T> {
         val state = MutableStateFlow(initial)
         viewModelScope.launch { flow.collect { state.value = it } }
         return state.asStateFlow()

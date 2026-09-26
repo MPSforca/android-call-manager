@@ -23,11 +23,12 @@ fun CallManagerTheme(content: @Composable () -> Unit) {
     val useDynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val isDark = isSystemInDarkTheme()
     val context = LocalContext.current
-    val colors = when {
-        useDynamicColor && isDark -> dynamicDarkColorScheme(context)
-        useDynamicColor -> dynamicLightColorScheme(context)
-        isDark -> DarkColors
-        else -> LightColors
-    }
+    val colors =
+        when {
+            useDynamicColor && isDark -> dynamicDarkColorScheme(context)
+            useDynamicColor -> dynamicLightColorScheme(context)
+            isDark -> DarkColors
+            else -> LightColors
+        }
     MaterialTheme(colorScheme = colors, content = content)
 }

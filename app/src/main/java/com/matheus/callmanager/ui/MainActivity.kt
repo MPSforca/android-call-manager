@@ -7,17 +7,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
-import com.matheus.callmanager.util.BatteryUtil
-import com.matheus.callmanager.util.ContactsUtil
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,39 +24,45 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.matheus.callmanager.ui.theme.CallManagerTheme
+import com.matheus.callmanager.util.BatteryUtil
+import com.matheus.callmanager.util.ContactsUtil
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
-    private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { viewModel.refreshRecentCalls() }
+    private val permissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions(),
+        ) { viewModel.refreshRecentCalls() }
 
-    private val roleLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        // No-op: user accepted or declined the call-screening role request.
-    }
+    private val roleLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            // No-op: user accepted or declined the call-screening role request.
+        }
 
     private var batteryOptimizationIgnored by mutableStateOf(false)
 
-    private val batteryOptimizationLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        batteryOptimizationIgnored = BatteryUtil.isIgnoringBatteryOptimizations(this)
-    }
+    private val batteryOptimizationLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            batteryOptimizationIgnored = BatteryUtil.isIgnoringBatteryOptimizations(this)
+        }
 
     private var pendingContactPickTarget: ContactPickTarget? = null
 
-    private val contactPickLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val uri = result.data?.data
-        val target = pendingContactPickTarget
-        pendingContactPickTarget = null
-        if (uri != null && target != null) {
-            ContactsUtil.resolvePickedPhoneNumber(this, uri)?.let { (number, name) ->
-                when (target) {
-                    ContactPickTarget.BLOCK -> viewModel.blockContact(number, name)
-                    ContactPickTarget.ALLOW -> viewModel.allowContact(number, name)
+    private val contactPickLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val uri = result.data?.data
+            val target = pendingContactPickTarget
+            pendingContactPickTarget = null
+            if (uri != null && target != null) {
+                ContactsUtil.resolvePickedPhoneNumber(this, uri)?.let { (number, name) ->
+                    when (target) {
+                        ContactPickTarget.BLOCK -> viewModel.blockContact(number, name)
+                        ContactPickTarget.ALLOW -> viewModel.allowContact(number, name)
+                    }
                 }
             }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,8 +83,10 @@ class MainActivity : ComponentActivity() {
                             onPickContactToAllow = { pickContact(ContactPickTarget.ALLOW) },
                             isIgnoringBatteryOptimizations = batteryOptimizationIgnored,
                             onRequestIgnoreBatteryOptimizations = {
-                                batteryOptimizationLauncher.launch(BatteryUtil.requestIgnoreBatteryOptimizationsIntent(this))
-                            }
+                                batteryOptimizationLauncher.launch(
+                                    BatteryUtil.requestIgnoreBatteryOptimizationsIntent(this),
+                                )
+                            },
                         )
                     }
                 }
@@ -106,17 +110,19 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestNeededPermissions() {
-        val needed = mutableListOf(
-            Manifest.permission.READ_CALL_LOG,
-            Manifest.permission.READ_CONTACTS,
-            Manifest.permission.READ_PHONE_STATE
-        )
+        val needed =
+            mutableListOf(
+                Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.READ_CONTACTS,
+                Manifest.permission.READ_PHONE_STATE,
+            )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             needed += Manifest.permission.POST_NOTIFICATIONS
         }
-        val missing = needed.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }
+        val missing =
+            needed.filter {
+                ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+            }
         if (missing.isNotEmpty()) {
             permissionLauncher.launch(missing.toTypedArray())
         }
@@ -136,12 +142,16 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun RequestRoleScreen(onRequest: () -> Unit) {
     androidx.compose.foundation.layout.Column(
-        modifier = androidx.compose.ui.Modifier.padding(24.dp),
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)
+        modifier =
+            androidx.compose.ui.Modifier
+                .padding(24.dp),
+        verticalArrangement =
+            androidx.compose.foundation.layout.Arrangement
+                .spacedBy(16.dp),
     ) {
         Text(
             "Call Manager needs to be your call-screening app to block calls silently and log them.",
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge,
         )
         Button(onClick = onRequest) {
             Text("Set as call-screening app")

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "America/Sao_Paulo",
+  "schedule": ["before 6am on monday"],
+  "packageRules": [
+    {
+      "matchManagers": ["gradle", "gradle-wrapper"],
+      "enabled": true
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "enabled": false
+    },
+    {
+      "groupName": "AndroidX",
+      "matchPackagePrefixes": ["androidx."]
+    },
+    {
+      "groupName": "Compose",
+      "matchPackagePrefixes": ["androidx.compose", "androidx.compose.", "org.jetbrains.compose"]
+    },
+    {
+      "groupName": "Kotlin & KSP",
+      "matchPackageNames": [
+        "org.jetbrains.kotlin.android",
+        "org.jetbrains.kotlin.plugin.compose",
+        "org.jetbrains.kotlin.plugin.serialization",
+        "com.google.devtools.ksp"
+      ]
+    }
+  ],
+  "ignorePaths": [".github/workflows/**"]
+}
