@@ -49,35 +49,45 @@ class RuleBasedCallScreeningService : CallScreeningService() {
                 if (repository.settings.showRejectedCallNotification &&
                     ScreeningPolicy.shouldNotifyRejected(action, Build.VERSION.SDK_INT)
                 ) {
-                    RejectedCallNotifier.notify(this@RuleBasedCallScreeningService, contactName, number, decision.reason)
+                    RejectedCallNotifier.notify(
+                        this@RuleBasedCallScreeningService,
+                        contactName,
+                        number,
+                        decision.reason,
+                    )
                 }
             }
         }
     }
 
-    private fun buildResponse(action: ScreeningAction): CallResponse = when (action) {
-        ScreeningAction.ALLOW -> CallResponse.Builder().build()
+    private fun buildResponse(action: ScreeningAction): CallResponse =
+        when (action) {
+            ScreeningAction.ALLOW -> CallResponse.Builder().build()
 
-        // Call is still allowed through (answerable) but muted: no ringtone/vibration. Needs
-        // API 29+; older platforms have no silence primitive, so fall back to a full reject.
-        // NOTE: whether this renders full-screen or notification-only is decided by the default
-        // Dialer/InCallService app, not by this CallScreeningService — see CLAUDE.md.
-        ScreeningAction.SILENCE -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            CallResponse.Builder().setSilenceCall(true).build()
-        } else {
-            CallResponse.Builder()
-                .setDisallowCall(true)
-                .setRejectCall(true)
-                .setSkipNotification(true)
-                .build()
+            // Call is still allowed through (answerable) but muted: no ringtone/vibration. Needs
+            // API 29+; older platforms have no silence primitive, so fall back to a full reject.
+            // NOTE: whether this renders full-screen or notification-only is decided by the default
+            // Dialer/InCallService app, not by this CallScreeningService — see CLAUDE.md.
+            ScreeningAction.SILENCE ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    CallResponse.Builder().setSilenceCall(true).build()
+                } else {
+                    CallResponse
+                        .Builder()
+                        .setDisallowCall(true)
+                        .setRejectCall(true)
+                        .setSkipNotification(true)
+                        .build()
+                }
+
+            // Fully hidden: rejected with no notification at all; only visible via this app's own
+            // Blocked tab (reading the system call log's BLOCKED_TYPE entries).
+            ScreeningAction.REJECT ->
+                CallResponse
+                    .Builder()
+                    .setDisallowCall(true)
+                    .setRejectCall(true)
+                    .setSkipNotification(true)
+                    .build()
         }
-
-        // Fully hidden: rejected with no notification at all; only visible via this app's own
-        // Blocked tab (reading the system call log's BLOCKED_TYPE entries).
-        ScreeningAction.REJECT -> CallResponse.Builder()
-            .setDisallowCall(true)
-            .setRejectCall(true)
-            .setSkipNotification(true)
-            .build()
-    }
 }

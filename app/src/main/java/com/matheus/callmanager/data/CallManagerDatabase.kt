@@ -13,39 +13,44 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         AllowListEntry::class,
         AcceptedCaller::class,
         BlockedCallLog::class,
-        AllowedNamePattern::class
+        AllowedNamePattern::class,
     ],
     version = 3,
-    exportSchema = false
+    exportSchema = false,
 )
 abstract class CallManagerDatabase : RoomDatabase() {
     abstract fun blockListDao(): BlockListDao
+
     abstract fun allowListDao(): AllowListDao
+
     abstract fun acceptedCallerDao(): AcceptedCallerDao
+
     abstract fun blockedCallLogDao(): BlockedCallLogDao
+
     abstract fun allowedNamePatternDao(): AllowedNamePatternDao
 
     companion object {
         @Volatile private var instance: CallManagerDatabase? = null
 
         /** Adds the `allowed_name_patterns` table; nothing to carry over from v2, no data touched. */
-        private val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `allowed_name_patterns` " +
-                        "(`pattern` TEXT NOT NULL, `addedAt` INTEGER NOT NULL, PRIMARY KEY(`pattern`))"
-                )
+        private val MIGRATION_2_3 =
+            object : Migration(2, 3) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL(
+                        "CREATE TABLE IF NOT EXISTS `allowed_name_patterns` " +
+                            "(`pattern` TEXT NOT NULL, `addedAt` INTEGER NOT NULL, PRIMARY KEY(`pattern`))",
+                    )
+                }
             }
-        }
 
         fun get(context: Context): CallManagerDatabase =
             instance ?: synchronized(this) {
-                instance ?: Room.databaseBuilder(
-                    context.applicationContext,
-                    CallManagerDatabase::class.java,
-                    "call-manager.db"
-                )
-                    .addMigrations(MIGRATION_2_3)
+                instance ?: Room
+                    .databaseBuilder(
+                        context.applicationContext,
+                        CallManagerDatabase::class.java,
+                        "call-manager.db",
+                    ).addMigrations(MIGRATION_2_3)
                     // Safety net for any version gap not covered by an explicit Migration above —
                     // real Migrations should cover every version bump going forward so user data
                     // (block list, allow list, etc.) survives app updates.

@@ -15,7 +15,10 @@ import kotlinx.coroutines.launch
  * remembered as "accepted" for the recently-accepted-sources rule.
  */
 class PhoneStateReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE) ?: return
         when (state) {
             TelephonyManager.EXTRA_STATE_RINGING -> {

@@ -6,12 +6,15 @@ import android.content.Context
 enum class BlockedCallAction {
     /** Let it through silently: it still shows on screen/notification, but never rings or vibrates. */
     SILENCE,
+
     /** Reject it outright, like the user declined it; it never surfaces as an incoming call at all. */
-    REJECT
+    REJECT,
 }
 
 /** Simple SharedPreferences-backed store for the user's screening rule preferences. */
-class SettingsStore(context: Context) {
+class SettingsStore(
+    context: Context,
+) {
     private val prefs = context.applicationContext.getSharedPreferences("call_manager_settings", Context.MODE_PRIVATE)
 
     var allowContacts: Boolean

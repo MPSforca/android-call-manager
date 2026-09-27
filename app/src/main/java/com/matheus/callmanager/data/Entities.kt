@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 data class BlockListEntry(
     @PrimaryKey val number: String,
     val displayName: String?,
-    val addedAt: Long
+    val addedAt: Long,
 )
 
 /** A number the user has explicitly allowed, regardless of other rules (e.g. picked from contacts). */
@@ -16,7 +16,7 @@ data class BlockListEntry(
 data class AllowListEntry(
     @PrimaryKey val number: String,
     val displayName: String?,
-    val addedAt: Long
+    val addedAt: Long,
 )
 
 /**
@@ -26,7 +26,7 @@ data class AllowListEntry(
 @Entity(tableName = "allowed_name_patterns")
 data class AllowedNamePattern(
     @PrimaryKey val pattern: String,
-    val addedAt: Long
+    val addedAt: Long,
 )
 
 /**
@@ -36,7 +36,7 @@ data class AllowedNamePattern(
 @Entity(tableName = "accepted_callers")
 data class AcceptedCaller(
     @PrimaryKey val number: String,
-    val lastAcceptedAt: Long
+    val lastAcceptedAt: Long,
 )
 
 /** A record of every call the screening service rejected, so it stays visible in the UI. */
@@ -46,5 +46,5 @@ data class BlockedCallLog(
     val number: String,
     val callerName: String?,
     val timestamp: Long,
-    val reason: String
+    val reason: String,
 )

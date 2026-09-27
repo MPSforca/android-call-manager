@@ -5,7 +5,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class CallLogUtilTest {
-
     @Test
     fun `call type label describes the outcome of a call`() {
         assertEquals("Incoming", CallLogUtil.callTypeLabel(CallLog.Calls.INCOMING_TYPE))
@@ -17,10 +16,11 @@ class CallLogUtilTest {
 
     @Test
     fun `calls from the same number are grouped into one entry`() {
-        val calls = listOf(
-            RecentCall(number = "+15551111111", name = "Spammer", timestamp = 2_000, type = 1),
-            RecentCall(number = "+15551111111", name = "Spammer", timestamp = 1_000, type = 1)
-        )
+        val calls =
+            listOf(
+                RecentCall(number = "+15551111111", name = "Spammer", timestamp = 2_000, type = 1),
+                RecentCall(number = "+15551111111", name = "Spammer", timestamp = 1_000, type = 1),
+            )
 
         val groups = CallLogUtil.groupByNumber(calls)
 
@@ -30,11 +30,12 @@ class CallLogUtilTest {
 
     @Test
     fun `group calls are ordered newest first regardless of input order`() {
-        val calls = listOf(
-            RecentCall(number = "+15551111111", name = null, timestamp = 1_000, type = 1),
-            RecentCall(number = "+15551111111", name = null, timestamp = 3_000, type = 1),
-            RecentCall(number = "+15551111111", name = null, timestamp = 2_000, type = 1)
-        )
+        val calls =
+            listOf(
+                RecentCall(number = "+15551111111", name = null, timestamp = 1_000, type = 1),
+                RecentCall(number = "+15551111111", name = null, timestamp = 3_000, type = 1),
+                RecentCall(number = "+15551111111", name = null, timestamp = 2_000, type = 1),
+            )
 
         val group = CallLogUtil.groupByNumber(calls).first()
 
@@ -44,10 +45,11 @@ class CallLogUtilTest {
 
     @Test
     fun `groups are ordered by their most recent call`() {
-        val calls = listOf(
-            RecentCall(number = "+15551111111", name = null, timestamp = 1_000, type = 1),
-            RecentCall(number = "+15552222222", name = null, timestamp = 5_000, type = 1)
-        )
+        val calls =
+            listOf(
+                RecentCall(number = "+15551111111", name = null, timestamp = 1_000, type = 1),
+                RecentCall(number = "+15552222222", name = null, timestamp = 5_000, type = 1),
+            )
 
         val groups = CallLogUtil.groupByNumber(calls)
 
@@ -57,10 +59,11 @@ class CallLogUtilTest {
 
     @Test
     fun `a name from any call in the group is used even if the latest call has none`() {
-        val calls = listOf(
-            RecentCall(number = "+15551111111", name = null, timestamp = 2_000, type = 1),
-            RecentCall(number = "+15551111111", name = "Spammer", timestamp = 1_000, type = 1)
-        )
+        val calls =
+            listOf(
+                RecentCall(number = "+15551111111", name = null, timestamp = 2_000, type = 1),
+                RecentCall(number = "+15551111111", name = "Spammer", timestamp = 1_000, type = 1),
+            )
 
         val group = CallLogUtil.groupByNumber(calls).first()
 

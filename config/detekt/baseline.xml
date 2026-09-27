@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>LongMethod:CallManagerApp.kt$@Composable private fun CallDetailScreen( viewModel: MainViewModel, group: RecentCallGroup, status: NumberStatus, blockedCalls: List&lt;UnifiedBlockedCall&gt;, defaultRegion: String, onBack: () -&gt; Unit, )</ID>
+    <ID>LongMethod:CallManagerApp.kt$@Composable private fun ListsScreen( viewModel: MainViewModel, onPickContactToBlock: () -&gt; Unit, onPickContactToAllow: () -&gt; Unit, )</ID>
+    <ID>LongMethod:CallManagerApp.kt$@Composable private fun RecentCallsScreen(viewModel: MainViewModel)</ID>
+    <ID>LongMethod:CallManagerApp.kt$@Composable private fun RulesScreen( viewModel: MainViewModel, isIgnoringBatteryOptimizations: Boolean, onRequestIgnoreBatteryOptimizations: () -&gt; Unit, )</ID>
+    <ID>MaxLineLength:CallRepository.kt$CallRepository$*</ID>
+    <ID>MaxLineLength:SettingsStore.kt$SettingsStore$/** How many days after answering a caller they stay allowed; the rule itself is toggled by [recentAcceptedRuleEnabled]. */</ID>
+    <ID>SwallowedException:RecentOutgoingLookup.kt$AndroidRecentOutgoingLookup$e: SecurityException</ID>
+  </CurrentIssues>
+</SmellBaseline>

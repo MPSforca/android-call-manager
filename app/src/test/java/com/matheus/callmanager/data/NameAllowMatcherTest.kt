@@ -9,7 +9,6 @@ import org.junit.Test
  * e.g. "PagerDuty" regardless of which of PagerDuty's rotating numbers actually called.
  */
 class NameAllowMatcherTest {
-
     @Test
     fun `caller name containing a pattern matches`() {
         assertTrue(NameAllowMatcher.matches("PagerDuty Outgoing Numbers", listOf("PagerDuty")))

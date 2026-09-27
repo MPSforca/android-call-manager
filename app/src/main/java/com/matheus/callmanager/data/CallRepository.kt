@@ -1,12 +1,17 @@
 package com.matheus.callmanager.data
 
 import android.content.Context
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.flow.Flow
+import java.util.concurrent.TimeUnit
 
 sealed class ScreeningDecision {
-    data class Allow(val reason: String) : ScreeningDecision()
-    data class Reject(val reason: String) : ScreeningDecision()
+    data class Allow(
+        val reason: String,
+    ) : ScreeningDecision()
+
+    data class Reject(
+        val reason: String,
+    ) : ScreeningDecision()
 }
 
 /**
@@ -17,7 +22,7 @@ class CallRepository(
     context: Context,
     private val database: CallManagerDatabase = CallManagerDatabase.get(context),
     private val contactsLookup: ContactsLookup = AndroidContactsLookup(context),
-    private val recentOutgoingLookup: RecentOutgoingLookup = AndroidRecentOutgoingLookup(context)
+    private val recentOutgoingLookup: RecentOutgoingLookup = AndroidRecentOutgoingLookup(context),
 ) {
     private val blockListDao = database.blockListDao()
     private val allowListDao = database.allowListDao()
@@ -27,8 +32,11 @@ class CallRepository(
     val settings = SettingsStore(context)
 
     fun observeBlockList(): Flow<List<BlockListEntry>> = blockListDao.observeAll()
+
     fun observeAllowList(): Flow<List<AllowListEntry>> = allowListDao.observeAll()
+
     fun observeBlockedCallLog(): Flow<List<BlockedCallLog>> = blockedCallLogDao.observeAll()
+
     fun observeAllowedNamePatterns(): Flow<List<AllowedNamePattern>> = allowedNamePatternDao.observeAll()
 
     suspend fun addAllowedNamePattern(pattern: String) {
@@ -39,9 +47,11 @@ class CallRepository(
 
     suspend fun blockNumbers(numbers: List<Pair<String, String?>>) {
         val now = System.currentTimeMillis()
-        blockListDao.insertAll(numbers.map { (number, name) ->
-            BlockListEntry(number, name ?: contactsLookup.displayName(number), now)
-        })
+        blockListDao.insertAll(
+            numbers.map { (number, name) ->
+                BlockListEntry(number, name ?: contactsLookup.displayName(number), now)
+            },
+        )
         // Blocking a number should take precedence over any existing allow entry for it.
         numbers.forEach { (number, _) ->
             allowListDao.getIfExists(number)?.let { allowListDao.delete(it) }
@@ -52,9 +62,11 @@ class CallRepository(
 
     suspend fun allowNumbers(numbers: List<Pair<String, String?>>) {
         val now = System.currentTimeMillis()
-        allowListDao.insertAll(numbers.map { (number, name) ->
-            AllowListEntry(number, name ?: contactsLookup.displayName(number), now)
-        })
+        allowListDao.insertAll(
+            numbers.map { (number, name) ->
+                AllowListEntry(number, name ?: contactsLookup.displayName(number), now)
+            },
+        )
         numbers.forEach { (number, _) ->
             blockListDao.getIfExists(number)?.let { blockListDao.delete(it) }
         }
@@ -71,7 +83,10 @@ class CallRepository(
      * Evaluates all configured rules for an incoming [number]. [callerName] is the carrier-supplied
      * caller ID name (CNAM), when Telecom provides one — not always available, so it's nullable.
      */
-    suspend fun evaluate(number: String, callerName: String? = null): ScreeningDecision {
+    suspend fun evaluate(
+        number: String,
+        callerName: String? = null,
+    ): ScreeningDecision {
         if (blockListDao.isBlocked(number)) {
             return ScreeningDecision.Reject("On your block list")
         }
@@ -106,16 +121,20 @@ class CallRepository(
     }
 
     /** Returns the caller's contact name, if any, so callers can reuse it (e.g. for a notification). */
-    suspend fun logBlockedCall(number: String, reason: String): String? {
+    suspend fun logBlockedCall(
+        number: String,
+        reason: String,
+    ): String? {
         val name = contactsLookup.displayName(number)
         blockedCallLogDao.insert(
-            BlockedCallLog(number = number, callerName = name, timestamp = System.currentTimeMillis(), reason = reason)
+            BlockedCallLog(number = number, callerName = name, timestamp = System.currentTimeMillis(), reason = reason),
         )
         return name
     }
 
     companion object {
         @Volatile private var instance: CallRepository? = null
+
         fun get(context: Context): CallRepository =
             instance ?: synchronized(this) {
                 instance ?: CallRepository(context.applicationContext).also { instance = it }

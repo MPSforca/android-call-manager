@@ -9,7 +9,7 @@ data class UnifiedBlockedCall(
     val name: String?,
     val timestamp: Long,
     val reason: String,
-    val source: String
+    val source: String,
 )
 
 /**
@@ -34,19 +34,31 @@ object BlockedCallMerger {
         return digits.takeLast(MATCH_SUFFIX_DIGITS)
     }
 
-    private fun sameNumber(a: String, b: String): Boolean {
+    private fun sameNumber(
+        a: String,
+        b: String,
+    ): Boolean {
         val keyA = matchKey(a)
         val keyB = matchKey(b)
         return keyA.isNotEmpty() && keyA == keyB
     }
 
-    fun merge(ownLog: List<BlockedCallLog>, systemLog: List<SystemBlockedCall>): List<UnifiedBlockedCall> {
-        val ownEntries = ownLog.map {
-            UnifiedBlockedCall(it.number, it.callerName, it.timestamp, it.reason, "Call Manager")
-        }
-        val systemOnly = systemLog
-            .filterNot { sys -> ownLog.any { sameNumber(it.number, sys.number) && abs(it.timestamp - sys.timestamp) < DEDUPE_WINDOW_MILLIS } }
-            .map { UnifiedBlockedCall(it.number, it.name, it.timestamp, it.source, "Android") }
+    fun merge(
+        ownLog: List<BlockedCallLog>,
+        systemLog: List<SystemBlockedCall>,
+    ): List<UnifiedBlockedCall> {
+        val ownEntries =
+            ownLog.map {
+                UnifiedBlockedCall(it.number, it.callerName, it.timestamp, it.reason, "Call Manager")
+            }
+        val systemOnly =
+            systemLog
+                .filterNot { sys ->
+                    ownLog.any {
+                        sameNumber(it.number, sys.number) &&
+                            abs(it.timestamp - sys.timestamp) < DEDUPE_WINDOW_MILLIS
+                    }
+                }.map { UnifiedBlockedCall(it.number, it.name, it.timestamp, it.source, "Android") }
         return (ownEntries + systemOnly).sortedByDescending { it.timestamp }
     }
 
@@ -58,6 +70,10 @@ object BlockedCallMerger {
      * directly, rather than trusting the system TYPE column, is what lets the UI show "Blocked" for
      * silenced calls too.
      */
-    fun wasBlocked(number: String, timestamp: Long, blockedCalls: List<UnifiedBlockedCall>): Boolean =
+    fun wasBlocked(
+        number: String,
+        timestamp: Long,
+        blockedCalls: List<UnifiedBlockedCall>,
+    ): Boolean =
         blockedCalls.any { sameNumber(it.number, number) && abs(it.timestamp - timestamp) < DEDUPE_WINDOW_MILLIS }
 }

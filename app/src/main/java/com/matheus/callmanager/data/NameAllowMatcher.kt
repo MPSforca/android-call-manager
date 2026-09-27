@@ -7,7 +7,10 @@ package com.matheus.callmanager.data
  * unit test.
  */
 object NameAllowMatcher {
-    fun matches(callerName: String?, patterns: List<String>): Boolean {
+    fun matches(
+        callerName: String?,
+        patterns: List<String>,
+    ): Boolean {
         if (callerName.isNullOrBlank()) return false
         return patterns.any { it.isNotBlank() && callerName.contains(it, ignoreCase = true) }
     }

@@ -40,13 +40,22 @@ object PhoneNumberFormatter {
      * readable national form (e.g. "(555) 123-4567"). Falls back to [rawNumber] unchanged if it
      * can't be parsed as a phone number (e.g. a short code, or malformed data).
      */
-    fun format(context: Context, rawNumber: String, defaultRegion: String): String {
+    fun format(
+        context: Context,
+        rawNumber: String,
+        defaultRegion: String,
+    ): String {
         val util = phoneUtil(context)
         return try {
             val parsed = util.parse(rawNumber, defaultRegion)
             if (!util.isValidNumber(parsed)) return rawNumber
             val isLocal = parsed.countryCode == util.getCountryCodeForRegion(defaultRegion)
-            val format = if (isLocal) PhoneNumberUtil.PhoneNumberFormat.NATIONAL else PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL
+            val format =
+                if (isLocal) {
+                    PhoneNumberUtil.PhoneNumberFormat.NATIONAL
+                } else {
+                    PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL
+                }
             util.format(parsed, format)
         } catch (e: NumberParseException) {
             rawNumber
@@ -60,7 +69,11 @@ object PhoneNumberFormatter {
      * [format] when the region has no concept of an area code (e.g. many mobile-first countries),
      * and to [rawNumber] unchanged if it doesn't parse as a valid number at all.
      */
-    fun formatWithAreaCode(context: Context, rawNumber: String, defaultRegion: String): String {
+    fun formatWithAreaCode(
+        context: Context,
+        rawNumber: String,
+        defaultRegion: String,
+    ): String {
         val util = phoneUtil(context)
         return try {
             val parsed = util.parse(rawNumber, defaultRegion)
@@ -87,7 +100,11 @@ object PhoneNumberFormatter {
      * typo — dialing prefixes like "00" don't belong after '+', e.g. "+055..." meant "+55...").
      * Falls back to the trimmed input unchanged if it doesn't parse as a valid number at all.
      */
-    fun normalizeForStorage(context: Context, rawNumber: String, defaultRegion: String): String {
+    fun normalizeForStorage(
+        context: Context,
+        rawNumber: String,
+        defaultRegion: String,
+    ): String {
         val util = phoneUtil(context)
         val cleaned = stripLeadingZeroAfterPlus(rawNumber.trim())
         return try {
@@ -108,8 +125,10 @@ object PhoneNumberFormatter {
     }
 
     /** A fresh [AsYouTypeFormatter] assuming [defaultRegion], for live formatting while typing. */
-    fun newAsYouTypeFormatter(context: Context, defaultRegion: String): AsYouTypeFormatter =
-        phoneUtil(context).getAsYouTypeFormatter(defaultRegion)
+    fun newAsYouTypeFormatter(
+        context: Context,
+        defaultRegion: String,
+    ): AsYouTypeFormatter = phoneUtil(context).getAsYouTypeFormatter(defaultRegion)
 
     /**
      * Re-derives the as-you-type formatting for the *entire* current [input] using [formatter],
@@ -118,7 +137,10 @@ object PhoneNumberFormatter {
      * handle. Only digits and a leading '+' are fed in; other characters (spaces, dashes the
      * formatter itself already inserted) are ignored.
      */
-    fun formatAsYouType(formatter: AsYouTypeFormatter, input: String): String {
+    fun formatAsYouType(
+        formatter: AsYouTypeFormatter,
+        input: String,
+    ): String {
         formatter.clear()
         if (input.isEmpty()) return input
         var formatted = input
