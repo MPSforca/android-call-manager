@@ -7,7 +7,7 @@
         errorLine1="        NotificationManagerCompat.from(context).notify(notificationId++, notification)"
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/util/RejectedCallNotifier.kt"
+            file="src/main/java/com/matheus/callmanager/core/telephony/RejectedCallNotifier.kt"
             line="42"
             column="9"/>
     </issue>
@@ -18,7 +18,7 @@
         errorLine1="        return roleManager.isRoleHeld(RoleManager.ROLE_CALL_SCREENING)"
         errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/ui/MainActivity.kt"
+            file="src/main/java/com/matheus/callmanager/MainActivity.kt"
             line="133"
             column="39"/>
     </issue>
@@ -29,7 +29,7 @@
         errorLine1="        roleLauncher.launch(roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING))"
         errorLine2="                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/ui/MainActivity.kt"
+            file="src/main/java/com/matheus/callmanager/MainActivity.kt"
             line="138"
             column="65"/>
     </issue>
@@ -40,7 +40,7 @@
         errorLine1="        val roleManager = getSystemService(RoleManager::class.java) ?: return false"
         errorLine2="                                           ~~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/ui/MainActivity.kt"
+            file="src/main/java/com/matheus/callmanager/MainActivity.kt"
             line="132"
             column="44"/>
     </issue>
@@ -51,7 +51,7 @@
         errorLine1="        return roleManager.isRoleHeld(RoleManager.ROLE_CALL_SCREENING)"
         errorLine2="                           ~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/ui/MainActivity.kt"
+            file="src/main/java/com/matheus/callmanager/MainActivity.kt"
             line="133"
             column="28"/>
     </issue>
@@ -62,7 +62,7 @@
         errorLine1="        val roleManager = getSystemService(RoleManager::class.java) ?: return"
         errorLine2="                                           ~~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/ui/MainActivity.kt"
+            file="src/main/java/com/matheus/callmanager/MainActivity.kt"
             line="137"
             column="44"/>
     </issue>
@@ -73,7 +73,7 @@
         errorLine1="        roleLauncher.launch(roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING))"
         errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/ui/MainActivity.kt"
+            file="src/main/java/com/matheus/callmanager/MainActivity.kt"
             line="138"
             column="41"/>
     </issue>
@@ -84,7 +84,7 @@
         errorLine1="        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse(&quot;package:${context.packageName}&quot;))"
         errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/util/BatteryUtil.kt"
+            file="src/main/java/com/matheus/callmanager/core/telephony/BatteryUtil.kt"
             line="27"
             column="25"/>
     </issue>
@@ -623,7 +623,7 @@
         errorLine1="    override fun onReceive("
         errorLine2="                 ~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/service/PhoneStateReceiver.kt"
+            file="src/main/java/com/matheus/callmanager/screening/PhoneStateReceiver.kt"
             line="18"
             column="18"/>
     </issue>
@@ -634,7 +634,7 @@
         errorLine1="        if (Build.VERSION.SDK_INT &lt; Build.VERSION_CODES.O) return"
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/util/RejectedCallNotifier.kt"
+            file="src/main/java/com/matheus/callmanager/core/telephony/RejectedCallNotifier.kt"
             line="46"
             column="13"/>
     </issue>
@@ -652,8 +652,8 @@
         errorLine1="    var recentDays by remember { mutableStateOf(settings.allowRecentAcceptedDays.toFloat()) }"
         errorLine2="                                 ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/ui/CallManagerApp.kt"
-            line="600"
+            file="src/main/java/com/matheus/callmanager/CallManagerApp.kt"
+            line="599"
             column="34"/>
     </issue>
 
@@ -663,8 +663,8 @@
         errorLine1="    var outgoingDays by remember { mutableStateOf(settings.allowRecentOutgoingDays.toFloat()) }"
         errorLine2="                                   ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/com/matheus/callmanager/ui/CallManagerApp.kt"
-            line="602"
+            file="src/main/java/com/matheus/callmanager/CallManagerApp.kt"
+            line="601"
             column="36"/>
     </issue>
 
