@@ -40,12 +40,12 @@ jobs:
         run: find "$ANDROID_HOME/platforms" -maxdepth 1 -type d -name 'android-*' ! -name 'android-35' -exec rm -rf {} +
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew testDebugUnitTest koverXmlReport
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results
           path: app/build/reports/tests
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-report
@@ -64,7 +64,7 @@ jobs:
         run: find "$ANDROID_HOME/platforms" -maxdepth 1 -type d -name 'android-*' ! -name 'android-35' -exec rm -rf {} +
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew detekt ktlintCheck lintDebug
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: static-analysis-reports
