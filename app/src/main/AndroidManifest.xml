@@ -16,7 +16,7 @@
         android:theme="@style/Theme.CallManager">
 
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.CallManager">
             <intent-filter>
@@ -26,7 +26,7 @@
         </activity>
 
         <service
-            android:name=".service.RuleBasedCallScreeningService"
+            android:name=".screening.RuleBasedCallScreeningService"
             android:permission="android.permission.BIND_SCREENING_SERVICE"
             android:exported="true">
             <intent-filter>
@@ -35,7 +35,7 @@
         </service>
 
         <receiver
-            android:name=".service.PhoneStateReceiver"
+            android:name=".screening.PhoneStateReceiver"
             android:exported="true"
             android:permission="android.permission.READ_PHONE_STATE">
             <intent-filter>
