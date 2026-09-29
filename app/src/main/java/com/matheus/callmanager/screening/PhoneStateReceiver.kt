@@ -1,24 +1,31 @@
 package com.matheus.callmanager.screening
 
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.telephony.TelephonyManager
 import com.matheus.callmanager.core.data.CallRepository
+import com.matheus.callmanager.core.di.HiltBroadcastReceiver
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Watches for RINGING -> OFFHOOK transitions, i.e. the user answering a call, so that number can be
  * remembered as "accepted" for the recently-accepted-sources rule.
  */
-class PhoneStateReceiver : BroadcastReceiver() {
+@AndroidEntryPoint
+class PhoneStateReceiver : HiltBroadcastReceiver() {
+    @Inject
+    lateinit var repository: CallRepository
+
     override fun onReceive(
         context: Context,
         intent: Intent,
     ) {
+        super.onReceive(context, intent)
         val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE) ?: return
         when (state) {
             TelephonyManager.EXTRA_STATE_RINGING -> {
@@ -27,7 +34,6 @@ class PhoneStateReceiver : BroadcastReceiver() {
             TelephonyManager.EXTRA_STATE_OFFHOOK -> {
                 val number = lastRingingNumber
                 if (number != null) {
-                    val repository = CallRepository.get(context)
                     CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                         repository.recordAccepted(number)
                     }

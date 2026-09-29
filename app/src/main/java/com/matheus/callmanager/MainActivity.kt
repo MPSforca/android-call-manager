@@ -26,7 +26,9 @@ import androidx.core.content.ContextCompat
 import com.matheus.callmanager.core.designsystem.theme.CallManagerTheme
 import com.matheus.callmanager.core.telephony.BatteryUtil
 import com.matheus.callmanager.core.telephony.ContactsUtil
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 

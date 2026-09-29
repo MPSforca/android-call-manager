@@ -9,10 +9,12 @@ import com.matheus.callmanager.core.data.ScreeningPolicy
 import com.matheus.callmanager.core.model.ScreeningAction
 import com.matheus.callmanager.core.model.ScreeningDecision
 import com.matheus.callmanager.core.telephony.RejectedCallNotifier
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Called by Telecom for every incoming call once this app is set as the default
@@ -23,14 +25,12 @@ import kotlinx.coroutines.launch
  * self-managed connections (the mechanism VoIP apps like WhatsApp use) here in the first place.
  * The direction/self-managed check below is a defensive second layer.
  */
+@AndroidEntryPoint
 class RuleBasedCallScreeningService : CallScreeningService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private lateinit var repository: CallRepository
 
-    override fun onCreate() {
-        super.onCreate()
-        repository = CallRepository.get(this)
-    }
+    @Inject
+    lateinit var repository: CallRepository
 
     override fun onScreenCall(callDetails: Call.Details) {
         val isSelfManaged = callDetails.callProperties and Call.Details.PROPERTY_SELF_MANAGED != 0

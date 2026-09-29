@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.database.entity.AcceptedCaller
+import com.matheus.callmanager.core.datastore.SettingsStore
 import com.matheus.callmanager.core.model.ScreeningDecision
 import com.matheus.callmanager.core.telephony.ContactsLookup
 import com.matheus.callmanager.core.telephony.RecentOutgoingLookup
@@ -57,10 +58,10 @@ class CallRepositoryTest {
         recentOutgoingLookup = FakeRecentOutgoingLookup()
         repository =
             CallRepository(
-                context,
                 database = db,
                 contactsLookup = contactsLookup,
                 recentOutgoingLookup = recentOutgoingLookup,
+                settings = SettingsStore(context),
             )
     }
 
