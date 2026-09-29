@@ -11,31 +11,29 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.matheus.callmanager.core.designsystem.theme.CallManagerTheme
 import com.matheus.callmanager.core.telephony.BatteryUtil
 import com.matheus.callmanager.core.telephony.ContactsUtil
+import com.matheus.callmanager.feature.lists.ListsViewModel
+import com.matheus.callmanager.feature.onboarding.RequestRoleScreen
+import com.matheus.callmanager.feature.recent.RecentViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val viewModel: MainViewModel by viewModels()
+    private val recentViewModel: RecentViewModel by viewModels()
+    private val listsViewModel: ListsViewModel by viewModels()
 
     private val permissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions(),
-        ) { viewModel.refreshRecentCalls() }
+        ) { recentViewModel.refreshRecentCalls() }
 
     private val roleLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -59,8 +57,8 @@ class MainActivity : ComponentActivity() {
             if (uri != null && target != null) {
                 ContactsUtil.resolvePickedPhoneNumber(this, uri)?.let { (number, name) ->
                     when (target) {
-                        ContactPickTarget.BLOCK -> viewModel.blockContact(number, name)
-                        ContactPickTarget.ALLOW -> viewModel.allowContact(number, name)
+                        ContactPickTarget.BLOCK -> listsViewModel.blockContact(number, name)
+                        ContactPickTarget.ALLOW -> listsViewModel.allowContact(number, name)
                     }
                 }
             }
@@ -80,7 +78,6 @@ class MainActivity : ComponentActivity() {
                         })
                     } else {
                         CallManagerApp(
-                            viewModel = viewModel,
                             onPickContactToBlock = { pickContact(ContactPickTarget.BLOCK) },
                             onPickContactToAllow = { pickContact(ContactPickTarget.ALLOW) },
                             isIgnoringBatteryOptimizations = batteryOptimizationIgnored,
@@ -106,8 +103,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.refreshRecentCalls()
-        viewModel.refreshSystemBlockedCalls()
+        recentViewModel.refreshRecentCalls()
+        recentViewModel.refreshBlockedCalls()
         batteryOptimizationIgnored = BatteryUtil.isIgnoringBatteryOptimizations(this)
     }
 
@@ -138,25 +135,5 @@ class MainActivity : ComponentActivity() {
     private fun requestScreeningRole() {
         val roleManager = getSystemService(RoleManager::class.java) ?: return
         roleLauncher.launch(roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING))
-    }
-}
-
-@Composable
-private fun RequestRoleScreen(onRequest: () -> Unit) {
-    androidx.compose.foundation.layout.Column(
-        modifier =
-            androidx.compose.ui.Modifier
-                .padding(24.dp),
-        verticalArrangement =
-            androidx.compose.foundation.layout.Arrangement
-                .spacedBy(16.dp),
-    ) {
-        Text(
-            "Call Manager needs to be your call-screening app to block calls silently and log them.",
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        Button(onClick = onRequest) {
-            Text("Set as call-screening app")
-        }
     }
 }

@@ -1,7 +1,9 @@
 package com.matheus.callmanager.core.di
 
+import com.matheus.callmanager.core.telephony.AndroidCallLogDataSource
 import com.matheus.callmanager.core.telephony.AndroidContactsLookup
 import com.matheus.callmanager.core.telephony.AndroidRecentOutgoingLookup
+import com.matheus.callmanager.core.telephony.CallLogDataSource
 import com.matheus.callmanager.core.telephony.ContactsLookup
 import com.matheus.callmanager.core.telephony.RecentOutgoingLookup
 import dagger.Binds
@@ -17,4 +19,7 @@ abstract class TelephonyModule {
 
     @Binds
     abstract fun bindRecentOutgoingLookup(impl: AndroidRecentOutgoingLookup): RecentOutgoingLookup
+
+    @Binds
+    abstract fun bindCallLogDataSource(impl: AndroidCallLogDataSource): CallLogDataSource
 }
