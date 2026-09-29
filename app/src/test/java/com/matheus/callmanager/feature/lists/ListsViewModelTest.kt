@@ -36,6 +36,7 @@ class ListsViewModelTest {
     private lateinit var db: CallManagerDatabase
     private lateinit var repository: CallRepository
     private lateinit var callLogDataSource: FakeCallLogDataSource
+    private lateinit var lifecycle: FakeActivityRetainedLifecycle
     private lateinit var viewModel: ListsViewModel
 
     @Before
@@ -45,13 +46,14 @@ class ListsViewModelTest {
         db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
         repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), SettingsStore(context))
         callLogDataSource = FakeCallLogDataSource()
-        val pager =
-            SystemBlockedCallsPager(repository, callLogDataSource, Dispatchers.Default, FakeActivityRetainedLifecycle())
+        lifecycle = FakeActivityRetainedLifecycle()
+        val pager = SystemBlockedCallsPager(repository, callLogDataSource, Dispatchers.Default, lifecycle)
         viewModel = ListsViewModel(repository, pager)
     }
 
     @After
     fun tearDown() {
+        lifecycle.triggerCleared()
         Dispatchers.resetMain()
         db.close()
     }

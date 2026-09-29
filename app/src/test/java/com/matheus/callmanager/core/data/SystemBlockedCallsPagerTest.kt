@@ -48,6 +48,7 @@ class SystemBlockedCallsPagerTest {
 
     @After
     fun tearDown() {
+        lifecycle.triggerCleared()
         db.close()
     }
 
