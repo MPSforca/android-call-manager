@@ -4,7 +4,7 @@
   <CurrentIssues>
     <ID>LongMethod:CallDetailScreen.kt$@Composable internal fun CallDetailScreen( viewModel: RecentViewModel, group: RecentCallGroup, status: NumberStatus, blockedCalls: List&lt;UnifiedBlockedCall&gt;, defaultRegion: String, onBack: () -&gt; Unit, )</ID>
     <ID>LongMethod:ListsScreen.kt$@Composable fun ListsScreen( onPickContactToBlock: () -&gt; Unit, onPickContactToAllow: () -&gt; Unit, viewModel: ListsViewModel = hiltViewModel(), )</ID>
-    <ID>LongMethod:RecentScreen.kt$@Composable fun RecentScreen(viewModel: RecentViewModel = hiltViewModel())</ID>
+    <ID>LongMethod:RecentScreen.kt$@Composable fun RecentScreen( onCallSelected: (number: String) -&gt; Unit, viewModel: RecentViewModel = hiltViewModel(), )</ID>
     <ID>LongMethod:RulesScreen.kt$@Composable fun RulesScreen( isIgnoringBatteryOptimizations: Boolean, onRequestIgnoreBatteryOptimizations: () -&gt; Unit, viewModel: RulesViewModel = hiltViewModel(), )</ID>
     <ID>MaxLineLength:CallRepository.kt$CallRepository$*</ID>
     <ID>MaxLineLength:SettingsStore.kt$SettingsStore$/** How many days after answering a caller they stay allowed; the rule itself is toggled by [recentAcceptedRuleEnabled]. */</ID>

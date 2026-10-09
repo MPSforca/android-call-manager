@@ -26,17 +26,57 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.matheus.callmanager.core.data.BlockedCallMerger
 import com.matheus.callmanager.core.model.RecentCallGroup
 import com.matheus.callmanager.core.model.UnifiedBlockedCall
+import com.matheus.callmanager.core.telephony.CallLogUtil
 import com.matheus.callmanager.core.telephony.PhoneNumberFormatter
 import java.text.DateFormat
 import java.util.Date
+
+/**
+ * Navigation destination for one number's call history. Owns its own [RecentViewModel] (scoped to
+ * the back-stack entry) and loads its data on entry, so it also works when opened directly from a
+ * deep link without the Recent tab beneath it.
+ */
+@Composable
+fun CallDetailRoute(
+    number: String,
+    onBack: () -> Unit,
+    viewModel: RecentViewModel = hiltViewModel(),
+) {
+    LaunchedEffect(number) {
+        viewModel.refreshRecentCalls()
+        viewModel.refreshBlockedCalls()
+    }
+    val calls by viewModel.recentCalls.collectAsState()
+    val blockList by viewModel.blockList.collectAsState()
+    val allowList by viewModel.allowList.collectAsState()
+    val blockedCalls by viewModel.blockedCalls.collectAsState()
+    val context = LocalContext.current
+    val defaultRegion = remember(context) { PhoneNumberFormatter.defaultRegion(context) }
+    val group =
+        remember(calls, number) {
+            CallLogUtil.groupByNumber(calls).find { it.number == number } ?: RecentCallGroup(number, null, emptyList())
+        }
+    CallDetailScreen(
+        viewModel = viewModel,
+        group = group,
+        status = statusOf(number, blockList.map { it.number }.toSet(), allowList.map { it.number }.toSet()),
+        blockedCalls = blockedCalls,
+        defaultRegion = defaultRegion,
+        onBack = onBack,
+    )
+}
 
 @Composable
 internal fun CallDetailScreen(

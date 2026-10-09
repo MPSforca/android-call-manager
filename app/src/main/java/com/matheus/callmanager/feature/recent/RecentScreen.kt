@@ -1,6 +1,5 @@
 package com.matheus.callmanager.feature.recent
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,6 +33,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.matheus.callmanager.core.data.BlockedCallMerger
 import com.matheus.callmanager.core.model.RecentCall
 import com.matheus.callmanager.core.model.UnifiedBlockedCall
@@ -43,34 +44,26 @@ import java.text.DateFormat
 import java.util.Date
 
 @Composable
-fun RecentScreen(viewModel: RecentViewModel = hiltViewModel()) {
+fun RecentScreen(
+    onCallSelected: (number: String) -> Unit,
+    viewModel: RecentViewModel = hiltViewModel(),
+) {
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.refreshRecentCalls()
+        viewModel.refreshBlockedCalls()
+    }
     val calls by viewModel.recentCalls.collectAsState()
     val hasMoreCalls by viewModel.hasMoreRecentCalls.collectAsState()
     val blockList by viewModel.blockList.collectAsState()
     val allowList by viewModel.allowList.collectAsState()
     val blockedCalls by viewModel.blockedCalls.collectAsState()
     var selected by remember { mutableStateOf(setOf<String>()) }
-    var selectedNumber by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val defaultRegion = remember(context) { PhoneNumberFormatter.defaultRegion(context) }
 
     val groups = remember(calls) { CallLogUtil.groupByNumber(calls) }
     val blockedNumbers = remember(blockList) { blockList.map { it.number }.toSet() }
     val allowedNumbers = remember(allowList) { allowList.map { it.number }.toSet() }
-
-    val detailGroup = groups.find { it.number == selectedNumber }
-    if (detailGroup != null) {
-        BackHandler { selectedNumber = null }
-        CallDetailScreen(
-            viewModel = viewModel,
-            group = detailGroup,
-            status = statusOf(detailGroup.number, blockedNumbers, allowedNumbers),
-            blockedCalls = blockedCalls,
-            defaultRegion = defaultRegion,
-            onBack = { selectedNumber = null },
-        )
-        return
-    }
 
     Column {
         Row(
@@ -111,7 +104,7 @@ fun RecentScreen(viewModel: RecentViewModel = hiltViewModel()) {
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .clickable { selectedNumber = group.number },
+                            .clickable { onCallSelected(group.number) },
                     leadingContent = {
                         Checkbox(
                             checked = selected.contains(group.number),
