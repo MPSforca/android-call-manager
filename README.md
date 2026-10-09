@@ -1,216 +1,92 @@
 # Call Manager
 
-An Android call-screening app: block calls by rule (explicit block list, explicit allow list, known
-contacts, "answered recently" window) while keeping every blocked call visible in-app, merged with
-whatever Android's own call log already knows about.
+[![PR checks](https://github.com/MPSforca/android-call-manager/actions/workflows/pr.yml/badge.svg)](https://github.com/MPSforca/android-call-manager/actions/workflows/pr.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-## Requirements
+Rule-based call blocking for Android, built on the system's call-screening role. Stop spam calls
+without losing track of them: every blocked call stays visible in the app, with the reason it was
+blocked.
 
-- Android Studio (bundles the SDK) — installed at `/Applications/Android Studio.app` on this machine.
-- A JDK in the 17–21 range for Gradle itself. The system default and Android Studio's bundled JBR may
-  resolve to a newer JDK that this project's Gradle version doesn't support — see "Troubleshooting"
-  below if `./gradlew` fails immediately.
+**Who it's for:** people who get a lot of unwanted calls but don't want to miss real ones, and
+don't want an always-running app (or an account, or a server) to deal with it.
 
-## Running it
+<!-- TODO: screenshots / GIF of the Recent, Lists and Rules tabs -->
 
-### From Android Studio (recommended for day-to-day development)
+## Features
 
-1. Open the project folder in Android Studio.
-2. Create a virtual device (Device Manager → Create Device) or connect a real phone with USB
-   debugging enabled.
-3. Click Run.
-4. On first launch, grant the requested permissions, then tap through the prompt to set the app as
-   your device's call-screening app (required — otherwise no call is ever intercepted).
+- **Block list and allow list**, managed by hand, from a contact picker, or in bulk from your call
+  history.
+- **Smart allow rules:** known contacts, caller-name patterns (e.g. "Dr.*"), people you answered
+  recently, people you called recently.
+- **Optional "block everyone else"** mode for strict screening.
+- **Silence or reject:** by default blocked calls ring silently and stay answerable; switch to
+  outright rejection in the Rules tab.
+- **Nothing disappears:** blocked calls are listed in-app, merged with calls that Android itself,
+  your carrier, or other apps blocked.
+- **Zero background cost:** no foreground service, no polling. Android wakes the app only when a
+  call arrives.
+- **Phone calls only:** WhatsApp and other VoIP calls are never screened.
+- **Private:** everything stays on your device. See [PRIVACY.md](PRIVACY.md).
 
-### From the command line
+## How a call is decided
 
-```bash
-export JAVA_HOME=$HOME/.sdkman/candidates/java/21.0.2-tem   # or any JDK 17–21
-export ANDROID_HOME=$HOME/Library/Android/sdk
+When a call comes in, the rules run in this order and the **first match wins**:
 
-./gradlew assembleDebug            # builds app/build/outputs/apk/debug/app-debug.apk
-./gradlew installDebug             # builds and installs onto a connected device/emulator
-```
+1. **On your block list** → blocked.
+2. **On your allow list** → allowed.
+3. **Caller name matches an allow pattern** → allowed.
+4. **Known contact** (if "allow contacts" is on) → allowed.
+5. **Answered within the last N days** (if enabled) → allowed.
+6. **You called them within the last N days** (if enabled) → allowed.
+7. **Otherwise:** blocked if "block unknown numbers" is on, allowed if not.
 
-## Testing
+"Blocked" then becomes *silenced* or *rejected* depending on your setting. Because the block list is
+checked first, a number on both lists is blocked.
 
-### Automated unit tests (fast, no device needed)
+## Install
 
-```bash
-export JAVA_HOME=$HOME/.sdkman/candidates/java/21.0.2-tem
-export ANDROID_HOME=$HOME/Library/Android/sdk
+There is no store listing yet. Either:
 
-./gradlew testDebugUnitTest
-```
+- Download the latest APK from the [Releases](https://github.com/MPSforca/android-call-manager/releases) page and install it, or
+- [Build it yourself](docs/DEVELOPMENT.md).
 
-This covers the rule-evaluation logic (`CallRepositoryTest`), the silence-vs-reject decision
-(`ScreeningPolicyTest`), and merging the app's own blocked-call log with Android's system call log
-(`BlockedCallMergerTest`). These run on the JVM via Robolectric — no emulator, no real contacts, no
-real calls required. Test report: `app/build/reports/tests/testDebugUnitTest/index.html`.
+On first launch, grant the permissions below and accept the prompt to make Call Manager your
+device's **call-screening app**. Without that role Android never hands it a call.
 
-### Manual/interactive testing with fixtures and mocks
+On phones from Xiaomi, Samsung, Huawei and some other makers, also exempt the app from battery
+optimization (the Rules tab prompts for it). Aggressive battery managers can otherwise kill the app
+so hard that Android can't start it for an incoming call.
 
-Real device testing needs three things that are awkward to set up by hand: an incoming call, a
-contact list, and existing call history. Here's how to fake each one.
+Requires Android 8.0 (API 26) or newer. Silencing (as opposed to rejecting) needs Android 10+.
 
-**1. Simulate the rule engine directly (fastest loop)**
+## Permissions and why
 
-Debug builds have a **Debug** tab (bottom nav, only visible when `BuildConfig.DEBUG` is true — i.e.
-never in a release build). Type any phone number and tap "Simulate call": it runs the exact same
-`CallRepository.evaluate()` logic the real `CallScreeningService` uses, including writing a rejected
-entry into the Blocked tab if the rules say to block it. Use this to iterate on rules without
-touching the phone/call stack at all.
+| Permission | Why it's needed |
+|---|---|
+| `READ_CALL_LOG` | Shows your call history, lists calls blocked by Android or your carrier, and powers the "you called them recently" rule. |
+| `READ_CONTACTS` | The "known contacts" rule, contact names in lists, and the contact picker. |
+| `READ_PHONE_STATE` | Detects that you answered a ringing call, which feeds the "answered recently" rule. |
+| `POST_NOTIFICATIONS` | Optional notification when a call is rejected outright (Android 13+). |
+| `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Lets the app ask you to exempt it from battery optimization. It isn't a wakelock. |
+| `ANSWER_PHONE_CALLS` | Declared in the manifest but not currently used by any code; the app never answers or ends calls. |
 
-**2. Simulate an actual incoming call (end-to-end, needs an emulator or a second phone)**
+The call-screening role is granted through a system dialog, not a permission prompt.
 
-- Emulator: click `...` (Extended Controls) → **Phone** → enter a number → "Call Device". This rings
-  the emulator for real and goes through Telecom → your `CallScreeningService`, exactly like a real
-  call.
-- Or from a terminal, with the emulator running:
-  ```bash
-  adb emu gsm call +15551234567     # ring it
-  adb emu gsm cancel +15551234567   # hang up
-  ```
-- On a real second phone: just call the test device from it.
+## Privacy
 
-**3. Seed fake contacts on the emulator**
+All rules, lists and logs live in a local database on your phone. The app has no network
+permission and no analytics. Details in [PRIVACY.md](PRIVACY.md).
 
-- Easiest: open the emulator's Contacts app and add a few by hand.
-- Scripted, for one name + number — insert a raw contact, then attach a name row and a phone row to
-  it via `ContactsContract.Data` (this is what the Contacts app itself does under the hood):
-  ```bash
-  # 1. Create an empty raw contact and note the _id it prints (e.g. "Row: 0 _id=12").
-  adb shell content insert --uri content://com.android.contacts/raw_contacts \
-    --bind account_type:s:null --bind account_name:s:null
+## Contributing
 
-  RAW_ID=12   # substitute the _id from step 1
+Bug reports and pull requests are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md). For how
+the app works and why, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); for setup and testing, see
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) and [docs/TESTING.md](docs/TESTING.md).
 
-  # 2. Attach a display name.
-  adb shell content insert --uri content://com.android.contacts/data \
-    --bind raw_contact_id:i:$RAW_ID \
-    --bind mimetype:s:vnd.android.cursor.item/name \
-    --bind data1:s:"Test Contact"
+## Security
 
-  # 3. Attach a phone number (data2:i:2 = TYPE_HOME; use 2 for mobile-style testing).
-  adb shell content insert --uri content://com.android.contacts/data \
-    --bind raw_contact_id:i:$RAW_ID \
-    --bind mimetype:s:vnd.android.cursor.item/phone_v2 \
-    --bind data1:s:+15551234567 \
-    --bind data2:i:2
-  ```
-  Use this to test "known contact" behavior end-to-end: the Debug tab's `allowContacts` rule, and
-  the block/allow list falling back to this name when you add the same number manually (see
-  `CallRepository.blockNumbers`/`allowNumbers`).
-- If you need to seed many contacts repeatably, it's more reliable to generate a `.vcf` file and
-  import it:
-  ```bash
-  cat > /tmp/test_contacts.vcf <<'EOF'
-  BEGIN:VCARD
-  VERSION:3.0
-  FN:Test Contact
-  TEL;TYPE=CELL:+15551234567
-  END:VCARD
-  EOF
-  adb push /tmp/test_contacts.vcf /sdcard/Download/test_contacts.vcf
-  # then on-device: Contacts app → Fix & manage → Import → From .vcf file
-  ```
+Please report vulnerabilities privately; see [SECURITY.md](SECURITY.md).
 
-**4. Seed the allow list directly (test allowlisting numbers that aren't contacts)**
+## License
 
-The Allow tab already lets you type any number by hand or pick one from Contacts, but for
-repeatable testing it's faster to write straight into the app's Room database
-(`allow_list` table) via `run-as` + `sqlite3` — this only works on a debug build, since
-`run-as` requires the app to be debuggable:
-
-```bash
-./scripts/seed_allow_list.sh                              # seeds a default fixture set
-./scripts/seed_allow_list.sh +15551234567 "Some Name"      # or: seed one specific entry
-```
-
-This is the scenario the allow list exists for: a number with **no** matching contact should
-still ring through as normal, because it's on the allow list — not because of the "allow known
-contacts" rule. To verify:
-
-- Open the Lists tab and confirm the seeded numbers show up under "Allow list".
-- Debug tab → type one of the seeded numbers → "Simulate call" → should report
-  `ALLOWED — On your allow list`.
-- Open the Recent tab (seed some call history first, see below, from the same numbers) and
-  confirm those rows are highlighted as allowed, with a checkmark icon.
-
-To inspect or clear it manually:
-
-```bash
-adb shell run-as com.matheus.callmanager sqlite3 databases/call-manager.db \
-  "SELECT * FROM allow_list;"
-adb shell run-as com.matheus.callmanager sqlite3 databases/call-manager.db \
-  "DELETE FROM allow_list;"
-```
-
-**5. Seed fake call history**
-
-The Recent tab and the Blocked tab both read Android's real system call log
-(`CallLog.Calls.CONTENT_URI`) — not app state — so history persists across app reinstalls and shows
-up regardless of whether the app was running when a call happened. To add fake entries for testing:
-
-```bash
-adb shell content insert --uri content://call_log/calls \
-  --bind number:s:+15551234567 \
-  --bind date:l:$(($(date +%s%N)/1000000)) \
-  --bind duration:i:0 \
-  --bind type:i:6 \
-  --bind new:i:1
-```
-
-`type:i:6` is `CallLog.Calls.BLOCKED_TYPE` — use this to fake a call that Android itself (or some
-other app) blocked, to test that it shows up correctly in the Blocked tab as source "Android" (as
-opposed to "Call Manager", which is only used for calls this app's own rules rejected). Use `type:i:1`
-for a normal incoming call, `type:i:2` for outgoing, `type:i:3` for missed.
-
-**6. Seed a batch of recent calls at once (for the grouped Recent tab)**
-
-The Recent tab groups calls by number, so testing it needs repeat calls from the same number plus
-several distinct numbers. `scripts/seed_call_log.sh` inserts a batch in one shot: a repeat caller
-(3 calls, to exercise the "N calls" grouping/expansion) plus a few one-off numbers. Add one of the
-seeded numbers to your block list afterwards (Lists tab, or the Debug tab) to check the blocked-row
-styling too:
-
-```bash
-./scripts/seed_call_log.sh                  # seeds the default fixture set
-./scripts/seed_call_log.sh +15559876543 5   # or: seed N calls from one specific number
-```
-
-To clear it back out: `adb shell content delete --uri content://call_log/calls`. This wipes the
-*entire* device call log, real entries included — only use it on an emulator or a throwaway test
-device.
-
-**7. Testing pagination in the Recent/Blocked tabs**
-
-Both tabs page through the system call log in batches of `CallLogUtil.DEFAULT_PAGE_SIZE` (200), with
-a "Load more" button that appears when a full page was returned. To exercise it without waiting for
-real call history to accumulate, seed more than one page's worth in a loop:
-
-```bash
-for i in $(seq 1 220); do
-  ./scripts/seed_call_log.sh +1555000$(printf '%04d' "$i") 1
-done
-```
-
-Open the Recent tab: it should show the first 200 grouped rows plus a "Load more" button; tapping it
-should fetch the rest with no duplicates or gaps. Mark some of the seeded numbers `type:i:6`
-(`BLOCKED_TYPE`, see above) to test the same "Load more" behavior on the Blocked tab.
-
-## Troubleshooting
-
-- **`./gradlew` fails immediately with a Java version error** — your default `java` is likely newer
-  than this Gradle version supports. Point `JAVA_HOME` at a JDK 17–21 explicitly (see commands
-  above). `sdk list java` (via SDKMAN, if installed) or Android Studio's own JBR (check its actual
-  version first — it is not guaranteed to be in range on every install) can provide one.
-- **Robolectric tests fail with an SDK version error** — `CallRepositoryTest` is pinned to
-  `@Config(sdk = [34])` because Robolectric doesn't yet support this project's `compileSdk` (35).
-  This is expected; don't remove the pin without upgrading Robolectric first.
-- **Calls aren't being screened at all on a real device** — go to the Rules tab and check the
-  battery-optimization banner; some OEMs (Xiaomi, Samsung, Huawei, etc.) kill the app process
-  aggressively enough that Telecom can't wake it for a call. Exempting the app from battery
-  optimization there fixes it without needing a foreground service.
-
-See `CLAUDE.md` for architecture and the reasoning behind the bigger design decisions.
+[Apache License 2.0](LICENSE)
