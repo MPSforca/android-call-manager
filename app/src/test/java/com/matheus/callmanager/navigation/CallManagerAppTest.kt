@@ -11,6 +11,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.BuildConfig
 import com.matheus.callmanager.MainActivity
+import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.di.PermissionsModule
 import com.matheus.callmanager.core.di.TelephonyModule
 import com.matheus.callmanager.core.model.RecentCall
@@ -27,12 +28,19 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import dagger.hilt.android.testing.UninstallModules
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import javax.inject.Inject
 
 private const val NUMBER = "+15550000000"
 
@@ -45,6 +53,7 @@ private class StaticCallLog(
 }
 
 /** Drives the real nav graph, shell and onboarding through `MainActivity` with Hilt and fake system seams. */
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 @UninstallModules(PermissionsModule::class, TelephonyModule::class)
 @RunWith(RobolectricTestRunner::class)
@@ -77,6 +86,9 @@ class CallManagerAppTest {
             listOf(RecentCall(number = NUMBER, name = "Alice", timestamp = 1_000L, type = CallLog.Calls.MISSED_TYPE)),
         )
 
+    @Inject
+    lateinit var database: CallManagerDatabase
+
     private var scenario: ActivityScenario<MainActivity>? = null
 
     private fun launch(deepLink: String? = null) {
@@ -91,9 +103,21 @@ class CallManagerAppTest {
         scenario = ActivityScenario.launch(intent)
     }
 
+    @Before
+    fun setUpMain() {
+        // Same discipline as the other suites: never leave the real Main dispatcher resolved, so
+        // stragglers from this test can't collide with another test's setMain/resetMain.
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+    }
+
     @After
     fun tearDown() {
+        // The Hilt test application's singleton database would otherwise outlive the test with open
+        // connections and live invalidation threads, which can surface as uncaught exceptions in
+        // whichever test runs next in the same JVM.
         scenario?.close()
+        database.close()
+        Dispatchers.resetMain()
     }
 
     private fun grantEverything() {
