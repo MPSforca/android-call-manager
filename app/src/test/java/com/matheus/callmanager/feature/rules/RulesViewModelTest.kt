@@ -3,15 +3,20 @@ package com.matheus.callmanager.feature.rules
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import app.cash.turbine.test
 import com.matheus.callmanager.core.data.CallRepository
 import com.matheus.callmanager.core.database.CallManagerDatabase
-import com.matheus.callmanager.core.datastore.SettingsStore
+import com.matheus.callmanager.core.model.BlockedCallAction
+import com.matheus.callmanager.core.model.UserPreferences
 import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
+import com.matheus.callmanager.testing.FakeSettingsRepository
+import com.matheus.callmanager.testing.MainDispatcherRule
+import kotlinx.coroutines.test.runTest
 import org.junit.After
-import org.junit.Assert.assertSame
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -20,15 +25,18 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class RulesViewModelTest {
+    @get:Rule
+    val mainDispatcherRule = MainDispatcherRule()
+
     private lateinit var db: CallManagerDatabase
-    private lateinit var repository: CallRepository
+    private val settings = FakeSettingsRepository()
     private lateinit var viewModel: RulesViewModel
 
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
-        repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), SettingsStore(context))
+        val repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), settings)
         viewModel = RulesViewModel(repository)
     }
 
@@ -38,14 +46,43 @@ class RulesViewModelTest {
     }
 
     @Test
-    fun `exposes the repository's settings store`() {
-        assertSame(repository.settings, viewModel.settings)
-    }
+    fun `preferences emit defaults and then follow the settings repository`() =
+        runTest {
+            viewModel.preferences.test {
+                assertEquals(UserPreferences(), awaitItem())
+
+                settings.update { copy(blockUnknownNumbers = true) }
+
+                assertEquals(UserPreferences(blockUnknownNumbers = true), awaitItem())
+            }
+        }
 
     @Test
-    fun `settings changes made through the ViewModel are visible on the repository`() {
-        viewModel.settings.blockUnknownNumbers = true
+    fun `every setter writes through to the settings repository`() =
+        runTest {
+            viewModel.setAllowContacts(false)
+            viewModel.setRecentAcceptedRuleEnabled(false)
+            viewModel.setAllowRecentAcceptedDays(7)
+            viewModel.setRecentOutgoingRuleEnabled(false)
+            viewModel.setAllowRecentOutgoingDays(9)
+            viewModel.setBlockUnknownNumbers(true)
+            viewModel.setBlockedCallAction(BlockedCallAction.REJECT)
+            viewModel.setShowRejectedCallNotification(false)
 
-        assertTrue(repository.settings.blockUnknownNumbers)
-    }
+            viewModel.preferences.test {
+                assertEquals(
+                    UserPreferences(
+                        allowContacts = false,
+                        recentAcceptedRuleEnabled = false,
+                        allowRecentAcceptedDays = 7,
+                        recentOutgoingRuleEnabled = false,
+                        allowRecentOutgoingDays = 9,
+                        blockUnknownNumbers = true,
+                        blockedCallAction = BlockedCallAction.REJECT,
+                        showRejectedCallNotification = false,
+                    ),
+                    expectMostRecentItem(),
+                )
+            }
+        }
 }

@@ -16,6 +16,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,15 +33,12 @@ fun RulesScreen(
     onRequestIgnoreBatteryOptimizations: () -> Unit,
     viewModel: RulesViewModel = hiltViewModel(),
 ) {
-    val settings = viewModel.settings
-    var allowContacts by remember { mutableStateOf(settings.allowContacts) }
-    var recentEnabled by remember { mutableStateOf(settings.recentAcceptedRuleEnabled) }
-    var recentDays by remember { mutableStateOf(settings.allowRecentAcceptedDays.toFloat()) }
-    var outgoingEnabled by remember { mutableStateOf(settings.recentOutgoingRuleEnabled) }
-    var outgoingDays by remember { mutableStateOf(settings.allowRecentOutgoingDays.toFloat()) }
-    var blockUnknown by remember { mutableStateOf(settings.blockUnknownNumbers) }
-    var blockedCallAction by remember { mutableStateOf(settings.blockedCallAction) }
-    var showRejectedNotification by remember { mutableStateOf(settings.showRejectedCallNotification) }
+    val prefs by viewModel.preferences.collectAsState()
+    // Slider position while dragging; committed to DataStore only when the drag ends.
+    var recentDaysDraft by remember { mutableStateOf<Float?>(null) }
+    var outgoingDaysDraft by remember { mutableStateOf<Float?>(null) }
+    val recentDays = recentDaysDraft ?: prefs.allowRecentAcceptedDays.toFloat()
+    val outgoingDays = outgoingDaysDraft ?: prefs.allowRecentOutgoingDays.toFloat()
 
     Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
         if (!isIgnoringBatteryOptimizations) {
@@ -66,10 +64,7 @@ fun RulesScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text("Allow calls from contacts")
-            Switch(checked = allowContacts, onCheckedChange = {
-                allowContacts = it
-                settings.allowContacts = it
-            })
+            Switch(checked = prefs.allowContacts, onCheckedChange = viewModel::setAllowContacts)
         }
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
         Row(
@@ -77,17 +72,17 @@ fun RulesScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text("Allow recently accepted callers")
-            Switch(checked = recentEnabled, onCheckedChange = {
-                recentEnabled = it
-                settings.recentAcceptedRuleEnabled = it
-            })
+            Switch(checked = prefs.recentAcceptedRuleEnabled, onCheckedChange = viewModel::setRecentAcceptedRuleEnabled)
         }
-        if (recentEnabled) {
+        if (prefs.recentAcceptedRuleEnabled) {
             Text("Allow again for ${recentDays.toInt()} days after you answer them")
             Slider(
                 value = recentDays,
-                onValueChange = { recentDays = it },
-                onValueChangeFinished = { settings.allowRecentAcceptedDays = recentDays.toInt() },
+                onValueChange = { recentDaysDraft = it },
+                onValueChangeFinished = {
+                    recentDaysDraft?.let { viewModel.setAllowRecentAcceptedDays(it.toInt()) }
+                    recentDaysDraft = null
+                },
                 valueRange = 1f..90f,
             )
         }
@@ -97,17 +92,17 @@ fun RulesScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text("Allow recently called numbers")
-            Switch(checked = outgoingEnabled, onCheckedChange = {
-                outgoingEnabled = it
-                settings.recentOutgoingRuleEnabled = it
-            })
+            Switch(checked = prefs.recentOutgoingRuleEnabled, onCheckedChange = viewModel::setRecentOutgoingRuleEnabled)
         }
-        if (outgoingEnabled) {
+        if (prefs.recentOutgoingRuleEnabled) {
             Text("Allow for ${outgoingDays.toInt()} days after you call them")
             Slider(
                 value = outgoingDays,
-                onValueChange = { outgoingDays = it },
-                onValueChangeFinished = { settings.allowRecentOutgoingDays = outgoingDays.toInt() },
+                onValueChange = { outgoingDaysDraft = it },
+                onValueChangeFinished = {
+                    outgoingDaysDraft?.let { viewModel.setAllowRecentOutgoingDays(it.toInt()) }
+                    outgoingDaysDraft = null
+                },
                 valueRange = 1f..90f,
             )
         }
@@ -117,10 +112,7 @@ fun RulesScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text("Reject unknown numbers by default")
-            Switch(checked = blockUnknown, onCheckedChange = {
-                blockUnknown = it
-                settings.blockUnknownNumbers = it
-            })
+            Switch(checked = prefs.blockUnknownNumbers, onCheckedChange = viewModel::setBlockUnknownNumbers)
         }
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
         Text("When a call is blocked", style = MaterialTheme.typography.titleSmall)
@@ -138,20 +130,14 @@ fun RulesScreen(
                         Modifier
                             .fillMaxWidth()
                             .selectable(
-                                selected = blockedCallAction == action,
-                                onClick = {
-                                    blockedCallAction = action
-                                    settings.blockedCallAction = action
-                                },
+                                selected = prefs.blockedCallAction == action,
+                                onClick = { viewModel.setBlockedCallAction(action) },
                             ).padding(vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     RadioButton(
-                        selected = blockedCallAction == action,
-                        onClick = {
-                            blockedCallAction = action
-                            settings.blockedCallAction = action
-                        },
+                        selected = prefs.blockedCallAction == action,
+                        onClick = { viewModel.setBlockedCallAction(action) },
                     )
                     Text(label, modifier = Modifier.padding(start = 8.dp))
                 }
@@ -163,10 +149,10 @@ fun RulesScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text("Notify when a call is rejected")
-            Switch(checked = showRejectedNotification, onCheckedChange = {
-                showRejectedNotification = it
-                settings.showRejectedCallNotification = it
-            })
+            Switch(
+                checked = prefs.showRejectedCallNotification,
+                onCheckedChange = viewModel::setShowRejectedCallNotification,
+            )
         }
     }
 }

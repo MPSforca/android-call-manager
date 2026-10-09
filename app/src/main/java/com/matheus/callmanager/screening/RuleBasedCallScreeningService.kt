@@ -13,6 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -42,11 +43,12 @@ class RuleBasedCallScreeningService : CallScreeningService() {
 
         scope.launch {
             val decision = repository.evaluate(number, callDetails.callerDisplayName)
-            val action = ScreeningPolicy.determineAction(decision, repository.settings.blockedCallAction)
+            val prefs = repository.settings.preferences.first()
+            val action = ScreeningPolicy.determineAction(decision, prefs.blockedCallAction)
             respondToCall(callDetails, buildResponse(action))
             if (decision is ScreeningDecision.Reject) {
                 val contactName = repository.logBlockedCall(number, decision.reason)
-                if (repository.settings.showRejectedCallNotification &&
+                if (prefs.showRejectedCallNotification &&
                     ScreeningPolicy.shouldNotifyRejected(action, Build.VERSION.SDK_INT)
                 ) {
                     RejectedCallNotifier.notify(
