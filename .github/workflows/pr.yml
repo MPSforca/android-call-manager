@@ -39,7 +39,7 @@ jobs:
       - name: Pin installed Android SDK platforms to compileSdk 35
         run: find "$ANDROID_HOME/platforms" -maxdepth 1 -type d -name 'android-*' ! -name 'android-35' -exec rm -rf {} +
       - uses: gradle/actions/setup-gradle@v6
-      - run: ./gradlew testDebugUnitTest koverXmlReport
+      - run: ./gradlew testDebugUnitTest koverXmlReport verifyCoreCoverage
       - uses: actions/upload-artifact@v7
         if: always()
         with:

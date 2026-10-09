@@ -98,6 +98,7 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
 }
 
 kover {
@@ -105,7 +106,10 @@ kover {
         instrumentation {
             excludedClasses.addAll(
                 "com.matheus.callmanager.BuildConfig",
-                "com.matheus.callmanager.*Hilt*",
+                // "Hilt_*" is Hilt's generated superclass naming convention (e.g. Hilt_MainActivity) —
+                // narrower than "*Hilt*" so it doesn't also swallow hand-written classes that happen
+                // to have "Hilt" in their name, like HiltBroadcastReceiver.
+                "com.matheus.callmanager.*Hilt_*",
                 "com.matheus.callmanager.*_Factory",
                 "com.matheus.callmanager.*_MembersInjector",
             )
@@ -116,6 +120,79 @@ kover {
             excludes {
                 annotatedBy("*Composable")
             }
+        }
+    }
+}
+
+/**
+ * Classes expected to stay at (or near) full unit coverage: ViewModels and the pure rule/data
+ * logic layer. Deliberately NOT the whole codebase — see CLAUDE.md's Testing section for classes
+ * (raw ContentResolver call-log queries, contacts lookups, Composable screens) that are excluded
+ * from this bar by design and are verified manually/on-device instead.
+ */
+val coreCoverageClasses =
+    listOf(
+        "com.matheus.callmanager.feature.recent.RecentViewModel",
+        "com.matheus.callmanager.feature.lists.ListsViewModel",
+        "com.matheus.callmanager.feature.rules.RulesViewModel",
+        "com.matheus.callmanager.feature.debug.DebugViewModel",
+        "com.matheus.callmanager.core.data.CallRepository",
+        "com.matheus.callmanager.core.data.ScreeningPolicy",
+        "com.matheus.callmanager.core.data.BlockedCallMerger",
+        "com.matheus.callmanager.core.data.NameAllowMatcher",
+        "com.matheus.callmanager.core.data.SystemBlockedCallsPager",
+        "com.matheus.callmanager.core.di.DispatchersModule",
+        "com.matheus.callmanager.core.di.DatabaseModule",
+        "com.matheus.callmanager.core.di.HiltBroadcastReceiver",
+    )
+
+// Kover 0.8's verify{} rules can no longer filter by class (only a shared, report-wide filter is
+// allowed), which would also hide these classes from the general HTML/XML reports. Reading the
+// XML report directly keeps the coverage bar scoped to just this list.
+tasks.register("verifyCoreCoverage") {
+    group = "verification"
+    description = "Fails if the ViewModel / rule-and-data-logic classes fall under 90% line coverage."
+    dependsOn("koverXmlReportDebug")
+    val reportFile = layout.buildDirectory.file("reports/kover/reportDebug.xml")
+    inputs.file(reportFile)
+    doLast {
+        val classes =
+            javax.xml.parsers.DocumentBuilderFactory
+                .newInstance()
+                .newDocumentBuilder()
+                .parse(
+                    reportFile.get().asFile,
+                ).getElementsByTagName("class")
+        val seen = mutableSetOf<String>()
+        var covered = 0
+        var missed = 0
+        for (i in 0 until classes.length) {
+            val classElement = classes.item(i) as org.w3c.dom.Element
+            val name = classElement.getAttribute("name").replace('/', '.')
+            if (name !in coreCoverageClasses) continue
+            seen += name
+            val children = classElement.childNodes
+            for (j in 0 until children.length) {
+                val child = children.item(j)
+                if (child is org.w3c.dom.Element &&
+                    child.tagName == "counter" &&
+                    child.getAttribute("type") == "LINE"
+                ) {
+                    covered += child.getAttribute("covered").toInt()
+                    missed += child.getAttribute("missed").toInt()
+                }
+            }
+        }
+        val notFound = coreCoverageClasses.toSet() - seen
+        check(
+            notFound.isEmpty(),
+        ) { "Coverage-gated classes missing from the Kover report (renamed or moved?): $notFound" }
+        val total = covered + missed
+        val percentage = if (total == 0) 100.0 else 100.0 * covered / total
+        val formatted = "%.1f".format(percentage)
+        logger.lifecycle("Core logic coverage: $covered/$total lines ($formatted%)")
+        check(percentage >= 90.0) {
+            "Core logic coverage is $formatted%, below the required 90%."
         }
     }
 }
