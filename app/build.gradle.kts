@@ -102,10 +102,6 @@ dependencies {
     testImplementation(libs.turbine)
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)
-    // Must be debugImplementation, not testImplementation: Robolectric unit tests run against the
-    // merged *debug variant* manifest, and this artifact's manifest fragment (which declares the
-    // generic ComponentActivity createComposeRule() launches into) only gets merged in that way.
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
 
 kover {
