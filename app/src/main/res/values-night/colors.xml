@@ -1,0 +1,4 @@
+<resources>
+    <!-- Mirrors DarkColorScheme.background in Color.kt. -->
+    <color name="window_background">#121318</color>
+</resources>
