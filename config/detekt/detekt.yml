@@ -6,6 +6,11 @@ style:
     active: false
   ReturnCount:
     active: false
+  UnusedPrivateMember:
+    # @Preview composables are only ever invoked by tooling (Android Studio / screenshot tests),
+    # never from other code, so detekt can't see a call site — exempt them rather than the whole
+    # rule.
+    ignoreAnnotated: ['Preview']
 
 complexity:
   LongParameterList:

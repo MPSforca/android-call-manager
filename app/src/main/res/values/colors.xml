@@ -1,0 +1,6 @@
+<resources>
+    <!-- Mirrors LightColorScheme.background in Color.kt. The XML theme only needs this for the
+         window background shown briefly before Compose takes over and for the splash transition;
+         Compose content itself is themed entirely from Color.kt, not from these resources. -->
+    <color name="window_background">#FAF8FF</color>
+</resources>
