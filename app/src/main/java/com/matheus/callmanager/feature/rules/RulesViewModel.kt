@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.matheus.callmanager.core.data.CallRepository
 import com.matheus.callmanager.core.model.BlockedCallAction
-import com.matheus.callmanager.core.model.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,8 +20,10 @@ class RulesViewModel
     ) : ViewModel() {
         private val settings = repository.settings
 
-        val preferences: StateFlow<UserPreferences> =
-            settings.preferences.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserPreferences())
+        val uiState: StateFlow<RulesUiState> =
+            settings.preferences
+                .map { RulesUiState(it) }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RulesUiState())
 
         fun setAllowContacts(value: Boolean) = viewModelScope.launch { settings.setAllowContacts(value) }
 
@@ -48,4 +50,6 @@ class RulesViewModel
 
         fun setShowRejectedCallNotification(value: Boolean) =
             viewModelScope.launch { settings.setShowRejectedCallNotification(value) }
+
+        fun setDynamicColor(value: Boolean) = viewModelScope.launch { settings.setDynamicColor(value) }
     }
