@@ -7,11 +7,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.matheus.callmanager.core.designsystem.component.CmTextButton
+import com.matheus.callmanager.core.designsystem.theme.LocalSpacing
 
 /** Persistent warning shown when screening can't work because the role or a permission is missing. */
 @Composable
@@ -23,11 +23,12 @@ fun MissingPermissionsBanner(
     // Battery exemption is optional, so only the core steps warrant a persistent warning.
     if (!state.showBanner) return
     val step = state.nextStep ?: return
+    val spacing = LocalSpacing.current
     Surface(color = MaterialTheme.colorScheme.errorContainer, modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = spacing.large, vertical = spacing.small),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(spacing.small),
         ) {
             Text(
                 if (step == OnboardingStep.ROLE) {
@@ -39,7 +40,7 @@ fun MissingPermissionsBanner(
                 color = MaterialTheme.colorScheme.onErrorContainer,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = { onFix(step) }) { Text("Fix") }
+            CmTextButton(text = "Fix", onClick = { onFix(step) })
         }
     }
 }

@@ -5,16 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.matheus.callmanager.core.designsystem.component.CmButton
+import com.matheus.callmanager.core.designsystem.component.CmTextButton
+import com.matheus.callmanager.core.designsystem.theme.LocalSpacing
 
 private class StepContent(
     val title: String,
@@ -73,11 +73,12 @@ fun OnboardingScreen(
     }
     if (step == null) return
 
+    val spacing = LocalSpacing.current
     val content = contentFor(step)
     val stepNumber = step.ordinal + 1
     Column(
-        modifier = modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+        modifier = modifier.fillMaxSize().padding(spacing.extraLarge),
+        verticalArrangement = Arrangement.spacedBy(spacing.large, Alignment.CenterVertically),
     ) {
         Text("Step $stepNumber of ${OnboardingStep.entries.size}", style = MaterialTheme.typography.labelLarge)
         LinearProgressIndicator(
@@ -86,7 +87,8 @@ fun OnboardingScreen(
         )
         Text(content.title, style = MaterialTheme.typography.headlineSmall)
         Text(content.why, style = MaterialTheme.typography.bodyLarge)
-        Button(
+        CmButton(
+            text = content.action,
             onClick =
                 when (step) {
                     OnboardingStep.ROLE -> onRequestRole
@@ -94,10 +96,11 @@ fun OnboardingScreen(
                     OnboardingStep.BATTERY -> onRequestBatteryExemption
                 },
             modifier = Modifier.fillMaxWidth(),
-        ) { Text(content.action) }
+        )
         // The battery step is optional once the core steps are done, so skipping just enters the app.
-        TextButton(onClick = if (step == OnboardingStep.BATTERY) onFinished else onSkip) {
-            Text(if (step == OnboardingStep.BATTERY) "Not now" else "Skip for now")
-        }
+        CmTextButton(
+            text = if (step == OnboardingStep.BATTERY) "Not now" else "Skip for now",
+            onClick = if (step == OnboardingStep.BATTERY) onFinished else onSkip,
+        )
     }
 }

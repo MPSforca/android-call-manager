@@ -2,11 +2,8 @@ package com.matheus.callmanager
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
@@ -17,6 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.matheus.callmanager.core.designsystem.component.CmScaffold
+import com.matheus.callmanager.core.designsystem.component.CmTopAppBar
 import com.matheus.callmanager.feature.onboarding.MissingPermissionsBanner
 import com.matheus.callmanager.feature.onboarding.OnboardingStep
 import com.matheus.callmanager.feature.onboarding.PermissionsState
@@ -30,7 +29,6 @@ import com.matheus.callmanager.navigation.navigateToTopLevel
  * App shell: a navigation bar on phones and a rail on landscape/tablet widths around the nav host.
  * The bar and top app bar only appear on the top-level tabs, not on onboarding or call detail.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CallManagerApp(
     permissions: PermissionsState,
@@ -62,8 +60,8 @@ fun CallManagerApp(
         },
         layoutType = layoutType,
     ) {
-        Scaffold(
-            topBar = { if (topLevel != null) TopAppBar(title = { Text("Call Manager") }) },
+        CmScaffold(
+            topBar = { if (topLevel != null) CmTopAppBar(title = "Call Manager") },
         ) { padding ->
             Column(modifier = Modifier.padding(padding)) {
                 if (topLevel != null && permissions.showBanner) {
