@@ -91,6 +91,8 @@ class FakeSettingsRepository(
 
     override suspend fun setBlockedCallAction(value: BlockedCallAction) = update { copy(blockedCallAction = value) }
 
+    override suspend fun setDynamicColor(value: Boolean) = update { copy(dynamicColor = value) }
+
     override suspend fun setShowRejectedCallNotification(value: Boolean) =
         update {
             copy(showRejectedCallNotification = value)

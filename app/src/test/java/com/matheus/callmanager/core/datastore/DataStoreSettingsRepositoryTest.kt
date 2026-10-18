@@ -83,6 +83,7 @@ class DataStoreSettingsRepositoryTest {
             repo.setBlockUnknownNumbers(true)
             repo.setBlockedCallAction(BlockedCallAction.REJECT)
             repo.setShowRejectedCallNotification(false)
+            repo.setDynamicColor(true)
 
             assertEquals(
                 UserPreferences(
@@ -94,6 +95,7 @@ class DataStoreSettingsRepositoryTest {
                     blockUnknownNumbers = true,
                     blockedCallAction = BlockedCallAction.REJECT,
                     showRejectedCallNotification = false,
+                    dynamicColor = true,
                 ),
                 repo.preferences.first(),
             )
