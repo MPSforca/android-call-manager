@@ -83,6 +83,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
+    implementation(libs.androidx.datastore.preferences)
+
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
@@ -102,6 +104,8 @@ dependencies {
     testImplementation(libs.turbine)
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.mockk)
+    testImplementation(libs.androidx.room.testing)
 }
 
 kover {
@@ -143,6 +147,14 @@ val coreCoverageClasses =
         "com.matheus.callmanager.core.data.ScreeningPolicy",
         "com.matheus.callmanager.core.data.BlockedCallMerger",
         "com.matheus.callmanager.core.data.NameAllowMatcher",
+        "com.matheus.callmanager.core.data.rule.BlockListRule",
+        "com.matheus.callmanager.core.data.rule.AllowListRule",
+        "com.matheus.callmanager.core.data.rule.NamePatternRule",
+        "com.matheus.callmanager.core.data.rule.ContactRule",
+        "com.matheus.callmanager.core.data.rule.RecentlyAcceptedRule",
+        "com.matheus.callmanager.core.data.rule.RecentlyCalledRule",
+        "com.matheus.callmanager.core.data.rule.UnknownNumberFallbackRule",
+        "com.matheus.callmanager.core.datastore.DataStoreSettingsRepository",
         "com.matheus.callmanager.core.data.SystemBlockedCallsPager",
         "com.matheus.callmanager.core.di.DispatchersModule",
         "com.matheus.callmanager.core.di.DatabaseModule",

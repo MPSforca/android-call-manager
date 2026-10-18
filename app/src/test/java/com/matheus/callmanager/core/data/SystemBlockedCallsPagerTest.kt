@@ -5,13 +5,13 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.matheus.callmanager.core.database.CallManagerDatabase
-import com.matheus.callmanager.core.datastore.SettingsStore
 import com.matheus.callmanager.core.model.SystemBlockedCall
 import com.matheus.callmanager.core.telephony.CallLogUtil
 import com.matheus.callmanager.testing.FakeActivityRetainedLifecycle
 import com.matheus.callmanager.testing.FakeCallLogDataSource
 import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
+import com.matheus.callmanager.testing.FakeSettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -31,6 +31,7 @@ private fun fakeSystemBlockedCall(index: Int) =
 @Config(sdk = [34])
 class SystemBlockedCallsPagerTest {
     private lateinit var db: CallManagerDatabase
+    private val settings = FakeSettingsRepository()
     private lateinit var repository: CallRepository
     private lateinit var callLogDataSource: FakeCallLogDataSource
     private lateinit var lifecycle: FakeActivityRetainedLifecycle
@@ -40,7 +41,7 @@ class SystemBlockedCallsPagerTest {
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
-        repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), SettingsStore(context))
+        repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), settings)
         callLogDataSource = FakeCallLogDataSource()
         lifecycle = FakeActivityRetainedLifecycle()
         pager = SystemBlockedCallsPager(repository, callLogDataSource, Dispatchers.Default, lifecycle)

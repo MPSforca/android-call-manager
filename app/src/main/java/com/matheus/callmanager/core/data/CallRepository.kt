@@ -1,17 +1,25 @@
 package com.matheus.callmanager.core.data
 
+import com.matheus.callmanager.core.data.rule.AllowListRule
+import com.matheus.callmanager.core.data.rule.BlockListRule
+import com.matheus.callmanager.core.data.rule.ContactRule
+import com.matheus.callmanager.core.data.rule.NamePatternRule
+import com.matheus.callmanager.core.data.rule.RecentlyAcceptedRule
+import com.matheus.callmanager.core.data.rule.RecentlyCalledRule
+import com.matheus.callmanager.core.data.rule.ScreeningContext
+import com.matheus.callmanager.core.data.rule.UnknownNumberFallbackRule
 import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.database.entity.AcceptedCaller
 import com.matheus.callmanager.core.database.entity.AllowListEntry
 import com.matheus.callmanager.core.database.entity.AllowedNamePattern
 import com.matheus.callmanager.core.database.entity.BlockListEntry
 import com.matheus.callmanager.core.database.entity.BlockedCallLog
-import com.matheus.callmanager.core.datastore.SettingsStore
+import com.matheus.callmanager.core.datastore.SettingsRepository
 import com.matheus.callmanager.core.model.ScreeningDecision
 import com.matheus.callmanager.core.telephony.ContactsLookup
 import com.matheus.callmanager.core.telephony.RecentOutgoingLookup
 import kotlinx.coroutines.flow.Flow
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,13 +34,25 @@ class CallRepository
         private val database: CallManagerDatabase,
         private val contactsLookup: ContactsLookup,
         private val recentOutgoingLookup: RecentOutgoingLookup,
-        val settings: SettingsStore,
+        val settings: SettingsRepository,
     ) {
         private val blockListDao = database.blockListDao()
         private val allowListDao = database.allowListDao()
         private val acceptedCallerDao = database.acceptedCallerDao()
         private val blockedCallLogDao = database.blockedCallLogDao()
         private val allowedNamePatternDao = database.allowedNamePatternDao()
+
+        /** Rule chain in precedence order: the first rule to return a decision wins. */
+        private val screeningRules =
+            listOf(
+                BlockListRule(blockListDao),
+                AllowListRule(allowListDao),
+                NamePatternRule(allowedNamePatternDao),
+                ContactRule(contactsLookup),
+                RecentlyAcceptedRule(acceptedCallerDao),
+                RecentlyCalledRule(recentOutgoingLookup),
+                UnknownNumberFallbackRule(),
+            )
 
         fun observeBlockList(): Flow<List<BlockListEntry>> = blockListDao.observeAll()
 
@@ -90,38 +110,8 @@ class CallRepository
             number: String,
             callerName: String? = null,
         ): ScreeningDecision {
-            if (blockListDao.isBlocked(number)) {
-                return ScreeningDecision.Reject("On your block list")
-            }
-            if (allowListDao.isAllowed(number)) {
-                return ScreeningDecision.Allow("On your allow list")
-            }
-            if (NameAllowMatcher.matches(callerName, allowedNamePatternDao.getAllPatterns())) {
-                return ScreeningDecision.Allow("Caller name matches an allow pattern")
-            }
-            if (settings.allowContacts && contactsLookup.isContact(number)) {
-                return ScreeningDecision.Allow("Known contact")
-            }
-            if (settings.recentAcceptedRuleEnabled) {
-                val accepted = acceptedCallerDao.get(number)
-                val cutoff =
-                    System.currentTimeMillis() - TimeUnit.DAYS.toMillis(settings.allowRecentAcceptedDays.toLong())
-                if (accepted != null && accepted.lastAcceptedAt >= cutoff) {
-                    return ScreeningDecision.Allow("Accepted within the last ${settings.allowRecentAcceptedDays} days")
-                }
-            }
-            if (settings.recentOutgoingRuleEnabled) {
-                val days = settings.allowRecentOutgoingDays
-                val cutoff = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days.toLong())
-                if (recentOutgoingLookup.hasOutgoingCallSince(number, cutoff)) {
-                    return ScreeningDecision.Allow("You called them within the last $days days")
-                }
-            }
-            return if (settings.blockUnknownNumbers) {
-                ScreeningDecision.Reject("Unknown number")
-            } else {
-                ScreeningDecision.Allow("No matching block rule")
-            }
+            val context = ScreeningContext(number, callerName, settings.preferences.first(), System.currentTimeMillis())
+            return screeningRules.firstNotNullOf { it.evaluate(context) }
         }
 
         /** Returns the caller's contact name, if any, so callers can reuse it (e.g. for a notification). */

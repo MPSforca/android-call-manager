@@ -5,10 +5,10 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.database.entity.AcceptedCaller
-import com.matheus.callmanager.core.datastore.SettingsStore
 import com.matheus.callmanager.core.model.ScreeningDecision
 import com.matheus.callmanager.core.telephony.ContactsLookup
 import com.matheus.callmanager.core.telephony.RecentOutgoingLookup
+import com.matheus.callmanager.testing.FakeSettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -42,6 +42,7 @@ private class FakeRecentOutgoingLookup : RecentOutgoingLookup {
 @Config(sdk = [34])
 class CallRepositoryTest {
     private lateinit var db: CallManagerDatabase
+    private val settings = FakeSettingsRepository()
     private lateinit var contactsLookup: FakeContactsLookup
     private lateinit var recentOutgoingLookup: FakeRecentOutgoingLookup
     private lateinit var repository: CallRepository
@@ -61,7 +62,7 @@ class CallRepositoryTest {
                 database = db,
                 contactsLookup = contactsLookup,
                 recentOutgoingLookup = recentOutgoingLookup,
-                settings = SettingsStore(context),
+                settings = settings,
             )
     }
 
@@ -91,7 +92,7 @@ class CallRepositoryTest {
     @Test
     fun `number on allow list is allowed even when block-unknown is on`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
+            settings.update { copy(blockUnknownNumbers = true) }
             repository.allowNumbers(listOf("+15552222222" to "Allowed Caller"))
 
             val decision = repository.evaluate("+15552222222")
@@ -102,9 +103,9 @@ class CallRepositoryTest {
     @Test
     fun `number called within the configured window is allowed`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
-            repository.settings.recentOutgoingRuleEnabled = true
-            repository.settings.allowRecentOutgoingDays = 30
+            settings.update { copy(blockUnknownNumbers = true) }
+            settings.update { copy(recentOutgoingRuleEnabled = true) }
+            settings.update { copy(allowRecentOutgoingDays = 30) }
             recentOutgoingLookup.outgoingCalls["+15558888888"] = System.currentTimeMillis()
 
             val decision = repository.evaluate("+15558888888")
@@ -115,9 +116,9 @@ class CallRepositoryTest {
     @Test
     fun `number called outside the configured window is not allowed`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
-            repository.settings.recentOutgoingRuleEnabled = true
-            repository.settings.allowRecentOutgoingDays = 1
+            settings.update { copy(blockUnknownNumbers = true) }
+            settings.update { copy(recentOutgoingRuleEnabled = true) }
+            settings.update { copy(allowRecentOutgoingDays = 1) }
             val fiveDaysAgo =
                 System.currentTimeMillis() -
                     java.util.concurrent.TimeUnit.DAYS
@@ -132,8 +133,8 @@ class CallRepositoryTest {
     @Test
     fun `recently called rule is ignored when disabled`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
-            repository.settings.recentOutgoingRuleEnabled = false
+            settings.update { copy(blockUnknownNumbers = true) }
+            settings.update { copy(recentOutgoingRuleEnabled = false) }
             recentOutgoingLookup.outgoingCalls["+15550001111"] = System.currentTimeMillis()
 
             val decision = repository.evaluate("+15550001111")
@@ -144,8 +145,8 @@ class CallRepositoryTest {
     @Test
     fun `number never called falls through to block-unknown`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
-            repository.settings.recentOutgoingRuleEnabled = true
+            settings.update { copy(blockUnknownNumbers = true) }
+            settings.update { copy(recentOutgoingRuleEnabled = true) }
 
             val decision = repository.evaluate("+15550002222")
 
@@ -155,7 +156,7 @@ class CallRepositoryTest {
     @Test
     fun `block list still wins over a recently called number`() =
         runTest {
-            repository.settings.recentOutgoingRuleEnabled = true
+            settings.update { copy(recentOutgoingRuleEnabled = true) }
             recentOutgoingLookup.outgoingCalls["+15550003333"] = System.currentTimeMillis()
             repository.blockNumbers(listOf("+15550003333" to "Blocked Later"))
 
@@ -178,7 +179,7 @@ class CallRepositoryTest {
     @Test
     fun `known contact is allowed when the contacts rule is enabled`() =
         runTest {
-            repository.settings.allowContacts = true
+            settings.update { copy(allowContacts = true) }
             contactsLookup.contacts["+15554444444"] = "Mom"
 
             val decision = repository.evaluate("+15554444444")
@@ -189,8 +190,8 @@ class CallRepositoryTest {
     @Test
     fun `contacts rule is ignored when disabled`() =
         runTest {
-            repository.settings.allowContacts = false
-            repository.settings.blockUnknownNumbers = true
+            settings.update { copy(allowContacts = false) }
+            settings.update { copy(blockUnknownNumbers = true) }
             contactsLookup.contacts["+15555555555"] = "Mom"
 
             val decision = repository.evaluate("+15555555555")
@@ -201,9 +202,9 @@ class CallRepositoryTest {
     @Test
     fun `caller accepted within the configured window is allowed again`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
-            repository.settings.recentAcceptedRuleEnabled = true
-            repository.settings.allowRecentAcceptedDays = 30
+            settings.update { copy(blockUnknownNumbers = true) }
+            settings.update { copy(recentAcceptedRuleEnabled = true) }
+            settings.update { copy(allowRecentAcceptedDays = 30) }
             repository.recordAccepted("+15556666666")
 
             val decision = repository.evaluate("+15556666666")
@@ -214,9 +215,9 @@ class CallRepositoryTest {
     @Test
     fun `caller accepted outside the configured window is not allowed`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
-            repository.settings.recentAcceptedRuleEnabled = true
-            repository.settings.allowRecentAcceptedDays = 1
+            settings.update { copy(blockUnknownNumbers = true) }
+            settings.update { copy(recentAcceptedRuleEnabled = true) }
+            settings.update { copy(allowRecentAcceptedDays = 1) }
 
             // Simulate an acceptance from 5 days ago by writing directly through the DAO.
             val fiveDaysAgo =
@@ -255,7 +256,7 @@ class CallRepositoryTest {
     @Test
     fun `caller whose display name matches an allow-name pattern is allowed even when block-unknown is on`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
+            settings.update { copy(blockUnknownNumbers = true) }
             repository.addAllowedNamePattern("PagerDuty")
 
             val decision = repository.evaluate("+15550101011", "PagerDuty Outgoing Numbers")
@@ -266,7 +267,7 @@ class CallRepositoryTest {
     @Test
     fun `caller display name that does not match any allow-name pattern falls through to block-unknown`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
+            settings.update { copy(blockUnknownNumbers = true) }
             repository.addAllowedNamePattern("PagerDuty")
 
             val decision = repository.evaluate("+15550101012", "Some Spammer")
@@ -277,7 +278,7 @@ class CallRepositoryTest {
     @Test
     fun `missing caller display name falls through to block-unknown even with allow-name patterns configured`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
+            settings.update { copy(blockUnknownNumbers = true) }
             repository.addAllowedNamePattern("PagerDuty")
 
             val decision = repository.evaluate("+15550101013", null)
@@ -288,7 +289,7 @@ class CallRepositoryTest {
     @Test
     fun `removing an allow-name pattern stops it from matching`() =
         runTest {
-            repository.settings.blockUnknownNumbers = true
+            settings.update { copy(blockUnknownNumbers = true) }
             repository.addAllowedNamePattern("PagerDuty")
             val entry = repository.observeAllowedNamePatterns().first().first()
 
