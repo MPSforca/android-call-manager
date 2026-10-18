@@ -174,3 +174,50 @@ done
 Open the Recent tab: it should show the first 200 grouped rows plus a "Load more" button; tapping it
 should fetch the rest with no duplicates or gaps. Mark some of the seeded numbers `type:i:6`
 (`BLOCKED_TYPE`, see above) to test the same "Load more" behavior on the Blocked tab.
+
+**8. Re-run onboarding (first-run flow and the missing-permissions banner)**
+
+Onboarding only appears when the screening role or a runtime permission is missing, so an
+already-set-up emulator opens straight on the Recent tab. `pm clear` wipes app data and revokes
+runtime permissions but **leaves the screening role**, so the flow would start at step 2. Remove
+the role as well to start from step 1:
+
+```bash
+# Check who holds the call-screening role (prints the package name, or nothing)
+adb shell cmd role get-role-holders android.app.role.CALL_SCREENING
+
+adb shell cmd role remove-role-holder android.app.role.CALL_SCREENING com.matheus.callmanager
+adb shell pm clear com.matheus.callmanager
+adb shell am start -n com.matheus.callmanager/.MainActivity
+```
+
+You should see "Step 1 of 3" (screening role), then permissions, then the battery step. The
+battery step is optional and first-run only, and is skipped on API < 29, where the role doesn't
+exist. To give the role back without going through the flow:
+
+```bash
+adb shell cmd role add-role-holder android.app.role.CALL_SCREENING com.matheus.callmanager
+```
+
+To test the `MissingPermissionsBanner` instead, choose "Skip for now" on the role and permissions
+steps: the app opens on the tabs with the banner on top, and its "Fix" button re-requests the
+missing item. If the app doesn't look new at all, make sure the latest build was actually installed
+(`./gradlew installDebug`, or Run in Android Studio); `assembleDebug` alone doesn't update the
+emulator.
+
+**9. Deep links and navigation**
+
+The app handles `callmanager://recent`, `callmanager://lists`, `callmanager://rules` and
+`callmanager://call/{number}` (URL-encode the number, so `+` becomes `%2B`):
+
+```bash
+adb shell am start -a android.intent.action.VIEW -d "callmanager://rules"
+adb shell am start -a android.intent.action.VIEW -d "callmanager://call/%2B15551234567"
+```
+
+Call detail should open as its own screen with no bottom bar, and system back should return to the
+previous screen. Also check that:
+
+- the navigation bar becomes a rail when the emulator is rotated to landscape, or on a tablet AVD;
+- switching tabs keeps each tab's scroll position and back stack;
+- rotating while on call detail keeps you on that call.
