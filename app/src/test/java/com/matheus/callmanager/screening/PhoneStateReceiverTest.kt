@@ -12,10 +12,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import dagger.hilt.android.testing.UninstallModules
-import kotlinx.coroutines.runBlocking
 import org.junit.After
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -62,18 +61,21 @@ class PhoneStateReceiverTest {
         receiver.onReceive(context, intent)
     }
 
-    private fun accepted(number: String) = runBlocking { db.acceptedCallerDao().get(number) }
+    private fun accepted(number: String): Boolean =
+        db.openHelper.readableDatabase
+            .query("SELECT 1 FROM accepted_callers WHERE number = ?", arrayOf(number))
+            .use { it.moveToFirst() }
 
     private fun awaitAccepted(number: String) {
         val deadline = System.currentTimeMillis() + TIMEOUT_MS
-        while (accepted(number) == null && System.currentTimeMillis() < deadline) Thread.sleep(POLL_MS)
-        assertNotNull("$number was not recorded as accepted", accepted(number))
+        while (!accepted(number) && System.currentTimeMillis() < deadline) Thread.sleep(POLL_MS)
+        assertTrue("$number was not recorded as accepted", accepted(number))
     }
 
     /** Gives the receiver's fire-and-forget IO coroutine time to (not) write, then checks nothing landed. */
     private fun assertNeverAccepted(number: String) {
         Thread.sleep(SETTLE_MS)
-        assertNull(accepted(number))
+        assertFalse(accepted(number))
     }
 
     @Test

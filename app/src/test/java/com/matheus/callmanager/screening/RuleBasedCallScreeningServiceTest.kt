@@ -8,7 +8,6 @@ import android.telecom.CallScreeningService.CallResponse
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.core.database.CallManagerDatabase
-import com.matheus.callmanager.core.database.entity.BlockListEntry
 import com.matheus.callmanager.core.datastore.SettingsRepository
 import com.matheus.callmanager.core.di.DatabaseModule
 import com.matheus.callmanager.core.di.SettingsBindingModule
@@ -30,8 +29,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -110,9 +107,16 @@ class RuleBasedCallScreeningServiceTest {
             every { callerDisplayName } returns callerName
         }
 
+    // Plain SQL on the test thread: no coroutines or Room executors, so a stuck service can only fail a bounded wait.
     private fun block(number: String) =
-        runBlocking {
-            db.blockListDao().insertAll(listOf(BlockListEntry(number, null, 1L)))
+        db.openHelper.writableDatabase.execSQL(
+            "INSERT INTO block_list (number, displayName, addedAt) VALUES (?, NULL, 1)",
+            arrayOf(number),
+        )
+
+    private fun loggedNumbers(): List<String> =
+        db.openHelper.readableDatabase.query("SELECT number FROM blocked_call_log").use { cursor ->
+            generateSequence { if (cursor.moveToNext()) cursor.getString(0) else null }.toList()
         }
 
     private fun awaitResponse(): CallResponse {
@@ -122,13 +126,7 @@ class RuleBasedCallScreeningServiceTest {
 
     private fun awaitLogCount(count: Int) =
         awaitUntil {
-            runBlocking {
-                db
-                    .blockedCallLogDao()
-                    .observeAll()
-                    .first()
-                    .size
-            } == count
+            loggedNumbers().size == count
         }
 
     private fun awaitUntil(condition: () -> Boolean) {
@@ -157,13 +155,7 @@ class RuleBasedCallScreeningServiceTest {
         assertFalse(response.silenceCall)
         assertEquals(
             0,
-            runBlocking {
-                db
-                    .blockedCallLogDao()
-                    .observeAll()
-                    .first()
-                    .size
-            },
+            loggedNumbers().size,
         )
     }
 
@@ -177,15 +169,7 @@ class RuleBasedCallScreeningServiceTest {
         assertTrue(response.silenceCall)
         assertFalse(response.disallowCall)
         awaitLogCount(1)
-        val entry =
-            runBlocking {
-                db
-                    .blockedCallLogDao()
-                    .observeAll()
-                    .first()
-                    .single()
-            }
-        assertEquals("+15551230000", entry.number)
+        assertEquals(listOf("+15551230000"), loggedNumbers())
     }
 
     @Test
@@ -212,6 +196,7 @@ class RuleBasedCallScreeningServiceTest {
         assertTrue(response.skipNotification)
         assertFalse(response.silenceCall)
         awaitLogCount(1)
+        awaitUntil { notifications().isNotEmpty() }
     }
 
     @Test
@@ -247,6 +232,7 @@ class RuleBasedCallScreeningServiceTest {
 
         assertTrue(awaitResponse().disallowCall)
         awaitLogCount(1)
+        awaitUntil { notifications().isNotEmpty() }
     }
 
     @Test
@@ -260,13 +246,7 @@ class RuleBasedCallScreeningServiceTest {
         assertFalse(response.silenceCall)
         assertEquals(
             0,
-            runBlocking {
-                db
-                    .blockedCallLogDao()
-                    .observeAll()
-                    .first()
-                    .size
-            },
+            loggedNumbers().size,
         )
     }
 
