@@ -41,6 +41,8 @@ class DataStoreSettingsRepository
 
         override suspend fun setShowRejectedCallNotification(value: Boolean) = set(SHOW_REJECTED_NOTIFICATION, value)
 
+        override suspend fun setDynamicColor(value: Boolean) = set(DYNAMIC_COLOR, value)
+
         private suspend fun <T> set(
             key: Preferences.Key<T>,
             value: T,
@@ -63,6 +65,7 @@ class DataStoreSettingsRepository
                         ?: defaults.blockedCallAction,
                 showRejectedCallNotification =
                     this[SHOW_REJECTED_NOTIFICATION] ?: defaults.showRejectedCallNotification,
+                dynamicColor = this[DYNAMIC_COLOR] ?: defaults.dynamicColor,
             )
         }
 
@@ -77,5 +80,6 @@ class DataStoreSettingsRepository
             internal val BLOCK_UNKNOWN = booleanPreferencesKey("block_unknown_numbers")
             internal val BLOCKED_ACTION = stringPreferencesKey("blocked_call_action")
             internal val SHOW_REJECTED_NOTIFICATION = booleanPreferencesKey("show_rejected_call_notification")
+            internal val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         }
     }

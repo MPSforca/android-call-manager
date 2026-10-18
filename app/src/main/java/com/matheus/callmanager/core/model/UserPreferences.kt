@@ -15,4 +15,6 @@ data class UserPreferences(
     val blockedCallAction: BlockedCallAction = BlockedCallAction.SILENCE,
     /** Whether an outright-rejected call posts a notification bar heads-up. Defaults to on. */
     val showRejectedCallNotification: Boolean = true,
+    /** Theme the app from the wallpaper on Android 12+. Off by default so the brand palette shows. */
+    val dynamicColor: Boolean = false,
 )

@@ -23,4 +23,6 @@ interface SettingsRepository {
     suspend fun setBlockedCallAction(value: BlockedCallAction)
 
     suspend fun setShowRejectedCallNotification(value: Boolean)
+
+    suspend fun setDynamicColor(value: Boolean)
 }
