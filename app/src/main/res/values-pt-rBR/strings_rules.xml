@@ -33,6 +33,37 @@
     <string name="rules_notify_title">Notificar quando uma chamada for rejeitada</string>
     <string name="rules_notify_subtitle">Mostrar uma notificação para cada chamada rejeitada</string>
 
+    <string name="rules_step_lists_title">Suas listas</string>
+    <string name="rules_step_lists_intro">Números que você adicionou manualmente. Estas listas são verificadas primeiro: um número na sua lista de bloqueio é bloqueado mesmo que também seja um contato.</string>
+    <string name="rules_step_people_title">Pessoas que você conhece</string>
+    <string name="rules_step_people_intro">Libere chamadas de quem você já tem relação. Se qualquer uma destas regras corresponder, a chamada toca normalmente.</string>
+    <string name="rules_step_unknown_title">Chamadores desconhecidos</string>
+    <string name="rules_step_unknown_intro">Defina o que acontece com um número que nenhuma das regras acima reconheceu.</string>
+    <string name="rules_step_blocked_title">Quando uma chamada é bloqueada</string>
+    <string name="rules_step_blocked_intro">Escolha como uma chamada bloqueada chega até você. Ela sempre continua visível na aba Recentes.</string>
+
+    <string name="rules_info_block_list_title">Lista de bloqueio</string>
+    <string name="rules_info_block_list_description">Números que você escolheu bloquear. Esta regra roda primeiro e sempre vence.</string>
+    <string name="rules_info_block_list_example">Você bloqueou um operador de telemarketing. Ele continua bloqueado mesmo que você o salve depois como contato.</string>
+    <string name="rules_info_allow_list_title">Lista de permitidos</string>
+    <string name="rules_info_allow_list_description">Números dos quais você sempre quer receber chamadas. Passam, a menos que estejam na lista de bloqueio.</string>
+    <string name="rules_info_allow_list_example">Sua farmácia não está nos contatos, mas você quer que as chamadas dela toquem.</string>
+    <string name="rules_info_name_pattern_title">Padrão de nome do chamador</string>
+    <string name="rules_info_name_pattern_description">Permite chamadas cujo nome no identificador de chamadas corresponde a um padrão que você define. Só funciona quando a operadora envia um nome.</string>
+    <string name="rules_info_name_pattern_example">Um padrão como \"Dr.\" libera qualquer chamada cujo identificador comece com \"Dr.\".</string>
+    <string name="rules_info_contact_title">Contatos</string>
+    <string name="rules_info_contact_description">Permite qualquer pessoa salva nos seus contatos.</string>
+    <string name="rules_info_contact_example">Sua irmã liga de um número salvo. A chamada toca normalmente.</string>
+    <string name="rules_info_recently_accepted_title">Atendidas recentemente</string>
+    <string name="rules_info_recently_accepted_description">Permite um número novamente por um tempo depois de você atender uma chamada dele.</string>
+    <string name="rules_info_recently_accepted_example">Você atendeu um entregador ontem. A ligação de volta hoje toca.</string>
+    <string name="rules_info_recently_called_title">Ligadas recentemente</string>
+    <string name="rules_info_recently_called_description">Permite números para os quais você mesmo ligou por um tempo, para que um retorno não seja bloqueado.</string>
+    <string name="rules_info_recently_called_example">Você ligou para uma clínica de manhã. Quando ela retornar à tarde, a chamada toca.</string>
+    <string name="rules_info_unknown_title">Números desconhecidos</string>
+    <string name="rules_info_unknown_description">A última regra. Um número que não correspondeu a nada acima é permitido, ou bloqueado se você ativar esta opção.</string>
+    <string name="rules_info_unknown_example">Um número não salvo, com o qual você nunca teve contato, liga. Com isto ativado, ele é bloqueado.</string>
+
     <string name="rules_section_appearance">Aparência</string>
     <string name="rules_dynamic_color_title">Cores dinâmicas</string>
     <string name="rules_dynamic_color_subtitle">Usar as cores do papel de parede em vez da paleta da marca</string>
