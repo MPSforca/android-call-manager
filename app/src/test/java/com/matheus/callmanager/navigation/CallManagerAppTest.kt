@@ -112,7 +112,7 @@ class CallManagerAppTest {
         grantEverything()
         launch()
 
-        compose.onNodeWithText("Tap a number for details, or select to block/allow in bulk").assertExists()
+        compose.onNodeWithText("Search name or number").assertExists()
         compose.onNodeWithText("Lists").performClick()
         compose.onNodeWithText("No blocked numbers").assertExists()
         compose.onNodeWithText("Rules").performClick()
@@ -132,11 +132,11 @@ class CallManagerAppTest {
 
         compose.onNodeWithText("Alice").performClick()
         compose.onNodeWithText("Call history").assertExists()
-        compose.onNodeWithText("Tap a number for details, or select to block/allow in bulk").assertDoesNotExist()
+        compose.onNodeWithText("Search name or number").assertDoesNotExist()
 
         compose.onNodeWithText("Alice").assertExists()
         scenario!!.onActivity { it.onBackPressedDispatcher.onBackPressed() }
-        compose.onNodeWithText("Tap a number for details, or select to block/allow in bulk").assertExists()
+        compose.onNodeWithText("Search name or number").assertExists()
     }
 
     @Test
@@ -184,7 +184,7 @@ class CallManagerAppTest {
         compose.onNodeWithText("Exempt from battery optimization").performClick()
         compose.onNodeWithText("Not now").performClick()
 
-        compose.onNodeWithText("Tap a number for details, or select to block/allow in bulk").assertExists()
+        compose.onNodeWithText("Search name or number").assertExists()
     }
 
     @Test
@@ -194,7 +194,7 @@ class CallManagerAppTest {
         launch()
 
         compose.onNodeWithText("Step 3 of 3").assertDoesNotExist()
-        compose.onNodeWithText("Tap a number for details, or select to block/allow in bulk").assertExists()
+        compose.onNodeWithText("Search name or number").assertExists()
     }
 
     private fun resumeActivity() {
