@@ -54,6 +54,9 @@ export JAVA_HOME=/path/to/jdk-17-to-21
 - **New and changed lines have at least 90% test coverage.** This applies to the lines you touched,
   not the whole repo. Code that can't run on the JVM (raw `CallLog` queries, for instance; see
   [docs/TESTING.md](docs/TESTING.md)) is exempt, but say so in the PR and describe the manual test.
+- **User-visible text is localized.** No hardcoded UI strings: every string lives in the feature's
+  `res/values/strings_<feature>.xml` (English) with matching `values-pt-rBR` and `values-es`
+  entries, and counts use `<plurals>`.
 - Behavior or UI changes were tried on a device or emulator, and the PR says how.
 - Docs are updated if behavior, permissions or architecture changed, and `CHANGELOG.md` has an
   entry under *Unreleased* for user-visible changes.
