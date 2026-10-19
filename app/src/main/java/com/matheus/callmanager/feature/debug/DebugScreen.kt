@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -31,6 +33,7 @@ import com.matheus.callmanager.core.designsystem.component.CmButton
 import com.matheus.callmanager.core.designsystem.component.CmCard
 import com.matheus.callmanager.core.designsystem.component.CmPhoneTextField
 import com.matheus.callmanager.core.designsystem.component.CmTextButton
+import com.matheus.callmanager.core.designsystem.component.EmptyState
 import com.matheus.callmanager.core.designsystem.component.SectionHeader
 import com.matheus.callmanager.core.designsystem.component.StatusPill
 import com.matheus.callmanager.core.designsystem.component.StatusTone
@@ -38,7 +41,7 @@ import com.matheus.callmanager.core.designsystem.theme.LocalSpacing
 import com.matheus.callmanager.core.model.ScreeningDecision
 import com.matheus.callmanager.core.telephony.PhoneNumberFormatter
 
-/** Debug-only: runs the same rule evaluation the real CallScreeningService uses, without a real call. */
+/** "Test a number": runs the same rule evaluation the real CallScreeningService uses, without a real call. */
 @Composable
 fun DebugScreen(viewModel: DebugViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -97,6 +100,13 @@ internal fun DebugContent(
                 text = stringResource(R.string.debug_simulate),
                 onClick = { onSimulate(number, callerName.ifBlank { null }) },
                 enabled = number.isNotBlank(),
+            )
+        }
+        if (state.trace == null) {
+            EmptyState(
+                icon = Icons.Filled.Science,
+                title = stringResource(R.string.debug_empty_title),
+                message = stringResource(R.string.debug_empty_message),
             )
         }
         state.trace?.let { TraceCard(it.decision, it.steps) }

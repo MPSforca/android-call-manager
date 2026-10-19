@@ -55,10 +55,10 @@ class DebugScreenTest {
         var simulated: Pair<String, String?>? = null
         show(onSimulate = { n, name -> simulated = n to name })
 
-        compose.onNodeWithText("Simulate call").assertIsNotEnabled()
+        compose.onNodeWithText("Test number").assertIsNotEnabled()
         compose.onNodeWithText("Phone number").performTextInput("5550100")
         compose.onNodeWithText("Caller ID name (optional)").performTextInput("Acme")
-        compose.onNodeWithText("Simulate call").assertIsEnabled().performClick()
+        compose.onNodeWithText("Test number").assertIsEnabled().performClick()
 
         assertTrue(simulated!!.first.isNotBlank())
         assertEquals("Acme", simulated!!.second)
@@ -81,9 +81,16 @@ class DebugScreenTest {
         show(DebugUiState(trace = null, history = listOf(entry)), onClear = { cleared = true })
 
         compose.onNodeWithText("+15550100").performScrollTo().performClick()
-        compose.onNodeWithText("Simulate call").assertIsEnabled()
+        compose.onNodeWithText("Test number").assertIsEnabled()
         compose.onNodeWithText("Clear").performScrollTo().performClick()
 
         assertTrue(cleared)
+    }
+
+    @Test
+    fun `shows the empty state until a trace exists`() {
+        show()
+
+        compose.onNodeWithText("No test yet").assertIsDisplayed()
     }
 }

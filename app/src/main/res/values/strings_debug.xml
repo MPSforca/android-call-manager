@@ -1,10 +1,13 @@
 <resources>
-    <string name="debug_title">Rule tester</string>
-    <string name="debug_subtitle">Simulate an incoming call to see how your rules would treat it, without dialing your device.</string>
+    <string name="debug_title">Test a number</string>
+    <string name="debug_subtitle">Check how your rules would treat a call from any number, without waiting for a real one.</string>
     <string name="debug_number_label">Phone number</string>
     <string name="debug_caller_name_label">Caller ID name (optional)</string>
     <string name="debug_caller_name_placeholder">e.g. PagerDuty Outgoing Numbers</string>
-    <string name="debug_simulate">Simulate call</string>
+    <string name="debug_simulate">Test number</string>
+
+    <string name="debug_empty_title">No test yet</string>
+    <string name="debug_empty_message">Enter a number above to see which rule would allow or block it.</string>
 
     <string name="debug_allowed">Allowed</string>
     <string name="debug_rejected">Blocked</string>
