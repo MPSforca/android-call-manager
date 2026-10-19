@@ -7,6 +7,10 @@ import com.matheus.callmanager.core.data.rule.NamePatternRule
 import com.matheus.callmanager.core.data.rule.RecentlyAcceptedRule
 import com.matheus.callmanager.core.data.rule.RecentlyCalledRule
 import com.matheus.callmanager.core.data.rule.ScreeningContext
+import com.matheus.callmanager.core.data.rule.ScreeningRuleId
+import com.matheus.callmanager.core.data.rule.ScreeningTrace
+import com.matheus.callmanager.core.data.rule.TraceOutcome
+import com.matheus.callmanager.core.data.rule.TraceStep
 import com.matheus.callmanager.core.data.rule.UnknownNumberFallbackRule
 import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.database.entity.AcceptedCaller
@@ -45,13 +49,13 @@ class CallRepository
         /** Rule chain in precedence order: the first rule to return a decision wins. */
         private val screeningRules =
             listOf(
-                BlockListRule(blockListDao),
-                AllowListRule(allowListDao),
-                NamePatternRule(allowedNamePatternDao),
-                ContactRule(contactsLookup),
-                RecentlyAcceptedRule(acceptedCallerDao),
-                RecentlyCalledRule(recentOutgoingLookup),
-                UnknownNumberFallbackRule(),
+                ScreeningRuleId.BLOCK_LIST to BlockListRule(blockListDao),
+                ScreeningRuleId.ALLOW_LIST to AllowListRule(allowListDao),
+                ScreeningRuleId.NAME_PATTERN to NamePatternRule(allowedNamePatternDao),
+                ScreeningRuleId.CONTACT to ContactRule(contactsLookup),
+                ScreeningRuleId.RECENTLY_ACCEPTED to RecentlyAcceptedRule(acceptedCallerDao),
+                ScreeningRuleId.RECENTLY_CALLED to RecentlyCalledRule(recentOutgoingLookup),
+                ScreeningRuleId.UNKNOWN_FALLBACK to UnknownNumberFallbackRule(),
             )
 
         fun observeBlockList(): Flow<List<BlockListEntry>> = blockListDao.observeAll()
@@ -109,9 +113,22 @@ class CallRepository
         suspend fun evaluate(
             number: String,
             callerName: String? = null,
-        ): ScreeningDecision {
+        ): ScreeningDecision = evaluateWithTrace(number, callerName).decision
+
+        /** Same chain as [evaluate], but also reports which rules ran, which deferred and which decided. */
+        suspend fun evaluateWithTrace(
+            number: String,
+            callerName: String? = null,
+        ): ScreeningTrace {
             val context = ScreeningContext(number, callerName, settings.preferences.first(), System.currentTimeMillis())
-            return screeningRules.firstNotNullOf { it.evaluate(context) }
+            var decision: ScreeningDecision? = null
+            val steps =
+                screeningRules.map { (id, rule) ->
+                    if (decision != null) return@map TraceStep(id, TraceOutcome.NOT_REACHED)
+                    decision = rule.evaluate(context)
+                    TraceStep(id, if (decision != null) TraceOutcome.DECIDED else TraceOutcome.PASSED)
+                }
+            return ScreeningTrace(checkNotNull(decision) { "Rule chain must end with a deciding rule" }, steps)
         }
 
         /** Returns the caller's contact name, if any, so callers can reuse it (e.g. for a notification). */

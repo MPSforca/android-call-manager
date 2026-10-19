@@ -1,0 +1,26 @@
+<resources>
+    <string name="debug_title">Rule tester</string>
+    <string name="debug_subtitle">Simulate an incoming call to see how your rules would treat it, without dialing your device.</string>
+    <string name="debug_number_label">Phone number</string>
+    <string name="debug_caller_name_label">Caller ID name (optional)</string>
+    <string name="debug_caller_name_placeholder">e.g. PagerDuty Outgoing Numbers</string>
+    <string name="debug_simulate">Simulate call</string>
+
+    <string name="debug_allowed">Allowed</string>
+    <string name="debug_rejected">Blocked</string>
+    <string name="debug_trace_title">Rule by rule</string>
+    <string name="debug_outcome_passed">No match</string>
+    <string name="debug_outcome_decided">Decided</string>
+    <string name="debug_outcome_not_reached">Not reached</string>
+
+    <string name="debug_rule_block_list">Block list</string>
+    <string name="debug_rule_allow_list">Allow list</string>
+    <string name="debug_rule_name_pattern">Caller name pattern</string>
+    <string name="debug_rule_contact">Contacts</string>
+    <string name="debug_rule_recently_accepted">Recently answered</string>
+    <string name="debug_rule_recently_called">Recently called</string>
+    <string name="debug_rule_unknown">Unknown numbers</string>
+
+    <string name="debug_history_title">History</string>
+    <string name="debug_history_clear">Clear</string>
+</resources>
