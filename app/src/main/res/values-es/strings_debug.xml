@@ -1,0 +1,29 @@
+<resources>
+    <string name="debug_title">Probar un número</string>
+    <string name="debug_subtitle">Comprueba cómo tratarían tus reglas una llamada de cualquier número, sin esperar a una llamada real.</string>
+    <string name="debug_number_label">Número de teléfono</string>
+    <string name="debug_caller_name_label">Nombre de identificación (opcional)</string>
+    <string name="debug_caller_name_placeholder">p. ej., PagerDuty Outgoing Numbers</string>
+    <string name="debug_simulate">Probar número</string>
+
+    <string name="debug_empty_title">Aún no hay pruebas</string>
+    <string name="debug_empty_message">Introduce un número arriba para ver qué regla lo permitiría o bloquearía.</string>
+
+    <string name="debug_allowed">Permitida</string>
+    <string name="debug_rejected">Bloqueada</string>
+    <string name="debug_trace_title">Regla por regla</string>
+    <string name="debug_outcome_passed">Sin coincidencia</string>
+    <string name="debug_outcome_decided">Decidió</string>
+    <string name="debug_outcome_not_reached">No evaluada</string>
+
+    <string name="debug_rule_block_list">Lista de bloqueo</string>
+    <string name="debug_rule_allow_list">Lista de permitidos</string>
+    <string name="debug_rule_name_pattern">Patrón de nombre del llamante</string>
+    <string name="debug_rule_contact">Contactos</string>
+    <string name="debug_rule_recently_accepted">Contestadas recientemente</string>
+    <string name="debug_rule_recently_called">Llamadas recientes</string>
+    <string name="debug_rule_unknown">Números desconocidos</string>
+
+    <string name="debug_history_title">Historial</string>
+    <string name="debug_history_clear">Borrar</string>
+</resources>
