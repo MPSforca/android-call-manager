@@ -1,0 +1,33 @@
+<resources>
+    <string name="lists_tab_blocked">Bloqueados</string>
+    <string name="lists_tab_allowed">Permitidos</string>
+    <string name="lists_tab_names">Nomes</string>
+
+    <string name="lists_search_label">Pesquisar</string>
+    <string name="lists_search_clear">Limpar pesquisa</string>
+
+    <string name="lists_blocked_subtitle">Chamadas destes números são sempre bloqueadas.</string>
+    <string name="lists_allowed_subtitle">Chamadas destes números sempre passam.</string>
+    <string name="lists_names_subtitle">Corresponde ao nome de identificação que a operadora mostra na chamada (por exemplo, \"PagerDuty\"), útil para quem muda de número mas mantém o mesmo nome. Nem toda operadora ou chamada informa um nome.</string>
+
+    <string name="lists_empty_blocked_title">Nenhum número bloqueado</string>
+    <string name="lists_empty_blocked_message">Os números que você bloquear aparecerão aqui.</string>
+    <string name="lists_empty_allowed_title">Nenhum número permitido</string>
+    <string name="lists_empty_allowed_message">Os números de quem você sempre quer ouvir aparecerão aqui.</string>
+    <string name="lists_empty_names_title">Nenhum padrão de nome</string>
+    <string name="lists_empty_names_message">Adicione um nome de identificação para liberar as chamadas correspondentes.</string>
+    <string name="lists_no_matches">Nenhum resultado</string>
+
+    <string name="lists_add">Adicionar</string>
+    <string name="lists_add_blocked">Bloquear um número</string>
+    <string name="lists_add_allowed">Permitir um número</string>
+    <string name="lists_add_name">Permitir um nome de chamador</string>
+    <string name="lists_number_label">Número de telefone</string>
+    <string name="lists_name_label">O nome contém</string>
+    <string name="lists_pick_contact">Escolher dos contatos</string>
+    <string name="lists_cancel">Cancelar</string>
+    <string name="lists_remove">Remover</string>
+
+    <string name="lists_removed">%1$s removido</string>
+    <string name="lists_undo">Desfazer</string>
+</resources>
