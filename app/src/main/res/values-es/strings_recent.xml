@@ -1,0 +1,24 @@
+<resources>
+    <string name="recent_search_hint">Buscar nombre o número</string>
+    <string name="recent_search_clear">Borrar búsqueda</string>
+
+    <string name="recent_filter_all">Todas</string>
+    <string name="recent_filter_blocked">Bloqueadas</string>
+    <string name="recent_filter_missed">Perdidas</string>
+    <string name="recent_filter_answered">Contestadas</string>
+
+    <string name="recent_day_today">Hoy</string>
+    <string name="recent_day_yesterday">Ayer</string>
+    <plurals name="recent_call_count">
+        <item quantity="one">%d llamada</item>
+        <item quantity="many">%d de llamadas</item>
+        <item quantity="other">%d llamadas</item>
+    </plurals>
+
+    <string name="recent_empty_title">Aún no hay llamadas</string>
+    <string name="recent_empty_message">Las llamadas que recibas aparecerán aquí.</string>
+    <string name="recent_no_match_title">No hay llamadas que coincidan</string>
+    <string name="recent_no_match_message">Prueba con otra búsqueda u otro filtro.</string>
+    <string name="recent_clear_filters">Borrar filtros</string>
+    <string name="recent_load_more">Cargar más</string>
+</resources>
