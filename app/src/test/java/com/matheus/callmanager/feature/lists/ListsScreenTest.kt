@@ -78,6 +78,20 @@ class ListsScreenTest {
 
     private fun patterns() = runBlocking { repository.observeAllowedNamePatterns().first() }
 
+    // The dialog writes through the ViewModel on another dispatcher, which waitForIdle() does not cover.
+    private fun awaitBlocked() =
+        runBlocking {
+            withTimeout(5_000) { repository.observeBlockList().first { it.isNotEmpty() } }
+        }
+
+    private fun awaitAllowed() =
+        runBlocking {
+            withTimeout(5_000) { repository.observeAllowList().first { it.isNotEmpty() } }
+        }
+
+    private fun awaitPatterns() =
+        runBlocking { withTimeout(5_000) { repository.observeAllowedNamePatterns().first { it.isNotEmpty() } } }
+
     @Test
     fun `empty tab shows its empty state and subtitle`() {
         show(ListsUiState())
@@ -154,7 +168,7 @@ class ListsScreenTest {
         compose.onNodeWithText("Add").performClick()
         compose.waitForIdle()
 
-        assertEquals(listOf("15550000009"), blocked().map { it.number.filter(Char::isDigit) })
+        assertEquals(listOf("15550000009"), awaitBlocked().map { it.number.filter(Char::isDigit) })
     }
 
     @Test
@@ -165,7 +179,7 @@ class ListsScreenTest {
         compose.onNodeWithText("Add").performClick()
         compose.waitForIdle()
 
-        assertEquals(listOf("15550000008"), allowed().map { it.number.filter(Char::isDigit) })
+        assertEquals(listOf("15550000008"), awaitAllowed().map { it.number.filter(Char::isDigit) })
     }
 
     @Test
@@ -180,7 +194,7 @@ class ListsScreenTest {
         compose.onNodeWithText("Add").performClick()
         compose.waitForIdle()
 
-        assertEquals(listOf("PagerDuty"), patterns().map { it.pattern })
+        assertEquals(listOf("PagerDuty"), awaitPatterns().map { it.pattern })
     }
 
     @Test
