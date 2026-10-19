@@ -12,7 +12,8 @@ import com.matheus.callmanager.testing.FakeCallLogDataSource
 import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
 import com.matheus.callmanager.testing.FakeSettingsRepository
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -27,9 +28,11 @@ import org.robolectric.annotation.Config
 private fun fakeSystemBlockedCall(index: Int) =
     SystemBlockedCall(number = "+1555000$index", name = null, timestamp = index.toLong(), source = "Test")
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class SystemBlockedCallsPagerTest {
+    private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var db: CallManagerDatabase
     private val settings = FakeSettingsRepository()
     private lateinit var repository: CallRepository
@@ -44,7 +47,7 @@ class SystemBlockedCallsPagerTest {
         repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), settings)
         callLogDataSource = FakeCallLogDataSource()
         lifecycle = FakeActivityRetainedLifecycle()
-        pager = SystemBlockedCallsPager(repository, callLogDataSource, Dispatchers.Default, lifecycle)
+        pager = SystemBlockedCallsPager(repository, callLogDataSource, testDispatcher, lifecycle)
     }
 
     @After

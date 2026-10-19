@@ -39,6 +39,7 @@ private fun fakeRecentCall(index: Int) =
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class RecentViewModelTest {
+    private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var db: CallManagerDatabase
     private val settings = FakeSettingsRepository()
     private lateinit var repository: CallRepository
@@ -48,14 +49,14 @@ class RecentViewModelTest {
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
+        Dispatchers.setMain(testDispatcher)
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
         repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), settings)
         callLogDataSource = FakeCallLogDataSource()
         lifecycle = FakeActivityRetainedLifecycle()
-        val pager = SystemBlockedCallsPager(repository, callLogDataSource, Dispatchers.Default, lifecycle)
-        viewModel = RecentViewModel(repository, callLogDataSource, pager, Dispatchers.Default)
+        val pager = SystemBlockedCallsPager(repository, callLogDataSource, testDispatcher, lifecycle)
+        viewModel = RecentViewModel(repository, callLogDataSource, pager, testDispatcher)
     }
 
     @After

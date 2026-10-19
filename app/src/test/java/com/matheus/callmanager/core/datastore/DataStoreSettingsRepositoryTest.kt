@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.matheus.callmanager.core.model.BlockedCallAction
+import com.matheus.callmanager.core.model.ThemeMode
 import com.matheus.callmanager.core.model.UserPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -84,6 +85,7 @@ class DataStoreSettingsRepositoryTest {
             repo.setBlockedCallAction(BlockedCallAction.REJECT)
             repo.setShowRejectedCallNotification(false)
             repo.setDynamicColor(true)
+            repo.setThemeMode(ThemeMode.DARK)
 
             assertEquals(
                 UserPreferences(
@@ -96,9 +98,19 @@ class DataStoreSettingsRepositoryTest {
                     blockedCallAction = BlockedCallAction.REJECT,
                     showRejectedCallNotification = false,
                     dynamicColor = true,
+                    themeMode = ThemeMode.DARK,
                 ),
                 repo.preferences.first(),
             )
+        }
+
+    @Test
+    fun `an unrecognised stored theme mode falls back to following the system`() =
+        runTest {
+            val store = dataStore()
+            store.edit { it[stringPreferencesKey("theme_mode")] = "SEPIA" }
+
+            assertEquals(ThemeMode.SYSTEM, DataStoreSettingsRepository(store).preferences.first().themeMode)
         }
 
     @Test

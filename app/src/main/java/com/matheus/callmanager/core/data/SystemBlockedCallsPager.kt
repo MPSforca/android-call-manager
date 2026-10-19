@@ -34,7 +34,7 @@ class SystemBlockedCallsPager
         @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
         activityRetainedLifecycle: ActivityRetainedLifecycle,
     ) {
-        private val scope = CoroutineScope(SupervisorJob())
+        private val scope = CoroutineScope(SupervisorJob() + ioDispatcher)
 
         init {
             activityRetainedLifecycle.addOnClearedListener { scope.cancel() }
