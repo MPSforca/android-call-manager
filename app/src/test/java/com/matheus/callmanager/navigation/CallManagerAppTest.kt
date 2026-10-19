@@ -119,7 +119,7 @@ class CallManagerAppTest {
         compose.onNodeWithText("Always allow").assertExists()
         if (BuildConfig.DEBUG) {
             compose.onNodeWithText("Debug").performClick()
-            compose.onNodeWithText("Simulate call").assertExists()
+            compose.onNodeWithText("Test number").assertExists()
         } else {
             compose.onNodeWithText("Debug").assertDoesNotExist()
         }
