@@ -1,0 +1,33 @@
+<resources>
+    <string name="lists_tab_blocked">Blocked</string>
+    <string name="lists_tab_allowed">Allowed</string>
+    <string name="lists_tab_names">Names</string>
+
+    <string name="lists_search_label">Search</string>
+    <string name="lists_search_clear">Clear search</string>
+
+    <string name="lists_blocked_subtitle">Calls from these numbers are always blocked.</string>
+    <string name="lists_allowed_subtitle">Calls from these numbers always get through.</string>
+    <string name="lists_names_subtitle">Matches the caller ID name your carrier shows for the call (e.g. \"PagerDuty\"), useful for callers whose number rotates but whose name stays the same. Not every carrier or call provides a name.</string>
+
+    <string name="lists_empty_blocked_title">No blocked numbers</string>
+    <string name="lists_empty_blocked_message">Numbers you block will show up here.</string>
+    <string name="lists_empty_allowed_title">No allowed numbers</string>
+    <string name="lists_empty_allowed_message">Numbers you always want to hear from will show up here.</string>
+    <string name="lists_empty_names_title">No name patterns</string>
+    <string name="lists_empty_names_message">Add a caller ID name to let matching calls through.</string>
+    <string name="lists_no_matches">No matches</string>
+
+    <string name="lists_add">Add</string>
+    <string name="lists_add_blocked">Block a number</string>
+    <string name="lists_add_allowed">Allow a number</string>
+    <string name="lists_add_name">Allow a caller name</string>
+    <string name="lists_number_label">Phone number</string>
+    <string name="lists_name_label">Name contains</string>
+    <string name="lists_pick_contact">Choose from contacts</string>
+    <string name="lists_cancel">Cancel</string>
+    <string name="lists_remove">Remove</string>
+
+    <string name="lists_removed">Removed %1$s</string>
+    <string name="lists_undo">Undo</string>
+</resources>
