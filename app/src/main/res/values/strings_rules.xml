@@ -32,6 +32,37 @@
     <string name="rules_notify_title">Notify when a call is rejected</string>
     <string name="rules_notify_subtitle">Show a heads-up notification for each rejected call</string>
 
+    <string name="rules_step_lists_title">Your lists</string>
+    <string name="rules_step_lists_intro">Numbers you added by hand. These are checked first: a number on your block list is blocked even if it is also a contact.</string>
+    <string name="rules_step_people_title">People you know</string>
+    <string name="rules_step_people_intro">Let through callers you already have a relationship with. If any of these match, the call rings normally.</string>
+    <string name="rules_step_unknown_title">Unknown callers</string>
+    <string name="rules_step_unknown_intro">Decide what happens to a number that none of the rules above recognised.</string>
+    <string name="rules_step_blocked_title">When a call is blocked</string>
+    <string name="rules_step_blocked_intro">Choose how a blocked call reaches you. It always stays visible in the Recent tab.</string>
+
+    <string name="rules_info_block_list_title">Block list</string>
+    <string name="rules_info_block_list_description">Numbers you chose to block. This rule runs first and always wins.</string>
+    <string name="rules_info_block_list_example">You blocked a telemarketer. They are blocked even if you later save them as a contact.</string>
+    <string name="rules_info_allow_list_title">Allow list</string>
+    <string name="rules_info_allow_list_description">Numbers you always want to hear from. They are let through unless they are on the block list.</string>
+    <string name="rules_info_allow_list_example">Your pharmacy is not in your contacts, but you want their calls to ring.</string>
+    <string name="rules_info_name_pattern_title">Caller name pattern</string>
+    <string name="rules_info_name_pattern_description">Allows calls whose caller ID name matches a pattern you set. It only works when the carrier sends a name.</string>
+    <string name="rules_info_name_pattern_example">A pattern like "Dr." lets through any call whose caller ID starts with "Dr.".</string>
+    <string name="rules_info_contact_title">Contacts</string>
+    <string name="rules_info_contact_description">Allows anyone saved in your contacts.</string>
+    <string name="rules_info_contact_example">Your sister calls from her saved number. It rings normally.</string>
+    <string name="rules_info_recently_accepted_title">Recently answered</string>
+    <string name="rules_info_recently_accepted_description">Allows a number again for a while after you answered a call from it.</string>
+    <string name="rules_info_recently_accepted_example">You answered a delivery driver yesterday. Their call back today rings.</string>
+    <string name="rules_info_recently_called_title">Recently called</string>
+    <string name="rules_info_recently_called_description">Allows numbers you called yourself for a while, so a callback is not blocked.</string>
+    <string name="rules_info_recently_called_example">You phoned a clinic this morning. When they call back this afternoon, it rings.</string>
+    <string name="rules_info_unknown_title">Unknown numbers</string>
+    <string name="rules_info_unknown_description">The last rule. A number that matched nothing above is allowed, or blocked if you turn this on.</string>
+    <string name="rules_info_unknown_example">An unsaved number you never contacted calls. With this on, it is blocked.</string>
+
     <string name="rules_section_appearance">Appearance</string>
     <string name="rules_dynamic_color_title">Dynamic color</string>
     <string name="rules_dynamic_color_subtitle">Theme the app from your wallpaper instead of the brand palette</string>
