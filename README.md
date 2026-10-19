@@ -1,6 +1,6 @@
 # Call Manager
 
-[![PR checks](https://github.com/MPSforca/android-call-manager/actions/workflows/pr.yml/badge.svg)](https://github.com/MPSforca/android-call-manager/actions/workflows/pr.yml)
+[![CI](https://github.com/MPSforca/android-call-manager/actions/workflows/pr.yml/badge.svg?branch=main&event=push)](https://github.com/MPSforca/android-call-manager/actions/workflows/pr.yml?query=branch%3Amain)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 Rule-based call blocking for Android, built on the system's call-screening role. Stop spam calls
