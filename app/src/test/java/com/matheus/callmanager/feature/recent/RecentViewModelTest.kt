@@ -19,6 +19,7 @@ import com.matheus.callmanager.testing.FakeSettingsRepository
 import com.matheus.callmanager.testing.inMemoryTestDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -200,6 +201,7 @@ class RecentViewModelTest {
                     ),
                 )
             viewModel.refreshRecentCalls()
+            viewModel.recentCalls.first { it.isNotEmpty() }
 
             viewModel.visibleCalls.test {
                 assertEquals(2, expectMostRecentItem().size)
@@ -220,6 +222,7 @@ class RecentViewModelTest {
                     ),
                 )
             viewModel.refreshRecentCalls()
+            viewModel.recentCalls.first { it.isNotEmpty() }
 
             viewModel.visibleCalls.test {
                 assertEquals(2, expectMostRecentItem().size)
@@ -235,6 +238,7 @@ class RecentViewModelTest {
             callLogDataSource.recentCallPages =
                 listOf(listOf(RecentCall("+15550000001", null, 5_000L, CallLog.Calls.MISSED_TYPE)))
             viewModel.refreshRecentCalls()
+            viewModel.recentCalls.first { it.isNotEmpty() }
             db.blockedCallLogDao().insert(
                 BlockedCallLog(number = "+15550000001", callerName = null, timestamp = 5_000L, reason = "r"),
             )
