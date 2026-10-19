@@ -116,7 +116,7 @@ class CallManagerAppTest {
         compose.onNodeWithText("Lists").performClick()
         compose.onNodeWithText("Add a number manually").assertExists()
         compose.onNodeWithText("Rules").performClick()
-        compose.onNodeWithText("Allow calls from contacts").assertExists()
+        compose.onNodeWithText("Always allow").assertExists()
         if (BuildConfig.DEBUG) {
             compose.onNodeWithText("Debug").performClick()
             compose.onNodeWithText("Simulate call").assertExists()

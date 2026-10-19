@@ -46,14 +46,14 @@ class RulesViewModelTest {
     }
 
     @Test
-    fun `preferences emit defaults and then follow the settings repository`() =
+    fun `uiState emits defaults and then follow the settings repository`() =
         runTest {
-            viewModel.preferences.test {
-                assertEquals(UserPreferences(), awaitItem())
+            viewModel.uiState.test {
+                assertEquals(RulesUiState(), awaitItem())
 
                 settings.update { copy(blockUnknownNumbers = true) }
 
-                assertEquals(UserPreferences(blockUnknownNumbers = true), awaitItem())
+                assertEquals(RulesUiState(UserPreferences(blockUnknownNumbers = true)), awaitItem())
             }
         }
 
@@ -68,18 +68,22 @@ class RulesViewModelTest {
             viewModel.setBlockUnknownNumbers(true)
             viewModel.setBlockedCallAction(BlockedCallAction.REJECT)
             viewModel.setShowRejectedCallNotification(false)
+            viewModel.setDynamicColor(true)
 
-            viewModel.preferences.test {
+            viewModel.uiState.test {
                 assertEquals(
-                    UserPreferences(
-                        allowContacts = false,
-                        recentAcceptedRuleEnabled = false,
-                        allowRecentAcceptedDays = 7,
-                        recentOutgoingRuleEnabled = false,
-                        allowRecentOutgoingDays = 9,
-                        blockUnknownNumbers = true,
-                        blockedCallAction = BlockedCallAction.REJECT,
-                        showRejectedCallNotification = false,
+                    RulesUiState(
+                        UserPreferences(
+                            allowContacts = false,
+                            recentAcceptedRuleEnabled = false,
+                            allowRecentAcceptedDays = 7,
+                            recentOutgoingRuleEnabled = false,
+                            allowRecentOutgoingDays = 9,
+                            blockUnknownNumbers = true,
+                            blockedCallAction = BlockedCallAction.REJECT,
+                            showRejectedCallNotification = false,
+                            dynamicColor = true,
+                        ),
                     ),
                     expectMostRecentItem(),
                 )
