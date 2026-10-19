@@ -1,17 +1,31 @@
 package com.matheus.callmanager.core.designsystem.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.matheus.callmanager.R
 
 /**
- * A deliberate type scale on the platform default font, rather than the Material baseline sizes.
- * No custom typeface is bundled (no downloadable-fonts dependency in the catalog yet) — the scale
- * itself, not the glyph shapes, is what differentiates this from default Material3 `Typography()`.
+ * A deliberate type scale on Manrope, a bundled variable font (`res/font/manrope.ttf`, SIL OFL; see
+ * `docs/third-party/Manrope-OFL.txt`). Bundled rather than downloadable so it needs no Play Services
+ * and works offline and on de-Googled devices. Variable font axes need API 26, which is our minSdk.
  */
-private val BaseFontFamily = FontFamily.Default
+@OptIn(ExperimentalTextApi::class)
+private val BaseFontFamily =
+    FontFamily(
+        listOf(FontWeight.Normal, FontWeight.Medium, FontWeight.SemiBold, FontWeight.Bold).map { weight ->
+            Font(
+                resId = R.font.manrope,
+                weight = weight,
+                variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)),
+            )
+        },
+    )
 
 val CallManagerTypography =
     Typography(
