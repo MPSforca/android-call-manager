@@ -3,8 +3,6 @@
     <string name="rules_battery_body">Some phones aggressively kill background apps, which can stop calls from being screened at all. This app has no persistent background process; it just needs the system to be allowed to wake it briefly per call.</string>
     <string name="rules_battery_action">Exempt from battery optimization</string>
 
-    <string name="rules_section_allow">Always allow</string>
-    <string name="rules_section_allow_subtitle">Calls that match any of these are let through before anything is blocked.</string>
     <string name="rules_contacts_title">Contacts</string>
     <string name="rules_contacts_subtitle">Allow calls from anyone in your contacts</string>
     <string name="rules_recent_accepted_title">Recently answered</string>
@@ -18,13 +16,9 @@
         <item quantity="other">%d days</item>
     </plurals>
 
-    <string name="rules_section_block">Blocking</string>
-    <string name="rules_section_block_subtitle">What happens to calls that no allow rule lets through.</string>
     <string name="rules_unknown_title">Reject unknown numbers</string>
     <string name="rules_unknown_subtitle">Block numbers that are not in your contacts or on your allow list</string>
 
-    <string name="rules_section_action">When a call is blocked</string>
-    <string name="rules_section_action_subtitle">Applies to your block list and, if enabled above, unknown numbers.</string>
     <string name="rules_action_silence">Silence</string>
     <string name="rules_action_reject">Reject</string>
     <string name="rules_action_silence_hint">Shown silently. You can still answer it, but it never rings.</string>
@@ -32,6 +26,7 @@
     <string name="rules_notify_title">Notify when a call is rejected</string>
     <string name="rules_notify_subtitle">Show a heads-up notification for each rejected call</string>
 
+    <string name="rules_step_header">%1$d. %2$s</string>
     <string name="rules_step_lists_title">Your lists</string>
     <string name="rules_step_lists_intro">Numbers you added by hand. These are checked first: a number on your block list is blocked even if it is also a contact.</string>
     <string name="rules_step_people_title">People you know</string>

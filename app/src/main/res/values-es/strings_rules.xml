@@ -3,8 +3,6 @@
     <string name="rules_battery_body">Algunos teléfonos cierran las apps en segundo plano de forma agresiva, lo que puede impedir que se filtren las llamadas. Esta app no tiene ningún proceso persistente en segundo plano; solo necesita que el sistema pueda activarla brevemente en cada llamada.</string>
     <string name="rules_battery_action">Excluir de la optimización de batería</string>
 
-    <string name="rules_section_allow">Permitir siempre</string>
-    <string name="rules_section_allow_subtitle">Las llamadas que coincidan con cualquiera de estas reglas pasan antes de cualquier bloqueo.</string>
     <string name="rules_contacts_title">Contactos</string>
     <string name="rules_contacts_subtitle">Permitir llamadas de cualquier persona de tus contactos</string>
     <string name="rules_recent_accepted_title">Contestadas recientemente</string>
@@ -19,13 +17,9 @@
         <item quantity="other">%d días</item>
     </plurals>
 
-    <string name="rules_section_block">Bloqueo</string>
-    <string name="rules_section_block_subtitle">Qué ocurre con las llamadas que ninguna regla de permiso deja pasar.</string>
     <string name="rules_unknown_title">Rechazar números desconocidos</string>
     <string name="rules_unknown_subtitle">Bloquear números que no están en tus contactos ni en tu lista de permitidos</string>
 
-    <string name="rules_section_action">Cuando se bloquea una llamada</string>
-    <string name="rules_section_action_subtitle">Se aplica a tu lista de bloqueo y, si lo activaste arriba, a los números desconocidos.</string>
     <string name="rules_action_silence">Silenciar</string>
     <string name="rules_action_reject">Rechazar</string>
     <string name="rules_action_silence_hint">Se muestra en silencio. Aún puedes contestarla, pero nunca suena.</string>
@@ -33,6 +27,7 @@
     <string name="rules_notify_title">Avisar cuando se rechace una llamada</string>
     <string name="rules_notify_subtitle">Mostrar una notificación por cada llamada rechazada</string>
 
+    <string name="rules_step_header">%1$d. %2$s</string>
     <string name="rules_step_lists_title">Tus listas</string>
     <string name="rules_step_lists_intro">Números que añadiste manualmente. Estas listas se comprueban primero: un número de tu lista de bloqueo se bloquea aunque también sea un contacto.</string>
     <string name="rules_step_people_title">Personas que conoces</string>

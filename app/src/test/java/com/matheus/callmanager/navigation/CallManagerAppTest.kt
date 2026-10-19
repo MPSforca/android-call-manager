@@ -116,7 +116,7 @@ class CallManagerAppTest {
         compose.onNodeWithText("Lists").performClick()
         compose.onNodeWithText("No blocked numbers").assertExists()
         compose.onNodeWithText("Rules").performClick()
-        compose.onNodeWithText("Always allow").assertExists()
+        compose.onNodeWithText("2. People you know").assertExists()
         if (BuildConfig.DEBUG) {
             compose.onNodeWithText("Debug").performClick()
             compose.onNodeWithText("Test number").assertExists()
