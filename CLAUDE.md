@@ -38,6 +38,18 @@ can use fakes. Dependencies are injected with Hilt; don't reintroduce singletons
 - **Silence by default; full-screen vs notification rendering is the dialer's decision, not ours**
   ([ADR 0004](docs/adr/0004-silence-vs-reject.md)).
 
+## Localization
+
+The app ships in English, Portuguese (`pt-BR` only) and Spanish. **Any task that adds or changes
+UI text must also add the translations:**
+
+- No hardcoded strings in Composables, notifications or `contentDescription`s. Use
+  `stringResource` / `pluralStringResource`, with the string in `res/values/strings_<feature>.xml`
+  (one file per feature, to avoid merge conflicts).
+- Add the same keys to `res/values-pt-rBR/` and `res/values-es/` in the same PR. Use `<plurals>`
+  for counts.
+- Check that longer translations don't truncate or break layouts.
+
 ## Build and test
 
 Gradle needs a **JDK 17–21** (newer JDKs fail); set `JAVA_HOME` accordingly. See

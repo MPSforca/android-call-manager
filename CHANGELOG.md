@@ -8,6 +8,8 @@ All notable changes to this project are documented here. The format is based on
 
 ### Added
 
+- Portuguese (Brazil) and Spanish translations for the Rules screen, and a per-app language picker
+  (Android 13+). Other screens follow as they move to string resources.
 - Public-repository documentation: README, CONTRIBUTING, architecture docs and ADRs, privacy and
   security policies, code of conduct, Apache-2.0 license.
 - CI (build, tests, static analysis, PR-title lint), release workflow, and dependency update
