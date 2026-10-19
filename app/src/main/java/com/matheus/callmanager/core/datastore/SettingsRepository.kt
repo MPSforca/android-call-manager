@@ -1,6 +1,7 @@
 package com.matheus.callmanager.core.datastore
 
 import com.matheus.callmanager.core.model.BlockedCallAction
+import com.matheus.callmanager.core.model.ThemeMode
 import com.matheus.callmanager.core.model.UserPreferences
 import kotlinx.coroutines.flow.Flow
 
@@ -25,4 +26,6 @@ interface SettingsRepository {
     suspend fun setShowRejectedCallNotification(value: Boolean)
 
     suspend fun setDynamicColor(value: Boolean)
+
+    suspend fun setThemeMode(value: ThemeMode)
 }

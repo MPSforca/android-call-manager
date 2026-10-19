@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.matheus.callmanager.core.model.BlockedCallAction
+import com.matheus.callmanager.core.model.ThemeMode
 import com.matheus.callmanager.core.model.UserPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -43,6 +44,8 @@ class DataStoreSettingsRepository
 
         override suspend fun setDynamicColor(value: Boolean) = set(DYNAMIC_COLOR, value)
 
+        override suspend fun setThemeMode(value: ThemeMode) = set(THEME_MODE, value.name)
+
         private suspend fun <T> set(
             key: Preferences.Key<T>,
             value: T,
@@ -66,6 +69,10 @@ class DataStoreSettingsRepository
                 showRejectedCallNotification =
                     this[SHOW_REJECTED_NOTIFICATION] ?: defaults.showRejectedCallNotification,
                 dynamicColor = this[DYNAMIC_COLOR] ?: defaults.dynamicColor,
+                themeMode =
+                    this[THEME_MODE]
+                        ?.let { name -> ThemeMode.entries.firstOrNull { it.name == name } }
+                        ?: defaults.themeMode,
             )
         }
 
@@ -81,5 +88,6 @@ class DataStoreSettingsRepository
             internal val BLOCKED_ACTION = stringPreferencesKey("blocked_call_action")
             internal val SHOW_REJECTED_NOTIFICATION = booleanPreferencesKey("show_rejected_call_notification")
             internal val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
+            internal val THEME_MODE = stringPreferencesKey("theme_mode")
         }
     }
