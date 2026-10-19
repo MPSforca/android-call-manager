@@ -1,12 +1,14 @@
 package com.matheus.callmanager.feature.recent
 
 import android.content.Context
+import android.provider.CallLog
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.matheus.callmanager.core.data.CallRepository
 import com.matheus.callmanager.core.data.SystemBlockedCallsPager
 import com.matheus.callmanager.core.database.CallManagerDatabase
+import com.matheus.callmanager.core.database.entity.BlockedCallLog
 import com.matheus.callmanager.core.model.RecentCall
 import com.matheus.callmanager.core.model.SystemBlockedCall
 import com.matheus.callmanager.testing.FakeActivityRetainedLifecycle
@@ -182,6 +184,62 @@ class RecentViewModelTest {
                 assertEquals(0, awaitItem().size)
                 viewModel.refreshBlockedCalls()
                 assertEquals(3, awaitItem().size)
+            }
+        }
+
+    @Test
+    fun `visibleCalls starts unfiltered and narrows by filter chip`() =
+        runTest {
+            callLogDataSource.recentCallPages =
+                listOf(
+                    listOf(
+                        RecentCall("+15550000001", null, 2L, CallLog.Calls.MISSED_TYPE),
+                        RecentCall("+15550000002", null, 1L, CallLog.Calls.INCOMING_TYPE),
+                    ),
+                )
+            viewModel.refreshRecentCalls()
+
+            viewModel.visibleCalls.test {
+                assertEquals(2, expectMostRecentItem().size)
+                viewModel.setFilter(RecentFilter.MISSED)
+                assertEquals(listOf("+15550000001"), awaitItem().map { it.number })
+            }
+            assertEquals(RecentFilter.MISSED, viewModel.filter.value)
+        }
+
+    @Test
+    fun `visibleCalls narrows by search query`() =
+        runTest {
+            callLogDataSource.recentCallPages =
+                listOf(
+                    listOf(
+                        RecentCall("+15550000001", "Alice", 2L, CallLog.Calls.MISSED_TYPE),
+                        RecentCall("+15550000002", "Bob", 1L, CallLog.Calls.MISSED_TYPE),
+                    ),
+                )
+            viewModel.refreshRecentCalls()
+
+            viewModel.visibleCalls.test {
+                assertEquals(2, expectMostRecentItem().size)
+                viewModel.setQuery("bob")
+                assertEquals(listOf("Bob"), awaitItem().map { it.name })
+            }
+            assertEquals("bob", viewModel.query.value)
+        }
+
+    @Test
+    fun `a call blocked by our own log shows under the Blocked filter`() =
+        runTest {
+            callLogDataSource.recentCallPages =
+                listOf(listOf(RecentCall("+15550000001", null, 5_000L, CallLog.Calls.MISSED_TYPE)))
+            viewModel.refreshRecentCalls()
+            db.blockedCallLogDao().insert(
+                BlockedCallLog(number = "+15550000001", callerName = null, timestamp = 5_000L, reason = "r"),
+            )
+            viewModel.setFilter(RecentFilter.BLOCKED)
+
+            viewModel.visibleCalls.test {
+                assertEquals(1, expectMostRecentItem().size)
             }
         }
 }

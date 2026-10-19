@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,6 +42,25 @@ class RecentViewModel
         val allowList: StateFlow<List<AllowListEntry>> =
             repository.observeAllowList().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
         val blockedCalls: StateFlow<List<UnifiedBlockedCall>> = pager.blockedCalls
+
+        private val _filter = MutableStateFlow(RecentFilter.ALL)
+        val filter: StateFlow<RecentFilter> = _filter.asStateFlow()
+        private val _query = MutableStateFlow("")
+        val query: StateFlow<String> = _query.asStateFlow()
+
+        /** Recent calls narrowed by the selected filter chip and the search query. */
+        val visibleCalls: StateFlow<List<RecentCall>> =
+            combine(_recentCalls, blockedCalls, _filter, _query) { calls, blocked, filter, query ->
+                calls.filterCalls(filter, query, blocked)
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+        fun setFilter(filter: RecentFilter) {
+            _filter.value = filter
+        }
+
+        fun setQuery(query: String) {
+            _query.value = query
+        }
 
         fun refreshRecentCalls() {
             viewModelScope.launch {
