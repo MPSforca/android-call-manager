@@ -4,6 +4,7 @@ import com.matheus.callmanager.core.datastore.SettingsRepository
 import com.matheus.callmanager.core.model.BlockedCallAction
 import com.matheus.callmanager.core.model.RecentCall
 import com.matheus.callmanager.core.model.SystemBlockedCall
+import com.matheus.callmanager.core.model.ThemeMode
 import com.matheus.callmanager.core.model.UserPreferences
 import com.matheus.callmanager.core.telephony.CallLogDataSource
 import com.matheus.callmanager.core.telephony.ContactsLookup
@@ -92,6 +93,8 @@ class FakeSettingsRepository(
     override suspend fun setBlockedCallAction(value: BlockedCallAction) = update { copy(blockedCallAction = value) }
 
     override suspend fun setDynamicColor(value: Boolean) = update { copy(dynamicColor = value) }
+
+    override suspend fun setThemeMode(value: ThemeMode) = update { copy(themeMode = value) }
 
     override suspend fun setShowRejectedCallNotification(value: Boolean) =
         update {
