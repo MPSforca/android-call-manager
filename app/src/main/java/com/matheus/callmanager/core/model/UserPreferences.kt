@@ -17,4 +17,6 @@ data class UserPreferences(
     val showRejectedCallNotification: Boolean = true,
     /** Theme the app from the wallpaper on Android 12+. Off by default so the brand palette shows. */
     val dynamicColor: Boolean = false,
+    /** Light, dark or follow the system. */
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
 )
