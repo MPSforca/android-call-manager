@@ -54,12 +54,31 @@ class RecentViewModel
                 calls.filterCalls(filter, query, blocked)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+        private val listing =
+            combine(_filter, _query, visibleCalls, blockedCalls) { filter, query, calls, blocked ->
+                RecentUiState(filter = filter, query = query, calls = calls, blockedCalls = blocked)
+            }
+
+        val uiState: StateFlow<RecentUiState> =
+            combine(listing, blockList, allowList, _hasMoreRecentCalls) { state, blockEntries, allowEntries, hasMore ->
+                state.copy(
+                    blockedNumbers = blockEntries.mapTo(HashSet()) { it.number },
+                    allowedNumbers = allowEntries.mapTo(HashSet()) { it.number },
+                    hasMore = hasMore,
+                )
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RecentUiState())
+
         fun setFilter(filter: RecentFilter) {
             _filter.value = filter
         }
 
         fun setQuery(query: String) {
             _query.value = query
+        }
+
+        fun clearFilters() {
+            _filter.value = RecentFilter.ALL
+            _query.value = ""
         }
 
         fun refreshRecentCalls() {
