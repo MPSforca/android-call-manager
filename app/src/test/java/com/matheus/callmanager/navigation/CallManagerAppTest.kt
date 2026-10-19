@@ -114,7 +114,7 @@ class CallManagerAppTest {
 
         compose.onNodeWithText("Tap a number for details, or select to block/allow in bulk").assertExists()
         compose.onNodeWithText("Lists").performClick()
-        compose.onNodeWithText("Add a number manually").assertExists()
+        compose.onNodeWithText("No blocked numbers").assertExists()
         compose.onNodeWithText("Rules").performClick()
         compose.onNodeWithText("Always allow").assertExists()
         if (BuildConfig.DEBUG) {
