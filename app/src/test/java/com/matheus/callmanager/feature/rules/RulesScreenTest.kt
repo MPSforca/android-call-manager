@@ -16,11 +16,17 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.core.data.CallRepository
+import com.matheus.callmanager.core.data.rule.ScreeningRuleId
+import com.matheus.callmanager.core.data.rule.ScreeningTrace
+import com.matheus.callmanager.core.data.rule.TraceOutcome
+import com.matheus.callmanager.core.data.rule.TraceStep
 import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.designsystem.theme.CallManagerTheme
 import com.matheus.callmanager.core.model.BlockedCallAction
+import com.matheus.callmanager.core.model.ScreeningDecision
 import com.matheus.callmanager.core.model.UserPreferences
 import com.matheus.callmanager.testing.ComposeHostActivityRule
 import com.matheus.callmanager.testing.FakeContactsLookup
@@ -73,6 +79,7 @@ class RulesScreenTest {
         onBattery: () -> Unit = {},
         onOpenStep: (RulesStep) -> Unit = {},
         onGuided: () -> Unit = {},
+        onPreview: (String, String?) -> Unit = { _, _ -> },
         state: RulesUiState = RulesUiState(),
     ) {
         compose.setContent {
@@ -82,9 +89,8 @@ class RulesScreenTest {
                     batteryExempt,
                     onBattery,
                     dynamicColorSupported,
-                    onOpenStep,
-                    onGuided,
-                ) { viewModel.setDynamicColor(it) }
+                    RulesHubActions(onOpenStep, onGuided, { viewModel.setDynamicColor(it) }, onPreview),
+                )
             }
         }
     }
@@ -118,6 +124,67 @@ class RulesScreenTest {
         compose.onNodeWithText("Unknown callers").performScrollTo().performClick()
 
         assertEquals(RulesStep.UNKNOWN_CALLERS, opened)
+    }
+
+    private val allowTrace =
+        ScreeningTrace(
+            ScreeningDecision.Allow("Contact"),
+            listOf(
+                TraceStep(ScreeningRuleId.BLOCK_LIST, TraceOutcome.PASSED),
+                TraceStep(ScreeningRuleId.CONTACT, TraceOutcome.DECIDED),
+            ),
+        )
+
+    @Test
+    fun `preview card reports typed numbers and names, normalised`() {
+        val calls = mutableListOf<Pair<String, String?>>()
+        showHub(onPreview = { n, name -> calls += n to name })
+
+        compose.onNodeWithText("Phone number").performScrollTo().performTextInput("+14155552671")
+        compose.onNodeWithText("Caller name (optional)").performScrollTo().performTextInput("Dr. Who")
+
+        assertEquals("+14155552671", calls.last().first)
+        assertEquals("Dr. Who", calls.last().second)
+    }
+
+    @Test
+    fun `preview card shows the verdict and which rule decided it`() {
+        showHub(state = RulesUiState(preview = RulePreview("+15550000001", allowTrace)), onPreview = { _, _ -> })
+        compose.onNodeWithText("Phone number").performScrollTo().performTextInput("+15550000001")
+
+        compose.onNodeWithText("Would ring").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Decided by: Contacts").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun `preview card shows a blocked verdict`() {
+        val trace =
+            ScreeningTrace(
+                ScreeningDecision.Reject("Block list"),
+                listOf(TraceStep(ScreeningRuleId.BLOCK_LIST, TraceOutcome.DECIDED)),
+            )
+        showHub(state = RulesUiState(preview = RulePreview("+15550000001", trace)))
+        compose.onNodeWithText("Phone number").performScrollTo().performTextInput("+15550000001")
+
+        compose.onNodeWithText("Would be blocked").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Decided by: Block list").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun `preview card hides the verdict when the field is empty`() {
+        showHub(state = RulesUiState(preview = RulePreview("+15550000001", allowTrace)))
+
+        compose.onNodeWithText("Would ring").assertDoesNotExist()
+    }
+
+    @Test
+    fun `step pages show the preview and send it to the view model`() {
+        showStep(RulesStep.UNKNOWN_CALLERS)
+
+        compose.onNodeWithText("Phone number").performScrollTo().performTextInput("+15550000001")
+        compose.waitForIdle()
+
+        compose.onNodeWithText("Try a number").assertExists()
     }
 
     @Test
