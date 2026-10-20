@@ -6,7 +6,7 @@ visible in-app.
 
 ## Components
 
-All paths are under `app/src/main/java/com/matheus/callmanager/`.
+All paths are under `app/src/main/java/com/sforca/callmanager/`.
 
 | Component | Role |
 |---|---|

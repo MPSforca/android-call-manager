@@ -13,7 +13,7 @@
 # fits alongside seeding contacts and the system call log.
 set -euo pipefail
 
-PKG="com.matheus.callmanager"
+PKG="com.sforca.callmanager"
 DB="databases/call-manager.db"
 
 sql() {

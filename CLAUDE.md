@@ -18,7 +18,7 @@ file short and don't duplicate them here.
 
 ## Layout
 
-Single `:app` module, package-by-feature, under `app/src/main/java/com/matheus/callmanager/`:
+Single `:app` module, package-by-feature, under `app/src/main/java/com/sforca/callmanager/`:
 `core/` (model, database, datastore, telephony, data, designsystem, di), `feature/` (recent, lists,
 rules, debug, onboarding), `screening/` (the screening service and phone-state receiver).
 
