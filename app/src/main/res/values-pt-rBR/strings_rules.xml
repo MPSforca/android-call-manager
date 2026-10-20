@@ -3,8 +3,6 @@
     <string name="rules_battery_body">Alguns celulares encerram apps em segundo plano de forma agressiva, o que pode impedir a triagem das chamadas. Este app não tem nenhum processo persistente em segundo plano; ele só precisa que o sistema possa ativá-lo brevemente a cada chamada.</string>
     <string name="rules_battery_action">Isentar da otimização de bateria</string>
 
-    <string name="rules_section_allow">Sempre permitir</string>
-    <string name="rules_section_allow_subtitle">Chamadas que correspondem a qualquer uma destas regras passam antes de qualquer bloqueio.</string>
     <string name="rules_contacts_title">Contatos</string>
     <string name="rules_contacts_subtitle">Permitir chamadas de qualquer pessoa dos seus contatos</string>
     <string name="rules_recent_accepted_title">Atendidas recentemente</string>
@@ -19,13 +17,9 @@
         <item quantity="other">%d dias</item>
     </plurals>
 
-    <string name="rules_section_block">Bloqueio</string>
-    <string name="rules_section_block_subtitle">O que acontece com chamadas que nenhuma regra de permissão libera.</string>
     <string name="rules_unknown_title">Rejeitar números desconhecidos</string>
     <string name="rules_unknown_subtitle">Bloquear números que não estão nos seus contatos nem na lista de permitidos</string>
 
-    <string name="rules_section_action">Quando uma chamada é bloqueada</string>
-    <string name="rules_section_action_subtitle">Vale para a sua lista de bloqueio e, se ativado acima, para números desconhecidos.</string>
     <string name="rules_action_silence">Silenciar</string>
     <string name="rules_action_reject">Rejeitar</string>
     <string name="rules_action_silence_hint">Exibida em silêncio. Você ainda pode atender, mas ela nunca toca.</string>
@@ -33,6 +27,7 @@
     <string name="rules_notify_title">Notificar quando uma chamada for rejeitada</string>
     <string name="rules_notify_subtitle">Mostrar uma notificação para cada chamada rejeitada</string>
 
+    <string name="rules_step_header">%1$d. %2$s</string>
     <string name="rules_step_lists_title">Suas listas</string>
     <string name="rules_step_lists_intro">Números que você adicionou manualmente. Estas listas são verificadas primeiro: um número na sua lista de bloqueio é bloqueado mesmo que também seja um contato.</string>
     <string name="rules_step_people_title">Pessoas que você conhece</string>
