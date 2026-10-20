@@ -16,14 +16,12 @@ import androidx.compose.material.icons.automirrored.filled.CallReceived
 import androidx.compose.material.icons.automirrored.filled.PhoneForwarded
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PhoneDisabled
 import androidx.compose.material.icons.filled.Voicemail
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,9 +31,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.matheus.callmanager.R
 import com.matheus.callmanager.core.data.BlockedCallMerger
+import com.matheus.callmanager.core.designsystem.component.AvatarInitials
+import com.matheus.callmanager.core.designsystem.component.CmButton
+import com.matheus.callmanager.core.designsystem.component.CmOutlinedButton
+import com.matheus.callmanager.core.designsystem.component.EmptyState
+import com.matheus.callmanager.core.designsystem.component.SectionHeader
+import com.matheus.callmanager.core.designsystem.component.StatusPill
+import com.matheus.callmanager.core.designsystem.component.StatusTone
+import com.matheus.callmanager.core.designsystem.theme.LocalSpacing
+import com.matheus.callmanager.core.model.RecentCall
 import com.matheus.callmanager.core.model.RecentCallGroup
 import com.matheus.callmanager.core.model.UnifiedBlockedCall
 import com.matheus.callmanager.core.telephony.CallLogUtil
@@ -87,68 +96,147 @@ internal fun CallDetailScreen(
     defaultRegion: String,
     onBack: () -> Unit,
 ) {
+    CallDetailContent(
+        group = group,
+        status = status,
+        blockedCalls = blockedCalls,
+        defaultRegion = defaultRegion,
+        onBack = onBack,
+        onToggleAllow = { viewModel.toggleAllow(group.number, group.name) },
+        onToggleBlock = { viewModel.toggleBlock(group.number, group.name) },
+    )
+}
+
+/** Stateless body of [CallDetailScreen]: the number's header, its block/allow actions and history. */
+@Composable
+internal fun CallDetailContent(
+    group: RecentCallGroup,
+    status: NumberStatus,
+    blockedCalls: List<UnifiedBlockedCall>,
+    defaultRegion: String,
+    onBack: () -> Unit,
+    onToggleAllow: () -> Unit,
+    onToggleBlock: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
     val context = LocalContext.current
     val formattedNumber =
         remember(group.number, defaultRegion) {
             PhoneNumberFormatter.format(context, group.number, defaultRegion)
         }
     Column(modifier = Modifier.fillMaxWidth()) {
+        DetailHeader(group.name, formattedNumber, status, onBack)
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.large, vertical = spacing.small),
+            horizontalArrangement = Arrangement.spacedBy(spacing.small),
         ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-            }
-            Column(modifier = Modifier.padding(start = 8.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(group.name ?: formattedNumber, style = MaterialTheme.typography.titleMedium)
-                    StatusBadge(status, modifier = Modifier.padding(start = 8.dp))
-                }
-                if (group.name != null) {
-                    Text(formattedNumber, style = MaterialTheme.typography.titleSmall)
+            CmOutlinedButton(
+                text =
+                    stringResource(
+                        if (status ==
+                            NumberStatus.ALLOWED
+                        ) {
+                            R.string.call_detail_allow_remove
+                        } else {
+                            R.string.call_detail_allow_add
+                        },
+                    ),
+                onClick = onToggleAllow,
+                modifier = Modifier.weight(1f),
+            )
+            CmButton(
+                text =
+                    stringResource(
+                        if (status ==
+                            NumberStatus.BLOCKED
+                        ) {
+                            R.string.call_detail_unblock
+                        } else {
+                            R.string.call_detail_block
+                        },
+                    ),
+                onClick = onToggleBlock,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        SectionHeader(title = stringResource(R.string.call_detail_history))
+        if (group.calls.isEmpty()) {
+            EmptyState(
+                icon = Icons.Filled.History,
+                title = stringResource(R.string.call_detail_empty_title),
+                message = stringResource(R.string.call_detail_empty_message),
+            )
+        } else {
+            LazyColumn {
+                items(group.calls, key = { it.timestamp }) { call ->
+                    HistoryRow(call, blockedCalls)
                 }
             }
         }
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            OutlinedButton(
-                modifier = Modifier.weight(1f),
-                onClick = { viewModel.toggleAllow(group.number, group.name) },
-            ) {
-                Text(if (status == NumberStatus.ALLOWED) "Remove from allow list" else "Add to allow list")
-            }
-            OutlinedButton(
-                modifier = Modifier.weight(1f),
-                onClick = { viewModel.toggleBlock(group.number, group.name) },
-            ) {
-                Text(if (status == NumberStatus.BLOCKED) "Unblock" else "Block")
-            }
+    }
+}
+
+@Composable
+private fun DetailHeader(
+    name: String?,
+    formattedNumber: String,
+    status: NumberStatus,
+    onBack: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.small, vertical = spacing.small),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onBack) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.call_detail_back))
         }
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        Text(
-            "Call history",
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(horizontal = 16.dp),
-        )
-        LazyColumn {
-            items(group.calls, key = { it.timestamp }) { call ->
-                val wasBlocked = BlockedCallMerger.wasBlocked(call.number, call.timestamp, blockedCalls)
-                ListItem(
-                    leadingContent = {
-                        Icon(
-                            if (wasBlocked) Icons.Filled.Block else callTypeIcon(call.type),
-                            contentDescription = null,
-                        )
-                    },
-                    headlineContent = { Text(DateFormat.getDateTimeInstance().format(Date(call.timestamp))) },
-                    supportingContent = { Text(callOutcomeLabel(call, blockedCalls)) },
+        AvatarInitials(name = name ?: formattedNumber, size = 48.dp)
+        Column(modifier = Modifier.weight(1f).padding(horizontal = spacing.medium)) {
+            Text(name ?: formattedNumber, style = MaterialTheme.typography.titleLarge)
+            if (name != null) {
+                Text(
+                    formattedNumber,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                HorizontalDivider()
             }
         }
+        when (status) {
+            NumberStatus.BLOCKED ->
+                StatusPill(stringResource(R.string.call_detail_status_blocked), StatusTone.BLOCKED)
+            NumberStatus.ALLOWED ->
+                StatusPill(stringResource(R.string.call_detail_status_allowed), StatusTone.ALLOWED)
+            NumberStatus.NONE -> Unit
+        }
+    }
+}
+
+@Composable
+private fun HistoryRow(
+    call: RecentCall,
+    blockedCalls: List<UnifiedBlockedCall>,
+) {
+    val spacing = LocalSpacing.current
+    val wasBlocked = BlockedCallMerger.wasBlocked(call.number, call.timestamp, blockedCalls)
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.large, vertical = spacing.small),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            if (wasBlocked) Icons.Filled.Block else callTypeIcon(call.type),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            DateFormat.getDateTimeInstance().format(Date(call.timestamp)),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f).padding(horizontal = spacing.medium),
+        )
+        StatusPill(
+            text = callOutcomeLabel(call, blockedCalls),
+            tone = if (wasBlocked) StatusTone.BLOCKED else StatusTone.UNKNOWN,
+        )
     }
 }
 
