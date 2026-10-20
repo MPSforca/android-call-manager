@@ -33,32 +33,32 @@ class TopLevelDestinationTest {
                     composable<Route.Lists> {}
                     composable<Route.Rules> {}
                     composable<Route.RulesStep> {}
-                    composable<Route.Debug> {}
+                    composable<Route.TestNumber> {}
                 }
         }
     }
 
     @Test
-    fun `debug tab is only visible in debug builds`() {
-        assertTrue(TopLevelDestination.DEBUG in TopLevelDestination.visible(isDebugBuild = true))
+    fun `test a number is a tab in every build`() {
         assertEquals(
             listOf(
                 TopLevelDestination.HOME,
                 TopLevelDestination.RECENT,
                 TopLevelDestination.LISTS,
                 TopLevelDestination.RULES,
+                TopLevelDestination.TEST_NUMBER,
             ),
-            TopLevelDestination.visible(isDebugBuild = false),
+            TopLevelDestination.entries.toList(),
         )
     }
 
     @Test
     fun `from resolves the current tab and ignores non top-level destinations`() {
         val nav = controller()
-        assertEquals(TopLevelDestination.HOME, TopLevelDestination.from(nav.currentDestination, true))
+        assertEquals(TopLevelDestination.HOME, TopLevelDestination.from(nav.currentDestination))
 
         nav.navigate(Route.CallDetail("+15550000000"))
-        assertNull(TopLevelDestination.from(nav.currentDestination, true))
+        assertNull(TopLevelDestination.from(nav.currentDestination))
         assertFalse(TopLevelDestination.HOME.matches(nav.currentDestination))
         assertFalse(TopLevelDestination.HOME.matches(null))
     }
@@ -68,17 +68,16 @@ class TopLevelDestinationTest {
         val nav = controller()
         nav.navigate(Route.RulesStep(RulesStep.LISTS))
 
-        assertEquals(TopLevelDestination.RULES, TopLevelDestination.from(nav.currentDestination, false))
+        assertEquals(TopLevelDestination.RULES, TopLevelDestination.from(nav.currentDestination))
         assertFalse(TopLevelDestination.LISTS.matches(nav.currentDestination))
     }
 
     @Test
-    fun `debug destination is not a tab in release builds`() {
+    fun `test a number destination resolves to its tab`() {
         val nav = controller()
-        nav.navigateToTopLevel(TopLevelDestination.DEBUG)
+        nav.navigateToTopLevel(TopLevelDestination.TEST_NUMBER)
 
-        assertNull(TopLevelDestination.from(nav.currentDestination, isDebugBuild = false))
-        assertEquals(TopLevelDestination.DEBUG, TopLevelDestination.from(nav.currentDestination, true))
+        assertEquals(TopLevelDestination.TEST_NUMBER, TopLevelDestination.from(nav.currentDestination))
     }
 
     @Test

@@ -36,7 +36,7 @@ sealed interface Route {
     data object Settings : Route
 
     @Serializable
-    data object Debug : Route
+    data object TestNumber : Route
 }
 
 /** Base URI for deep links, e.g. `callmanager://call/%2B15551234567`. */

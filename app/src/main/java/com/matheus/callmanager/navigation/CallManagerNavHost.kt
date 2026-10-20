@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
-import com.matheus.callmanager.BuildConfig
 import com.matheus.callmanager.feature.debug.DebugScreen
 import com.matheus.callmanager.feature.home.HomeScreen
 import com.matheus.callmanager.feature.lists.ListsScreen
@@ -79,9 +78,9 @@ fun CallManagerNavHost(
         }
         rulesDestinations(navController)
         settingsDestination(permissions, actions)
-        if (BuildConfig.DEBUG) {
-            composable<Route.Debug> { DebugScreen() }
-        }
+        composable<Route.TestNumber>(
+            deepLinks = listOf(navDeepLink<Route.TestNumber>(basePath = "${DEEP_LINK_BASE}test")),
+        ) { DebugScreen() }
     }
 }
 
@@ -90,6 +89,7 @@ private fun NavGraphBuilder.rulesDestinations(navController: NavHostController) 
         RulesScreen(
             onOpenStep = { navController.navigate(Route.RulesStep(it)) },
             onGuidedSetup = { navController.navigate(Route.RulesStep(RulesStep.entries.first(), guided = true)) },
+            onTestNumber = { navController.navigateToTopLevel(TopLevelDestination.TEST_NUMBER) },
         )
     }
     composable<Route.RulesStep> { entry ->

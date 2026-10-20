@@ -41,8 +41,7 @@ See [TESTING.md](TESTING.md) for manual and device-level testing.
 
 - Kotlin 2.0 needs the separate `org.jetbrains.kotlin.plugin.compose` Gradle plugin; Compose no
   longer works through `composeOptions.kotlinCompilerExtensionVersion` alone.
-- `buildFeatures.buildConfig = true` is set explicitly (an AGP 8.x opt-in). The Debug tab is gated
-  on `BuildConfig.DEBUG`.
+- `buildFeatures.buildConfig = true` is set explicitly (an AGP 8.x opt-in); it exposes `BuildConfig.VERSION_NAME` to the Settings screen.
 - Dependency versions live in `gradle/libs.versions.toml`.
 
 ## Signed release builds

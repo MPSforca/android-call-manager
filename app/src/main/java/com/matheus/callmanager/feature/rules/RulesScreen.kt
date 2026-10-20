@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.callmanager.R
 import com.matheus.callmanager.core.designsystem.component.CmButton
 import com.matheus.callmanager.core.designsystem.component.CmCard
+import com.matheus.callmanager.core.designsystem.component.CmOutlinedButton
 import com.matheus.callmanager.core.designsystem.theme.LocalSpacing
 
 /** The Rules hub: how rules are evaluated, one status card per step, and a guided walkthrough. */
@@ -29,6 +30,7 @@ import com.matheus.callmanager.core.designsystem.theme.LocalSpacing
 fun RulesScreen(
     onOpenStep: (RulesStep) -> Unit,
     onGuidedSetup: () -> Unit,
+    onTestNumber: () -> Unit,
     viewModel: RulesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -38,6 +40,7 @@ fun RulesScreen(
             RulesHubActions(
                 onOpenStep = onOpenStep,
                 onGuidedSetup = onGuidedSetup,
+                onTestNumber = onTestNumber,
                 onPreviewChange = { number, name -> viewModel.setPreview(number, name) },
             ),
     )
@@ -47,6 +50,7 @@ fun RulesScreen(
 internal data class RulesHubActions(
     val onOpenStep: (RulesStep) -> Unit,
     val onGuidedSetup: () -> Unit,
+    val onTestNumber: () -> Unit,
     val onPreviewChange: (number: String, callerName: String?) -> Unit,
 )
 
@@ -68,6 +72,11 @@ internal fun RulesHubContent(
         CmButton(
             text = stringResource(R.string.rules_hub_guided_setup),
             onClick = actions.onGuidedSetup,
+            modifier = Modifier.padding(horizontal = spacing.large, vertical = spacing.small),
+        )
+        CmOutlinedButton(
+            text = stringResource(R.string.rules_hub_test_number),
+            onClick = actions.onTestNumber,
             modifier = Modifier.padding(horizontal = spacing.large, vertical = spacing.small),
         )
         RulesStep.entries.forEach { step ->

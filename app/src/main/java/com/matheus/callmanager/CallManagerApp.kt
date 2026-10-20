@@ -43,8 +43,7 @@ fun CallManagerApp(
 ) {
     val navController = rememberNavController()
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination
-    val isDebugBuild = BuildConfig.DEBUG
-    val topLevel = TopLevelDestination.from(currentDestination, isDebugBuild)
+    val topLevel = TopLevelDestination.from(currentDestination)
     // Chosen once: later permission changes surface as a banner rather than yanking the user around.
     val startDestination = remember { if (permissions.needsOnboarding) Route.Onboarding else Route.Home }
     val layoutType =
@@ -56,7 +55,7 @@ fun CallManagerApp(
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            TopLevelDestination.visible(isDebugBuild).forEach { destination ->
+            TopLevelDestination.entries.forEach { destination ->
                 item(
                     selected = destination.matches(currentDestination),
                     onClick = { navController.navigateToTopLevel(destination) },

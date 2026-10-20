@@ -49,8 +49,8 @@ to set up by hand. Here is how to fake each. Recipes that use `run-as` need a de
 
 **1. Simulate the rule engine directly (fastest loop)**
 
-Debug builds have a **Debug** tab (bottom nav, only visible when `BuildConfig.DEBUG` is true — i.e.
-never in a release build). Type any phone number and tap "Simulate call": it runs the exact same
+The **Test** tab (bottom nav, also reachable from the Rules hub's "Test a number" button or the
+`callmanager://test` deep link) is available in every build. Type any phone number and tap "Test number": it runs the exact same
 `CallRepository.evaluate()` logic the real `CallScreeningService` uses, including writing a rejected
 entry into the Blocked tab if the rules say to block it. Use this to iterate on rules without
 touching the phone/call stack at all.
@@ -92,7 +92,7 @@ touching the phone/call stack at all.
     --bind data1:s:+15551234567 \
     --bind data2:i:2
   ```
-  Use this to test "known contact" behavior end-to-end: the Debug tab's `allowContacts` rule, and
+  Use this to test "known contact" behavior end-to-end: the Test tab's `allowContacts` rule, and
   the block/allow list falling back to this name when you add the same number manually (see
   `CallRepository.blockNumbers`/`allowNumbers`).
 - If you need to seed many contacts repeatably, it's more reliable to generate a `.vcf` file and
@@ -126,7 +126,7 @@ still ring through as normal, because it's on the allow list — not because of 
 contacts" rule. To verify:
 
 - Open the Lists tab and confirm the seeded numbers show up under "Allow list".
-- Debug tab → type one of the seeded numbers → "Simulate call" → should report
+- Test tab → type one of the seeded numbers → "Test number" → should report
   `ALLOWED — On your allow list`.
 - Open the Recent tab (seed some call history first, see below, from the same numbers) and
   confirm those rows are highlighted as allowed, with a checkmark icon.
@@ -165,7 +165,7 @@ for a normal incoming call, `type:i:2` for outgoing, `type:i:3` for missed.
 The Recent tab groups calls by number, so testing it needs repeat calls from the same number plus
 several distinct numbers. `scripts/seed_call_log.sh` inserts a batch in one shot: a repeat caller
 (3 calls, to exercise the "N calls" grouping/expansion) plus a few one-off numbers. Add one of the
-seeded numbers to your block list afterwards (Lists tab, or the Debug tab) to check the blocked-row
+seeded numbers to your block list afterwards (Lists tab, or the Test tab) to check the blocked-row
 styling too:
 
 ```bash

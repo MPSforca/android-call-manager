@@ -76,12 +76,13 @@ class RulesScreenTest {
     private fun showHub(
         onOpenStep: (RulesStep) -> Unit = {},
         onGuided: () -> Unit = {},
+        onTestNumber: () -> Unit = {},
         onPreview: (String, String?) -> Unit = { _, _ -> },
         state: RulesUiState = RulesUiState(),
     ) {
         compose.setContent {
             CallManagerTheme {
-                RulesHubContent(state, RulesHubActions(onOpenStep, onGuided, onPreview))
+                RulesHubContent(state, RulesHubActions(onOpenStep, onGuided, onTestNumber, onPreview))
             }
         }
     }
@@ -186,6 +187,16 @@ class RulesScreenTest {
         compose.onNodeWithText("Guided setup").performClick()
 
         assertTrue(guided)
+    }
+
+    @Test
+    fun `hub test a number button fires`() {
+        var opened = false
+        showHub(onTestNumber = { opened = true })
+
+        compose.onNodeWithText("Test a number").performClick()
+
+        assertTrue(opened)
     }
 
     @Test

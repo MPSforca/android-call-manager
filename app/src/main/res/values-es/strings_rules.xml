@@ -61,6 +61,7 @@
     <string name="rules_info_position">Regla %1$d</string>
     <string name="rules_hub_intro">Las reglas se aplican de arriba abajo. La primera que coincide decide qué pasa con la llamada.</string>
     <string name="rules_hub_guided_setup">Configuración guiada</string>
+    <string name="rules_hub_test_number">Probar un número</string>
     <string name="rules_summary_lists">Bloqueados: %1$d · Permitidos: %2$d · Patrones: %3$d</string>
     <string name="rules_summary_toggles">%1$d de %2$d activas</string>
     <string name="rules_summary_unknown_on">Los números desconocidos se bloquean</string>
