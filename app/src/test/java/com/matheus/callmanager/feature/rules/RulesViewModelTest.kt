@@ -5,6 +5,8 @@ import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.matheus.callmanager.core.data.CallRepository
 import com.matheus.callmanager.core.database.CallManagerDatabase
+import com.matheus.callmanager.core.database.entity.AllowListEntry
+import com.matheus.callmanager.core.database.entity.BlockListEntry
 import com.matheus.callmanager.core.model.BlockedCallAction
 import com.matheus.callmanager.core.model.UserPreferences
 import com.matheus.callmanager.testing.FakeContactsLookup
@@ -31,12 +33,13 @@ class RulesViewModelTest {
     private lateinit var db: CallManagerDatabase
     private val settings = FakeSettingsRepository()
     private lateinit var viewModel: RulesViewModel
+    private lateinit var repository: CallRepository
 
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = inMemoryTestDatabase(context)
-        val repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), settings)
+        repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), settings)
         viewModel = RulesViewModel(repository)
     }
 
@@ -54,6 +57,22 @@ class RulesViewModelTest {
                 settings.update { copy(blockUnknownNumbers = true) }
 
                 assertEquals(RulesUiState(UserPreferences(blockUnknownNumbers = true)), awaitItem())
+            }
+        }
+
+    @Test
+    fun `uiState counts the block list, allow list and name patterns`() =
+        runTest {
+            db.blockListDao().insertAll(listOf(BlockListEntry("+15550000001", "A", 1L)))
+            db.allowListDao().insertAll(
+                listOf(AllowListEntry("+15550000002", "B", 1L), AllowListEntry("+15550000003", "C", 1L)),
+            )
+            repository.addAllowedNamePattern("Dr.")
+
+            viewModel.uiState.test {
+                var item = awaitItem()
+                while (item.listCounts != ListCounts(1, 2, 1)) item = awaitItem()
+                assertEquals(ListCounts(1, 2, 1), item.listCounts)
             }
         }
 

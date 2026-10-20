@@ -7,6 +7,7 @@ import android.provider.CallLog
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -116,13 +117,62 @@ class CallManagerAppTest {
         compose.onNodeWithText("Lists").performClick()
         compose.onNodeWithText("No blocked numbers").assertExists()
         compose.onNodeWithText("Rules").performClick()
-        compose.onNodeWithText("2. People you know").assertExists()
+        compose.onNodeWithText("Guided setup").assertExists()
         if (BuildConfig.DEBUG) {
             compose.onNodeWithText("Debug").performClick()
             compose.onNodeWithText("Test number").assertExists()
         } else {
             compose.onNodeWithText("Debug").assertDoesNotExist()
         }
+    }
+
+    @Test
+    fun `rules hub opens a step and back returns to the hub on the Rules tab`() {
+        grantEverything()
+        launch()
+
+        compose.onNodeWithText("Rules").performClick()
+        compose.onNodeWithText("People you know").performClick()
+        compose.onNodeWithText("2. People you know").assertExists()
+        compose.onNodeWithText("Guided setup").assertDoesNotExist()
+
+        scenario!!.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        compose.onNodeWithText("Guided setup").assertExists()
+    }
+
+    @Test
+    fun `guided setup walks every step in order and ends on the hub`() {
+        grantEverything()
+        launch()
+
+        compose.onNodeWithText("Rules").performClick()
+        compose.onNodeWithText("Guided setup").performClick()
+        listOf(
+            "1. Your lists",
+            "2. People you know",
+            "3. Unknown callers",
+            "4. When a call is blocked",
+        ).forEachIndexed {
+                i,
+                header,
+            ->
+            compose.onNodeWithText(header).assertExists()
+            compose.onNodeWithText(if (i == 3) "Done" else "Next").performScrollTo().performClick()
+        }
+
+        compose.onNodeWithText("Guided setup").assertExists()
+    }
+
+    @Test
+    fun `lists step opens the Lists tab`() {
+        grantEverything()
+        launch()
+
+        compose.onNodeWithText("Rules").performClick()
+        compose.onNodeWithText("Your lists").performClick()
+        compose.onNodeWithText("Open Lists").performScrollTo().performClick()
+
+        compose.onNodeWithText("No blocked numbers").assertExists()
     }
 
     @Test

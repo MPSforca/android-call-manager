@@ -65,4 +65,21 @@
     <string name="rules_info_action">Acerca de %1$s</string>
     <string name="rules_info_example_label">Ejemplo</string>
     <string name="rules_info_position">Regla %1$d</string>
+    <string name="rules_hub_intro">Las reglas se aplican de arriba abajo. La primera que coincide decide qué pasa con la llamada.</string>
+    <string name="rules_hub_guided_setup">Configuración guiada</string>
+    <string name="rules_summary_lists">Bloqueados: %1$d · Permitidos: %2$d · Patrones: %3$d</string>
+    <string name="rules_summary_toggles">%1$d de %2$d activas</string>
+    <string name="rules_summary_unknown_on">Los números desconocidos se bloquean</string>
+    <string name="rules_summary_unknown_off">Los números desconocidos se permiten</string>
+    <string name="rules_summary_blocked_silence">Las llamadas bloqueadas se silencian</string>
+    <string name="rules_summary_blocked_reject">Las llamadas bloqueadas se rechazan</string>
+    <string name="rules_summary_blocked_reject_notify">Las llamadas bloqueadas se rechazan, con una notificación</string>
+    <string name="rules_step_next">Siguiente</string>
+    <string name="rules_step_done">Listo</string>
+    <string name="rules_lists_open">Abrir listas</string>
+    <plurals name="rules_lists_entries">
+        <item quantity="one">%d entrada</item>
+        <item quantity="many">%d de entradas</item>
+        <item quantity="other">%d entradas</item>
+    </plurals>
 </resources>

@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.createGraph
 import androidx.navigation.toRoute
 import androidx.test.core.app.ApplicationProvider
+import com.matheus.callmanager.feature.rules.RulesStep
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -30,6 +31,7 @@ class TopLevelDestinationTest {
                     composable<Route.CallDetail> {}
                     composable<Route.Lists> {}
                     composable<Route.Rules> {}
+                    composable<Route.RulesStep> {}
                     composable<Route.Debug> {}
                 }
         }
@@ -53,6 +55,15 @@ class TopLevelDestinationTest {
         assertNull(TopLevelDestination.from(nav.currentDestination, true))
         assertFalse(TopLevelDestination.RECENT.matches(nav.currentDestination))
         assertFalse(TopLevelDestination.RECENT.matches(null))
+    }
+
+    @Test
+    fun `rules step pages belong to the Rules tab`() {
+        val nav = controller()
+        nav.navigate(Route.RulesStep(RulesStep.LISTS))
+
+        assertEquals(TopLevelDestination.RULES, TopLevelDestination.from(nav.currentDestination, false))
+        assertFalse(TopLevelDestination.LISTS.matches(nav.currentDestination))
     }
 
     @Test

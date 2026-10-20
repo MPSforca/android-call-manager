@@ -64,4 +64,20 @@
     <string name="rules_info_action">About %1$s</string>
     <string name="rules_info_example_label">Example</string>
     <string name="rules_info_position">Rule %1$d</string>
+    <string name="rules_hub_intro">Rules run from top to bottom. The first rule that matches decides what happens to a call.</string>
+    <string name="rules_hub_guided_setup">Guided setup</string>
+    <string name="rules_summary_lists">Blocked: %1$d · Allowed: %2$d · Patterns: %3$d</string>
+    <string name="rules_summary_toggles">%1$d of %2$d on</string>
+    <string name="rules_summary_unknown_on">Unknown numbers are blocked</string>
+    <string name="rules_summary_unknown_off">Unknown numbers are allowed</string>
+    <string name="rules_summary_blocked_silence">Blocked calls are silenced</string>
+    <string name="rules_summary_blocked_reject">Blocked calls are rejected</string>
+    <string name="rules_summary_blocked_reject_notify">Blocked calls are rejected, with a notification</string>
+    <string name="rules_step_next">Next</string>
+    <string name="rules_step_done">Done</string>
+    <string name="rules_lists_open">Open Lists</string>
+    <plurals name="rules_lists_entries">
+        <item quantity="one">%d entry</item>
+        <item quantity="other">%d entries</item>
+    </plurals>
 </resources>

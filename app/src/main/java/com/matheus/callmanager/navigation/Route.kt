@@ -1,6 +1,7 @@
 package com.matheus.callmanager.navigation
 
 import kotlinx.serialization.Serializable
+import com.matheus.callmanager.feature.rules.RulesStep as RulesStepPage
 
 /** Type-safe navigation destinations (Navigation 2.8+). */
 sealed interface Route {
@@ -20,6 +21,13 @@ sealed interface Route {
 
     @Serializable
     data object Rules : Route
+
+    /** One page of the Rules flow; [guided] shows a Next/Done button that walks to the following step. */
+    @Serializable
+    data class RulesStep(
+        val step: RulesStepPage,
+        val guided: Boolean = false,
+    ) : Route
 
     @Serializable
     data object Debug : Route
