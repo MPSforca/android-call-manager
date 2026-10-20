@@ -3,7 +3,9 @@ package com.matheus.callmanager.core.designsystem.component
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.matheus.callmanager.R
 import com.matheus.callmanager.core.designsystem.theme.CallManagerTheme
 
 /** A yes/no confirmation dialog, e.g. before removing a number from the block/allow list. */
@@ -14,7 +16,7 @@ fun ConfirmDialog(
     confirmLabel: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    dismissLabel: String = "Cancel",
+    dismissLabel: String = stringResource(R.string.common_cancel),
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,

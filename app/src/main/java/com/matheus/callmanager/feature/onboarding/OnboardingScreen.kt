@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -14,6 +16,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.matheus.callmanager.R
 import com.matheus.callmanager.core.designsystem.component.CmButton
 import com.matheus.callmanager.core.designsystem.component.CmTextButton
@@ -71,7 +75,7 @@ fun OnboardingScreen(
     val content = contentFor(step)
     val stepNumber = step.ordinal + 1
     Column(
-        modifier = modifier.fillMaxSize().padding(spacing.extraLarge),
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(spacing.extraLarge),
         verticalArrangement = Arrangement.spacedBy(spacing.large, Alignment.CenterVertically),
     ) {
         Text(
@@ -82,7 +86,11 @@ fun OnboardingScreen(
             progress = { stepNumber / OnboardingStep.entries.size.toFloat() },
             modifier = Modifier.fillMaxWidth(),
         )
-        Text(stringResource(content.title), style = MaterialTheme.typography.headlineSmall)
+        Text(
+            stringResource(content.title),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.semantics { heading() },
+        )
         Text(stringResource(content.why), style = MaterialTheme.typography.bodyLarge)
         CmButton(
             text = stringResource(content.action),
