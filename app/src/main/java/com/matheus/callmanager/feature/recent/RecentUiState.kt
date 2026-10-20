@@ -23,4 +23,6 @@ internal class RecentActions(
     val onClearFilters: () -> Unit,
     val onCallSelected: (number: String) -> Unit,
     val onLoadMore: () -> Unit,
+    val onBlock: (number: String, name: String?) -> Unit,
+    val onUndoBlock: (number: String, name: String?, restoreAllow: Boolean) -> Unit,
 )

@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -118,6 +119,33 @@ class RecentViewModel
 
         fun unallow(entry: AllowListEntry) {
             viewModelScope.launch { repository.unallow(entry) }
+        }
+
+        /** Blocks one number from a swipe; pair with [undoBlock]. */
+        fun blockNumber(
+            number: String,
+            name: String?,
+        ) {
+            viewModelScope.launch { repository.blockNumbers(listOf(number to name)) }
+        }
+
+        /**
+         * Reverts [blockNumber]. Blocking drops any allow entry for the number, so [restoreAllow]
+         * puts it back when the number had one.
+         */
+        fun undoBlock(
+            number: String,
+            name: String?,
+            restoreAllow: Boolean,
+        ) {
+            viewModelScope.launch {
+                repository.observeBlockList().first().firstOrNull { it.number == number }?.let {
+                    repository.unblock(
+                        it,
+                    )
+                }
+                if (restoreAllow) repository.allowNumbers(listOf(number to name))
+            }
         }
 
         /** Toggles a single number's block-list membership (used by the call-detail screen). */

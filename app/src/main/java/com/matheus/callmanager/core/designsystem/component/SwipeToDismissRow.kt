@@ -18,19 +18,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import com.matheus.callmanager.core.designsystem.theme.CallManagerTheme
 import com.matheus.callmanager.core.designsystem.theme.LocalSpacing
 
 /**
  * Wraps [content] so a swipe toward the end calls [onDismiss]. The row snaps back until the
- * caller removes it from the list, so a failed delete never leaves a ghost gap.
+ * caller removes it from the list, so a failed delete never leaves a ghost gap. [icon] is the
+ * glyph revealed behind the row, a bin by default.
  */
 @Composable
 fun SwipeToDismissRow(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     deleteContentDescription: String? = null,
+    icon: ImageVector = Icons.Filled.Delete,
     content: @Composable () -> Unit,
 ) {
     val spacing = LocalSpacing.current
@@ -56,7 +59,7 @@ fun SwipeToDismissRow(
                         .padding(horizontal = spacing.large),
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Delete,
+                    imageVector = icon,
                     contentDescription = deleteContentDescription,
                     tint = MaterialTheme.colorScheme.onErrorContainer,
                 )

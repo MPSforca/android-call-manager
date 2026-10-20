@@ -136,6 +136,51 @@ class RecentViewModelTest {
         }
 
     @Test
+    fun `blockNumber adds one number with its name`() =
+        runTest {
+            viewModel.blockList.test {
+                assertEquals(0, awaitItem().size)
+
+                viewModel.blockNumber("+15550000000", "Spammer")
+
+                val entry = awaitItem().single()
+                assertEquals("+15550000000", entry.number)
+                assertEquals("Spammer", entry.displayName)
+            }
+        }
+
+    @Test
+    fun `undoBlock removes the block entry`() =
+        runTest {
+            viewModel.blockList.test {
+                assertEquals(0, awaitItem().size)
+                viewModel.blockNumber("+15550000000", null)
+                assertEquals(1, awaitItem().size)
+
+                viewModel.undoBlock("+15550000000", null, restoreAllow = false)
+
+                assertEquals(0, awaitItem().size)
+            }
+            assertEquals(0, viewModel.allowList.value.size)
+        }
+
+    @Test
+    fun `undoBlock puts a displaced allow entry back`() =
+        runTest {
+            viewModel.allowList.test {
+                assertEquals(0, awaitItem().size)
+                viewModel.allowNumbers(setOf("+15550000000"))
+                assertEquals(1, awaitItem().size)
+                viewModel.blockNumber("+15550000000", null)
+                assertEquals(0, awaitItem().size)
+
+                viewModel.undoBlock("+15550000000", null, restoreAllow = true)
+
+                assertEquals(1, awaitItem().size)
+            }
+        }
+
+    @Test
     fun `toggleBlock adds then removes a single number from the block list`() =
         runTest {
             viewModel.blockList.test {

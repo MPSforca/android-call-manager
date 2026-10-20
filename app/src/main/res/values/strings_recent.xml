@@ -20,4 +20,8 @@
     <string name="recent_no_match_message">Try a different search or filter.</string>
     <string name="recent_clear_filters">Clear filters</string>
     <string name="recent_load_more">Load more</string>
+
+    <string name="recent_blocked_snackbar">Blocked %1$s</string>
+    <string name="recent_undo">Undo</string>
+    <string name="recent_swipe_block">Block</string>
 </resources>

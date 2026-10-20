@@ -3,6 +3,7 @@ package com.matheus.callmanager.feature.recent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
@@ -18,9 +20,13 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
@@ -31,9 +37,12 @@ import com.matheus.callmanager.core.designsystem.component.CmOutlinedButton
 import com.matheus.callmanager.core.designsystem.component.EmptyState
 import com.matheus.callmanager.core.designsystem.component.SectionHeader
 import com.matheus.callmanager.core.designsystem.component.StatusTone
+import com.matheus.callmanager.core.designsystem.component.SwipeToDismissRow
+import com.matheus.callmanager.core.designsystem.component.showUndo
 import com.matheus.callmanager.core.designsystem.theme.LocalSpacing
 import com.matheus.callmanager.core.model.RecentCallGroup
 import com.matheus.callmanager.core.telephony.PhoneNumberFormatter
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -54,39 +63,44 @@ internal fun RecentContent(
 ) {
     val spacing = LocalSpacing.current
     val days = remember(state.calls, zone) { state.calls.groupByDay(zone) }
-    Column {
-        SearchField(query = state.query, onQueryChange = actions.onQueryChange)
-        FilterChips(selected = state.filter, onSelected = actions.onFilterSelected)
-        if (days.isEmpty()) {
-            EmptyRecent(isFiltering = state.isFiltering, onClearFilters = actions.onClearFilters)
-        } else {
-            LazyColumn(
-                contentPadding =
-                    androidx.compose.foundation.layout
-                        .PaddingValues(bottom = spacing.large),
-            ) {
-                days.forEach { day ->
-                    item(key = "header-${day.date}") { SectionHeader(title = dayTitle(day.date, today)) }
-                    items(day.groups, key = { "${day.date}-${it.number}" }) { group ->
-                        RecentGroupRow(
-                            group = group,
-                            state = state,
-                            zone = zone,
-                            onCallSelected = actions.onCallSelected,
-                        )
+    val snackbarHost = remember { SnackbarHostState() }
+    Box {
+        Column {
+            SearchField(query = state.query, onQueryChange = actions.onQueryChange)
+            FilterChips(selected = state.filter, onSelected = actions.onFilterSelected)
+            if (days.isEmpty()) {
+                EmptyRecent(isFiltering = state.isFiltering, onClearFilters = actions.onClearFilters)
+            } else {
+                LazyColumn(
+                    contentPadding =
+                        androidx.compose.foundation.layout
+                            .PaddingValues(bottom = spacing.large),
+                ) {
+                    days.forEach { day ->
+                        item(key = "header-${day.date}") { SectionHeader(title = dayTitle(day.date, today)) }
+                        items(day.groups, key = { "${day.date}-${it.number}" }) { group ->
+                            RecentGroupRow(
+                                group = group,
+                                state = state,
+                                zone = zone,
+                                actions = actions,
+                                snackbarHost = snackbarHost,
+                            )
+                        }
                     }
-                }
-                if (state.hasMore) {
-                    item(key = "load-more") {
-                        CmOutlinedButton(
-                            text = stringResource(R.string.recent_load_more),
-                            onClick = actions.onLoadMore,
-                            modifier = Modifier.fillMaxWidth().padding(spacing.large),
-                        )
+                    if (state.hasMore) {
+                        item(key = "load-more") {
+                            CmOutlinedButton(
+                                text = stringResource(R.string.recent_load_more),
+                                onClick = actions.onLoadMore,
+                                modifier = Modifier.fillMaxWidth().padding(spacing.large),
+                            )
+                        }
                     }
                 }
             }
         }
+        SnackbarHost(snackbarHost, modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
@@ -171,23 +185,63 @@ private fun RecentGroupRow(
     group: RecentCallGroup,
     state: RecentUiState,
     zone: ZoneId,
-    onCallSelected: (String) -> Unit,
+    actions: RecentActions,
+    snackbarHost: SnackbarHostState,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val formattedNumber =
         remember(group.number) {
             PhoneNumberFormatter.format(context, group.number, PhoneNumberFormatter.defaultRegion(context))
         }
-    val latest = group.calls.first()
-    val blocked = latest.isBlocked(state.blockedCalls)
     val count =
         if (group.calls.size > 1) {
             pluralStringResource(R.plurals.recent_call_count, group.calls.size, group.calls.size)
         } else {
             null
         }
+    val displayName = group.name ?: formattedNumber
+    val blockedMessage = stringResource(R.string.recent_blocked_snackbar, displayName)
+    val undoLabel = stringResource(R.string.recent_undo)
+    val row: @Composable () -> Unit = {
+        RecentCallRow(group, displayName, formattedNumber, count, state, zone) {
+            actions.onCallSelected(group.number)
+        }
+    }
+    if (group.number in state.blockedNumbers) {
+        row()
+    } else {
+        val restoreAllow = group.number in state.allowedNumbers
+        SwipeToDismissRow(
+            onDismiss = {
+                actions.onBlock(group.number, group.name)
+                scope.launch {
+                    snackbarHost.showUndo(blockedMessage, undoLabel) {
+                        actions.onUndoBlock(group.number, group.name, restoreAllow)
+                    }
+                }
+            },
+            icon = Icons.Filled.Block,
+            deleteContentDescription = stringResource(R.string.recent_swipe_block),
+            content = row,
+        )
+    }
+}
+
+@Composable
+private fun RecentCallRow(
+    group: RecentCallGroup,
+    displayName: String,
+    formattedNumber: String,
+    count: String?,
+    state: RecentUiState,
+    zone: ZoneId,
+    onClick: () -> Unit,
+) {
+    val latest = group.calls.first()
+    val blocked = latest.isBlocked(state.blockedCalls)
     CallRow(
-        displayName = group.name ?: formattedNumber,
+        displayName = displayName,
         number = listOfNotNull(formattedNumber.takeIf { group.name != null }, count).joinToString(" · "),
         timeLabel = remember(latest.timestamp, zone) { formatTime(latest.timestamp, zone) },
         outcomeLabel = callOutcomeLabel(latest, state.blockedCalls),
@@ -197,7 +251,7 @@ private fun RecentGroupRow(
                 group.number in state.allowedNumbers -> StatusTone.ALLOWED
                 else -> StatusTone.UNKNOWN
             },
-        modifier = Modifier.clickable { onCallSelected(group.number) }.padding(horizontal = LocalSpacing.current.large),
+        modifier = Modifier.clickable(onClick = onClick).padding(horizontal = LocalSpacing.current.large),
     )
 }
 
