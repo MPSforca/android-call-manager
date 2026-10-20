@@ -1,0 +1,12 @@
+<resources>
+    <string name="call_detail_back">Atrás</string>
+    <string name="call_detail_allow_add">Añadir a la lista de permitidos</string>
+    <string name="call_detail_allow_remove">Quitar de la lista de permitidos</string>
+    <string name="call_detail_block">Bloquear</string>
+    <string name="call_detail_unblock">Desbloquear</string>
+    <string name="call_detail_history">Historial de llamadas</string>
+    <string name="call_detail_status_blocked">Bloqueado</string>
+    <string name="call_detail_status_allowed">Permitido</string>
+    <string name="call_detail_empty_title">No se encontraron llamadas</string>
+    <string name="call_detail_empty_message">Aún no hay historial de llamadas para este número.</string>
+</resources>

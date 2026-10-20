@@ -1,0 +1,12 @@
+<resources>
+    <string name="call_detail_back">Back</string>
+    <string name="call_detail_allow_add">Add to allow list</string>
+    <string name="call_detail_allow_remove">Remove from allow list</string>
+    <string name="call_detail_block">Block</string>
+    <string name="call_detail_unblock">Unblock</string>
+    <string name="call_detail_history">Call history</string>
+    <string name="call_detail_status_blocked">Blocked</string>
+    <string name="call_detail_status_allowed">Allowed</string>
+    <string name="call_detail_empty_title">No calls found</string>
+    <string name="call_detail_empty_message">There is no call history for this number yet.</string>
+</resources>
