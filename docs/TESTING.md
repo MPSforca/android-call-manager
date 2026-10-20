@@ -134,9 +134,9 @@ contacts" rule. To verify:
 To inspect or clear it manually:
 
 ```bash
-adb shell run-as com.matheus.callmanager sqlite3 databases/call-manager.db \
+adb shell run-as com.sforca.callmanager sqlite3 databases/call-manager.db \
   "SELECT * FROM allow_list;"
-adb shell run-as com.matheus.callmanager sqlite3 databases/call-manager.db \
+adb shell run-as com.sforca.callmanager sqlite3 databases/call-manager.db \
   "DELETE FROM allow_list;"
 ```
 
@@ -204,9 +204,9 @@ the role as well to start from step 1:
 # Check who holds the call-screening role (prints the package name, or nothing)
 adb shell cmd role get-role-holders android.app.role.CALL_SCREENING
 
-adb shell cmd role remove-role-holder android.app.role.CALL_SCREENING com.matheus.callmanager
-adb shell pm clear com.matheus.callmanager
-adb shell am start -n com.matheus.callmanager/.MainActivity
+adb shell cmd role remove-role-holder android.app.role.CALL_SCREENING com.sforca.callmanager
+adb shell pm clear com.sforca.callmanager
+adb shell am start -n com.sforca.callmanager/.MainActivity
 ```
 
 You should see "Step 1 of 3" (screening role), then permissions, then the battery step. The
@@ -214,7 +214,7 @@ battery step is optional and first-run only, and is skipped on API < 29, where t
 exist. To give the role back without going through the flow:
 
 ```bash
-adb shell cmd role add-role-holder android.app.role.CALL_SCREENING com.matheus.callmanager
+adb shell cmd role add-role-holder android.app.role.CALL_SCREENING com.sforca.callmanager
 ```
 
 To test the `MissingPermissionsBanner` instead, choose "Skip for now" on the role and permissions
