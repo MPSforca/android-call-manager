@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_open">Open settings</string>
+
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dynamic_color_title">Dynamic color</string>
+    <string name="settings_dynamic_color_subtitle">Theme the app from your wallpaper instead of the brand palette</string>
+
+    <string name="settings_section_protection">Protection</string>
+    <string name="settings_battery_title">Call screening can be silently killed</string>
+    <string name="settings_battery_body">Some phones aggressively kill background apps, which can stop calls from being screened at all. This app has no persistent background process; it just needs the system to be allowed to wake it briefly per call.</string>
+    <string name="settings_battery_action">Exempt from battery optimization</string>
+    <string name="settings_battery_ok">This app is exempt from battery optimization.</string>
+
+    <string name="settings_section_about">About</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_privacy">Privacy policy</string>
+    <string name="settings_license">License</string>
+    <string name="settings_permissions_title">Permissions</string>
+    <string name="settings_permissions_subtitle">Review what this app can access in system settings</string>
+</resources>

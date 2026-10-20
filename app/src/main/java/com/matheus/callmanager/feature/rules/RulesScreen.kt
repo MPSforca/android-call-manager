@@ -1,11 +1,9 @@
 package com.matheus.callmanager.feature.rules
 
-import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -24,15 +22,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.callmanager.R
 import com.matheus.callmanager.core.designsystem.component.CmButton
 import com.matheus.callmanager.core.designsystem.component.CmCard
-import com.matheus.callmanager.core.designsystem.component.CmSwitchRow
-import com.matheus.callmanager.core.designsystem.component.SectionHeader
 import com.matheus.callmanager.core.designsystem.theme.LocalSpacing
 
 /** The Rules hub: how rules are evaluated, one status card per step, and a guided walkthrough. */
 @Composable
 fun RulesScreen(
-    isIgnoringBatteryOptimizations: Boolean,
-    onRequestIgnoreBatteryOptimizations: () -> Unit,
     onOpenStep: (RulesStep) -> Unit,
     onGuidedSetup: () -> Unit,
     viewModel: RulesViewModel = hiltViewModel(),
@@ -40,14 +34,10 @@ fun RulesScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     RulesHubContent(
         state = state,
-        isIgnoringBatteryOptimizations = isIgnoringBatteryOptimizations,
-        onRequestIgnoreBatteryOptimizations = onRequestIgnoreBatteryOptimizations,
-        dynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
         actions =
             RulesHubActions(
                 onOpenStep = onOpenStep,
                 onGuidedSetup = onGuidedSetup,
-                onDynamicColorChange = { viewModel.setDynamicColor(it) },
                 onPreviewChange = { number, name -> viewModel.setPreview(number, name) },
             ),
     )
@@ -57,7 +47,6 @@ fun RulesScreen(
 internal data class RulesHubActions(
     val onOpenStep: (RulesStep) -> Unit,
     val onGuidedSetup: () -> Unit,
-    val onDynamicColorChange: (Boolean) -> Unit,
     val onPreviewChange: (number: String, callerName: String?) -> Unit,
 )
 
@@ -65,9 +54,6 @@ internal data class RulesHubActions(
 @Composable
 internal fun RulesHubContent(
     state: RulesUiState,
-    isIgnoringBatteryOptimizations: Boolean,
-    onRequestIgnoreBatteryOptimizations: () -> Unit,
-    dynamicColorSupported: Boolean,
     actions: RulesHubActions,
 ) {
     val spacing = LocalSpacing.current
@@ -84,9 +70,6 @@ internal fun RulesHubContent(
             onClick = actions.onGuidedSetup,
             modifier = Modifier.padding(horizontal = spacing.large, vertical = spacing.small),
         )
-        if (!isIgnoringBatteryOptimizations) {
-            BatteryCard(onRequestIgnoreBatteryOptimizations)
-        }
         RulesStep.entries.forEach { step ->
             StepCard(
                 step = step,
@@ -95,15 +78,6 @@ internal fun RulesHubContent(
             )
         }
         RulePreviewCard(state.preview, actions.onPreviewChange)
-        if (dynamicColorSupported) {
-            SectionHeader(title = stringResource(R.string.rules_section_appearance))
-            CmSwitchRow(
-                title = stringResource(R.string.rules_dynamic_color_title),
-                subtitle = stringResource(R.string.rules_dynamic_color_subtitle),
-                checked = state.preferences.dynamicColor,
-                onCheckedChange = actions.onDynamicColorChange,
-            )
-        }
     }
 }
 
@@ -136,19 +110,5 @@ private fun StepCard(
             }
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
         }
-    }
-}
-
-@Composable
-private fun BatteryCard(onRequest: () -> Unit) {
-    val spacing = LocalSpacing.current
-    CmCard(modifier = Modifier.padding(horizontal = spacing.large, vertical = spacing.small)) {
-        Text(stringResource(R.string.rules_battery_title), style = MaterialTheme.typography.titleSmall)
-        Text(stringResource(R.string.rules_battery_body), style = MaterialTheme.typography.bodySmall)
-        CmButton(
-            text = stringResource(R.string.rules_battery_action),
-            onClick = onRequest,
-            modifier = Modifier.padding(top = spacing.small).fillMaxWidth(),
-        )
     }
 }

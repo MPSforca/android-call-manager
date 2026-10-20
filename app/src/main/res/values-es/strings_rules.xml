@@ -1,7 +1,4 @@
 <resources>
-    <string name="rules_battery_title">El filtrado de llamadas puede detenerse sin aviso</string>
-    <string name="rules_battery_body">Algunos teléfonos cierran las apps en segundo plano de forma agresiva, lo que puede impedir que se filtren las llamadas. Esta app no tiene ningún proceso persistente en segundo plano; solo necesita que el sistema pueda activarla brevemente en cada llamada.</string>
-    <string name="rules_battery_action">Excluir de la optimización de batería</string>
 
     <string name="rules_contacts_title">Contactos</string>
     <string name="rules_contacts_subtitle">Permitir llamadas de cualquier persona de tus contactos</string>
@@ -59,9 +56,6 @@
     <string name="rules_info_unknown_description">La última regla. Un número que no coincidió con nada de lo anterior se permite, o se bloquea si activas esta opción.</string>
     <string name="rules_info_unknown_example">Llama un número no guardado con el que nunca tuviste contacto. Con esto activado, se bloquea.</string>
 
-    <string name="rules_section_appearance">Apariencia</string>
-    <string name="rules_dynamic_color_title">Color dinámico</string>
-    <string name="rules_dynamic_color_subtitle">Usar los colores del fondo de pantalla en lugar de la paleta de la marca</string>
     <string name="rules_info_action">Acerca de %1$s</string>
     <string name="rules_info_example_label">Ejemplo</string>
     <string name="rules_info_position">Regla %1$d</string>

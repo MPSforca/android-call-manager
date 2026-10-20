@@ -4,19 +4,24 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Looper
 import android.provider.CallLog
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.BuildConfig
 import com.matheus.callmanager.MainActivity
+import com.matheus.callmanager.core.datastore.SettingsRepository
 import com.matheus.callmanager.core.di.PermissionsModule
 import com.matheus.callmanager.core.di.TelephonyModule
 import com.matheus.callmanager.core.model.RecentCall
 import com.matheus.callmanager.core.model.SystemBlockedCall
+import com.matheus.callmanager.core.model.ThemeMode
 import com.matheus.callmanager.core.telephony.CallLogDataSource
 import com.matheus.callmanager.core.telephony.ContactsLookup
 import com.matheus.callmanager.core.telephony.RecentOutgoingLookup
@@ -29,13 +34,16 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import dagger.hilt.android.testing.UninstallModules
+import kotlinx.coroutines.flow.first
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import javax.inject.Inject
 
 private const val NUMBER = "+15550000000"
 
@@ -58,6 +66,9 @@ class CallManagerAppTest {
 
     @get:Rule(order = 1)
     val compose = createEmptyComposeRule()
+
+    @Inject
+    lateinit var settings: SettingsRepository
 
     private val fakeStatus = FakeSystemPermissionStatus()
 
@@ -124,6 +135,45 @@ class CallManagerAppTest {
         } else {
             compose.onNodeWithText("Debug").assertDoesNotExist()
         }
+    }
+
+    @Test
+    fun `gear icon opens settings and back returns to Recent`() {
+        grantEverything()
+        launch()
+
+        compose.onNodeWithContentDescription("Open settings").performClick()
+        compose.onNodeWithText("Appearance").assertExists()
+        compose.onNodeWithText("Version", substring = true).performScrollTo().assertExists()
+
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Search name or number").assertExists()
+    }
+
+    @Test
+    fun `settings deep link opens settings without a navigation bar`() {
+        grantEverything()
+        launch(deepLink = "callmanager://settings")
+
+        compose.onNodeWithText("Appearance").assertExists()
+        compose.onNodeWithText("Rules").assertDoesNotExist()
+    }
+
+    @Test
+    fun `settings theme choice is saved and permissions shortcut opens app details`() {
+        grantEverything()
+        launch(deepLink = "callmanager://settings")
+
+        compose.onNodeWithText("Dark").performSemanticsAction(SemanticsActions.OnClick)
+        compose.waitUntil(timeoutMillis = 5_000) {
+            Thread.sleep(20)
+            shadowOf(Looper.getMainLooper()).idle()
+            kotlinx.coroutines.runBlocking { settings.preferences.first().themeMode } == ThemeMode.DARK
+        }
+        compose.onNodeWithText("Permissions").performScrollTo().performClick()
+
+        val started = shadowOf(ApplicationProvider.getApplicationContext<android.app.Application>()).nextStartedActivity
+        assertEquals(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, started.action)
     }
 
     @Test

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Configurações</string>
+    <string name="settings_back">Voltar</string>
+    <string name="settings_open">Abrir configurações</string>
+
+    <string name="settings_section_appearance">Aparência</string>
+    <string name="settings_theme_title">Tema</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Escuro</string>
+    <string name="settings_dynamic_color_title">Cores dinâmicas</string>
+    <string name="settings_dynamic_color_subtitle">Usar as cores do papel de parede em vez da paleta da marca</string>
+
+    <string name="settings_section_protection">Proteção</string>
+    <string name="settings_battery_title">A triagem de chamadas pode ser encerrada silenciosamente</string>
+    <string name="settings_battery_body">Alguns celulares encerram apps em segundo plano de forma agressiva, o que pode impedir a triagem das chamadas. Este app não tem nenhum processo persistente em segundo plano; ele só precisa que o sistema possa ativá-lo brevemente a cada chamada.</string>
+    <string name="settings_battery_action">Isentar da otimização de bateria</string>
+    <string name="settings_battery_ok">Este app está isento da otimização de bateria.</string>
+
+    <string name="settings_section_about">Sobre</string>
+    <string name="settings_version">Versão %1$s</string>
+    <string name="settings_privacy">Política de privacidade</string>
+    <string name="settings_license">Licença</string>
+    <string name="settings_permissions_title">Permissões</string>
+    <string name="settings_permissions_subtitle">Veja o que este app pode acessar nas configurações do sistema</string>
+</resources>

@@ -122,7 +122,6 @@ class RulesViewModelTest {
             viewModel.setBlockUnknownNumbers(true)
             viewModel.setBlockedCallAction(BlockedCallAction.REJECT)
             viewModel.setShowRejectedCallNotification(false)
-            viewModel.setDynamicColor(true)
 
             viewModel.uiState.test {
                 assertEquals(
@@ -136,7 +135,6 @@ class RulesViewModelTest {
                             blockUnknownNumbers = true,
                             blockedCallAction = BlockedCallAction.REJECT,
                             showRejectedCallNotification = false,
-                            dynamicColor = true,
                         ),
                     ),
                     expectMostRecentItem(),
