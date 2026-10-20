@@ -14,7 +14,6 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
-import com.matheus.callmanager.BuildConfig
 import com.matheus.callmanager.MainActivity
 import com.matheus.callmanager.core.datastore.SettingsRepository
 import com.matheus.callmanager.core.di.PermissionsModule
@@ -131,12 +130,27 @@ class CallManagerAppTest {
         compose.onNodeWithText("No blocked numbers").assertExists()
         compose.onNodeWithText("Rules").performClick()
         compose.onNodeWithText("Guided setup").assertExists()
-        if (BuildConfig.DEBUG) {
-            compose.onNodeWithText("Debug").performClick()
-            compose.onNodeWithText("Test number").assertExists()
-        } else {
-            compose.onNodeWithText("Debug").assertDoesNotExist()
-        }
+        compose.onNodeWithText("Test").performClick()
+        compose.onNodeWithText("Test number").assertExists()
+    }
+
+    @Test
+    fun `rules hub test a number button opens the Test a number tab`() {
+        grantEverything()
+        launch()
+
+        compose.onNodeWithText("Rules").performClick()
+        compose.onNodeWithText("Test a number").performClick()
+
+        compose.onNodeWithText("Test number").assertExists()
+    }
+
+    @Test
+    fun `test deep link opens Test a number`() {
+        grantEverything()
+        launch(deepLink = "callmanager://test")
+
+        compose.onNodeWithText("Test number").assertExists()
     }
 
     @Test

@@ -3,10 +3,10 @@ package com.matheus.callmanager.navigation
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Rule
+import androidx.compose.material.icons.filled.Science
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -19,7 +19,6 @@ enum class TopLevelDestination(
     val icon: ImageVector,
     val route: Route,
     val routeClass: KClass<out Route>,
-    val debugOnly: Boolean = false,
     private val nestedRouteClasses: List<KClass<out Route>> = emptyList(),
 ) {
     HOME(R.string.nav_home, Icons.Filled.Home, Route.Home, Route.Home::class),
@@ -32,7 +31,7 @@ enum class TopLevelDestination(
         Route.Rules::class,
         nestedRouteClasses = listOf(Route.RulesStep::class),
     ),
-    DEBUG(R.string.nav_debug, Icons.Filled.BugReport, Route.Debug, Route.Debug::class, debugOnly = true),
+    TEST_NUMBER(R.string.nav_test_number, Icons.Filled.Science, Route.TestNumber, Route.TestNumber::class),
     ;
 
     fun matches(destination: NavDestination?): Boolean =
@@ -42,11 +41,6 @@ enum class TopLevelDestination(
         }
 
     companion object {
-        fun visible(isDebugBuild: Boolean): List<TopLevelDestination> = entries.filter { isDebugBuild || !it.debugOnly }
-
-        fun from(
-            destination: NavDestination?,
-            isDebugBuild: Boolean,
-        ): TopLevelDestination? = visible(isDebugBuild).firstOrNull { it.matches(destination) }
+        fun from(destination: NavDestination?): TopLevelDestination? = entries.firstOrNull { it.matches(destination) }
     }
 }

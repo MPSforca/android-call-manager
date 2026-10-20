@@ -60,6 +60,7 @@
     <string name="rules_info_position">Rule %1$d</string>
     <string name="rules_hub_intro">Rules run from top to bottom. The first rule that matches decides what happens to a call.</string>
     <string name="rules_hub_guided_setup">Guided setup</string>
+    <string name="rules_hub_test_number">Test a number</string>
     <string name="rules_summary_lists">Blocked: %1$d · Allowed: %2$d · Patterns: %3$d</string>
     <string name="rules_summary_toggles">%1$d of %2$d on</string>
     <string name="rules_summary_unknown_on">Unknown numbers are blocked</string>
