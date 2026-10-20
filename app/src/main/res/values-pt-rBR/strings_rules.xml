@@ -1,7 +1,4 @@
 <resources>
-    <string name="rules_battery_title">A triagem de chamadas pode ser encerrada silenciosamente</string>
-    <string name="rules_battery_body">Alguns celulares encerram apps em segundo plano de forma agressiva, o que pode impedir a triagem das chamadas. Este app não tem nenhum processo persistente em segundo plano; ele só precisa que o sistema possa ativá-lo brevemente a cada chamada.</string>
-    <string name="rules_battery_action">Isentar da otimização de bateria</string>
 
     <string name="rules_contacts_title">Contatos</string>
     <string name="rules_contacts_subtitle">Permitir chamadas de qualquer pessoa dos seus contatos</string>
@@ -59,9 +56,6 @@
     <string name="rules_info_unknown_description">A última regra. Um número que não correspondeu a nada acima é permitido, ou bloqueado se você ativar esta opção.</string>
     <string name="rules_info_unknown_example">Um número não salvo, com o qual você nunca teve contato, liga. Com isto ativado, ele é bloqueado.</string>
 
-    <string name="rules_section_appearance">Aparência</string>
-    <string name="rules_dynamic_color_title">Cores dinâmicas</string>
-    <string name="rules_dynamic_color_subtitle">Usar as cores do papel de parede em vez da paleta da marca</string>
     <string name="rules_info_action">Sobre %1$s</string>
     <string name="rules_info_example_label">Exemplo</string>
     <string name="rules_info_position">Regra %1$d</string>

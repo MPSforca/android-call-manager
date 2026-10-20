@@ -2,6 +2,7 @@ package com.matheus.callmanager.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
@@ -18,6 +19,7 @@ import com.matheus.callmanager.feature.recent.RecentScreen
 import com.matheus.callmanager.feature.rules.RulesScreen
 import com.matheus.callmanager.feature.rules.RulesStep
 import com.matheus.callmanager.feature.rules.RulesStepScreen
+import com.matheus.callmanager.feature.settings.SettingsScreen
 
 @Composable
 fun CallManagerNavHost(
@@ -61,8 +63,6 @@ fun CallManagerNavHost(
         }
         composable<Route.Rules>(deepLinks = listOf(navDeepLink<Route.Rules>(basePath = "${DEEP_LINK_BASE}rules"))) {
             RulesScreen(
-                isIgnoringBatteryOptimizations = permissions.batteryExempt,
-                onRequestIgnoreBatteryOptimizations = actions.requestBatteryExemption,
                 onOpenStep = { navController.navigate(Route.RulesStep(it)) },
                 onGuidedSetup = { navController.navigate(Route.RulesStep(RulesStep.entries.first(), guided = true)) },
             )
@@ -77,9 +77,24 @@ fun CallManagerNavHost(
                 onDone = { navController.popBackStack<Route.Rules>(inclusive = false) },
             )
         }
+        settingsDestination(permissions, actions)
         if (BuildConfig.DEBUG) {
             composable<Route.Debug> { DebugScreen() }
         }
+    }
+}
+
+private fun NavGraphBuilder.settingsDestination(
+    permissions: PermissionsState,
+    actions: SystemActions,
+) {
+    composable<Route.Settings>(
+        deepLinks = listOf(navDeepLink<Route.Settings>(basePath = "${DEEP_LINK_BASE}settings")),
+    ) {
+        SettingsScreen(
+            isIgnoringBatteryOptimizations = permissions.batteryExempt,
+            onRequestIgnoreBatteryOptimizations = actions.requestBatteryExemption,
+        )
     }
 }
 

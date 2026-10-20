@@ -86,6 +86,4 @@ class RulesViewModel
 
         fun setShowRejectedCallNotification(value: Boolean) =
             viewModelScope.launch { settings.setShowRejectedCallNotification(value) }
-
-        fun setDynamicColor(value: Boolean) = viewModelScope.launch { settings.setDynamicColor(value) }
     }

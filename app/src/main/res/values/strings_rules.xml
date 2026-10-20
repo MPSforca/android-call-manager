@@ -1,7 +1,4 @@
 <resources>
-    <string name="rules_battery_title">Call screening can be silently killed</string>
-    <string name="rules_battery_body">Some phones aggressively kill background apps, which can stop calls from being screened at all. This app has no persistent background process; it just needs the system to be allowed to wake it briefly per call.</string>
-    <string name="rules_battery_action">Exempt from battery optimization</string>
 
     <string name="rules_contacts_title">Contacts</string>
     <string name="rules_contacts_subtitle">Allow calls from anyone in your contacts</string>
@@ -58,9 +55,6 @@
     <string name="rules_info_unknown_description">The last rule. A number that matched nothing above is allowed, or blocked if you turn this on.</string>
     <string name="rules_info_unknown_example">An unsaved number you never contacted calls. With this on, it is blocked.</string>
 
-    <string name="rules_section_appearance">Appearance</string>
-    <string name="rules_dynamic_color_title">Dynamic color</string>
-    <string name="rules_dynamic_color_subtitle">Theme the app from your wallpaper instead of the brand palette</string>
     <string name="rules_info_action">About %1$s</string>
     <string name="rules_info_example_label">Example</string>
     <string name="rules_info_position">Rule %1$d</string>

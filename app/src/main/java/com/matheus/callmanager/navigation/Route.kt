@@ -30,6 +30,9 @@ sealed interface Route {
     ) : Route
 
     @Serializable
+    data object Settings : Route
+
+    @Serializable
     data object Debug : Route
 }
 

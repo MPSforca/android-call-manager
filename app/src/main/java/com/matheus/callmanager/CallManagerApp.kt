@@ -2,7 +2,10 @@ package com.matheus.callmanager
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
@@ -12,6 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.matheus.callmanager.core.designsystem.component.CmScaffold
@@ -61,7 +68,7 @@ fun CallManagerApp(
         layoutType = layoutType,
     ) {
         CmScaffold(
-            topBar = { if (topLevel != null) CmTopAppBar(title = "Call Manager") },
+            topBar = { AppTopBar(navController, topLevel, currentDestination) },
         ) { padding ->
             Column(modifier = Modifier.padding(padding)) {
                 if (topLevel != null && permissions.showBanner) {
@@ -84,5 +91,28 @@ fun CallManagerApp(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun AppTopBar(
+    navController: NavHostController,
+    topLevel: TopLevelDestination?,
+    currentDestination: NavDestination?,
+) {
+    when {
+        topLevel == TopLevelDestination.RECENT ->
+            CmTopAppBar(title = "Call Manager") {
+                IconButton(onClick = { navController.navigate(Route.Settings) }) {
+                    Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_open))
+                }
+            }
+        topLevel != null -> CmTopAppBar(title = "Call Manager")
+        currentDestination?.hasRoute(Route.Settings::class) == true ->
+            CmTopAppBar(
+                title = stringResource(R.string.settings_title),
+                onBack = { navController.popBackStack() },
+                backContentDescription = stringResource(R.string.settings_back),
+            )
     }
 }

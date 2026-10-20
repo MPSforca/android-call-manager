@@ -74,9 +74,6 @@ class RulesScreenTest {
     }
 
     private fun showHub(
-        batteryExempt: Boolean = true,
-        dynamicColorSupported: Boolean = true,
-        onBattery: () -> Unit = {},
         onOpenStep: (RulesStep) -> Unit = {},
         onGuided: () -> Unit = {},
         onPreview: (String, String?) -> Unit = { _, _ -> },
@@ -84,13 +81,7 @@ class RulesScreenTest {
     ) {
         compose.setContent {
             CallManagerTheme {
-                RulesHubContent(
-                    state,
-                    batteryExempt,
-                    onBattery,
-                    dynamicColorSupported,
-                    RulesHubActions(onOpenStep, onGuided, { viewModel.setDynamicColor(it) }, onPreview),
-                )
+                RulesHubContent(state, RulesHubActions(onOpenStep, onGuided, onPreview))
             }
         }
     }
@@ -195,38 +186,6 @@ class RulesScreenTest {
         compose.onNodeWithText("Guided setup").performClick()
 
         assertTrue(guided)
-    }
-
-    @Test
-    fun `hub battery card appears only when not exempt and fires the request`() {
-        var requested = false
-        showHub(batteryExempt = false, onBattery = { requested = true })
-
-        compose.onNodeWithText("Exempt from battery optimization").performScrollTo().performClick()
-
-        assertTrue(requested)
-    }
-
-    @Test
-    fun `hub hides the battery card when exempt`() {
-        showHub(batteryExempt = true)
-
-        compose.onNodeWithText("Exempt from battery optimization").assertDoesNotExist()
-    }
-
-    @Test
-    fun `hub dynamic color toggle writes through and is hidden on unsupported devices`() {
-        showHub()
-        compose.onNode(isToggleable()).performScrollTo().performClick()
-        compose.waitForIdle()
-        assertTrue(prefs().dynamicColor)
-    }
-
-    @Test
-    fun `hub dynamic color toggle is hidden on unsupported devices`() {
-        showHub(dynamicColorSupported = false)
-
-        compose.onNodeWithText("Dynamic color").assertDoesNotExist()
     }
 
     @Test
