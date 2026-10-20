@@ -268,7 +268,9 @@ class RecentViewModelTest {
 
                 val state =
                     awaitUntil {
-                        it.calls.size == 1 &&
+                        it.filter == RecentFilter.MISSED &&
+                            it.query == "ali" &&
+                            it.calls.size == 1 &&
                             it.blockedNumbers.isNotEmpty() &&
                             it.allowedNumbers.isNotEmpty()
                     }
