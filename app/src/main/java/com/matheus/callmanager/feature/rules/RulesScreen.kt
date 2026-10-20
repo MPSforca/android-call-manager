@@ -9,11 +9,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.matheus.callmanager.R
+import com.matheus.callmanager.core.data.rule.ScreeningRuleId
 import com.matheus.callmanager.core.designsystem.component.CmButton
 import com.matheus.callmanager.core.designsystem.component.CmCard
 import com.matheus.callmanager.core.designsystem.component.CmSwitchRow
@@ -49,14 +53,16 @@ internal fun RulesContent(
     viewModel: RulesViewModel,
 ) {
     val prefs = state.preferences
+    var infoRule by remember { mutableStateOf<ScreeningRuleId?>(null) }
+    infoRule?.let { RuleInfoSheet(RuleCatalog.forRule(it), onDismiss = { infoRule = null }) }
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = LocalSpacing.current.medium),
     ) {
         if (!isIgnoringBatteryOptimizations) {
             BatteryCard(onRequestIgnoreBatteryOptimizations)
         }
-        PeopleYouKnowStep(prefs, viewModel)
-        UnknownCallersStep(prefs, viewModel)
+        PeopleYouKnowStep(prefs, viewModel) { infoRule = it }
+        UnknownCallersStep(prefs, viewModel) { infoRule = it }
         BlockedCallsStep(prefs, viewModel)
         if (dynamicColorSupported) {
             SectionHeader(title = stringResource(R.string.rules_section_appearance))

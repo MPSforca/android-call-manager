@@ -61,4 +61,7 @@
     <string name="rules_section_appearance">Appearance</string>
     <string name="rules_dynamic_color_title">Dynamic color</string>
     <string name="rules_dynamic_color_subtitle">Theme the app from your wallpaper instead of the brand palette</string>
+    <string name="rules_info_action">About %1$s</string>
+    <string name="rules_info_example_label">Example</string>
+    <string name="rules_info_position">Rule %1$d</string>
 </resources>

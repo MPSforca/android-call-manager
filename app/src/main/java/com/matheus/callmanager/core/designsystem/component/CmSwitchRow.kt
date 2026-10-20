@@ -4,6 +4,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -11,10 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.matheus.callmanager.core.designsystem.theme.CallManagerTheme
 import com.matheus.callmanager.core.designsystem.theme.LocalSpacing
 
-/** A settings row pairing a label (and optional explanatory subtitle) with a toggle. */
+/**
+ * A settings row pairing a label (and optional explanatory subtitle) with a toggle. When [onInfoClick]
+ * is set, an (i) button appears before the toggle, labelled by [infoContentDescription].
+ */
 @Composable
 fun CmSwitchRow(
     title: String,
@@ -22,6 +31,8 @@ fun CmSwitchRow(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    onInfoClick: (() -> Unit)? = null,
+    infoContentDescription: String? = null,
 ) {
     val spacing = LocalSpacing.current
     Row(
@@ -36,6 +47,11 @@ fun CmSwitchRow(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+        }
+        if (onInfoClick != null) {
+            IconButton(onClick = onInfoClick) {
+                Icon(Icons.Outlined.Info, contentDescription = infoContentDescription, modifier = Modifier.size(20.dp))
             }
         }
         Switch(checked = checked, onCheckedChange = onCheckedChange)

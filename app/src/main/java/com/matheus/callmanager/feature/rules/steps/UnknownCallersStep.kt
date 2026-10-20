@@ -3,6 +3,7 @@ package com.matheus.callmanager.feature.rules.steps
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.matheus.callmanager.R
+import com.matheus.callmanager.core.data.rule.ScreeningRuleId
 import com.matheus.callmanager.core.designsystem.component.CmSwitchRow
 import com.matheus.callmanager.core.model.UserPreferences
 import com.matheus.callmanager.feature.rules.RulesStep
@@ -13,12 +14,16 @@ import com.matheus.callmanager.feature.rules.RulesViewModel
 internal fun UnknownCallersStep(
     prefs: UserPreferences,
     viewModel: RulesViewModel,
+    onInfo: (ScreeningRuleId) -> Unit,
 ) {
+    val info = ruleInfo(ScreeningRuleId.UNKNOWN_FALLBACK, onInfo)
     StepHeader(RulesStep.UNKNOWN_CALLERS)
     CmSwitchRow(
         title = stringResource(R.string.rules_unknown_title),
         subtitle = stringResource(R.string.rules_unknown_subtitle),
         checked = prefs.blockUnknownNumbers,
         onCheckedChange = { viewModel.setBlockUnknownNumbers(it) },
+        onInfoClick = info.onClick,
+        infoContentDescription = info.contentDescription,
     )
 }

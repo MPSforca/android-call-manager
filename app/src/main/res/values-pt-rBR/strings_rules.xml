@@ -62,4 +62,7 @@
     <string name="rules_section_appearance">Aparência</string>
     <string name="rules_dynamic_color_title">Cores dinâmicas</string>
     <string name="rules_dynamic_color_subtitle">Usar as cores do papel de parede em vez da paleta da marca</string>
+    <string name="rules_info_action">Sobre %1$s</string>
+    <string name="rules_info_example_label">Exemplo</string>
+    <string name="rules_info_position">Regra %1$d</string>
 </resources>
