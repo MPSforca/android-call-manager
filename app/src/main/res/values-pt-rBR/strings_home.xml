@@ -1,0 +1,15 @@
+<resources>
+    <string name="home_status_on">Proteção ativada</string>
+    <string name="home_status_on_detail">As chamadas recebidas são verificadas com as suas regras.</string>
+    <string name="home_status_attention">Requer atenção</string>
+    <string name="home_status_attention_detail">As chamadas não estão sendo filtradas até isso ser corrigido.</string>
+    <string name="home_fix">Corrigir</string>
+    <string name="home_missing_role">O Call Manager não é o seu app de filtragem de chamadas, então as chamadas não estão sendo filtradas.</string>
+    <string name="home_missing_permissions">O Call Manager não tem as permissões de que precisa para funcionar.</string>
+    <string name="home_missing_battery">Isente o Call Manager da otimização de bateria para manter a filtragem confiável.</string>
+    <string name="home_blocked_today">Bloqueadas hoje</string>
+    <string name="home_allowed_today">Permitidas hoje</string>
+    <string name="home_activity">Atividade recente</string>
+    <string name="home_see_all">Ver tudo</string>
+    <string name="home_activity_empty">Nenhuma chamada ainda</string>
+</resources>

@@ -20,13 +20,14 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class TopLevelDestinationTest {
-    private fun controller(start: Route = Route.Recent): NavHostController {
+    private fun controller(start: Route = Route.Home): NavHostController {
         val context = ApplicationProvider.getApplicationContext<Context>()
         return NavHostController(context).apply {
             navigatorProvider.addNavigator(ComposeNavigator())
             graph =
                 createGraph(startDestination = start) {
                     composable<Route.Onboarding> {}
+                    composable<Route.Home> {}
                     composable<Route.Recent> {}
                     composable<Route.CallDetail> {}
                     composable<Route.Lists> {}
@@ -41,7 +42,12 @@ class TopLevelDestinationTest {
     fun `debug tab is only visible in debug builds`() {
         assertTrue(TopLevelDestination.DEBUG in TopLevelDestination.visible(isDebugBuild = true))
         assertEquals(
-            listOf(TopLevelDestination.RECENT, TopLevelDestination.LISTS, TopLevelDestination.RULES),
+            listOf(
+                TopLevelDestination.HOME,
+                TopLevelDestination.RECENT,
+                TopLevelDestination.LISTS,
+                TopLevelDestination.RULES,
+            ),
             TopLevelDestination.visible(isDebugBuild = false),
         )
     }
@@ -49,12 +55,12 @@ class TopLevelDestinationTest {
     @Test
     fun `from resolves the current tab and ignores non top-level destinations`() {
         val nav = controller()
-        assertEquals(TopLevelDestination.RECENT, TopLevelDestination.from(nav.currentDestination, true))
+        assertEquals(TopLevelDestination.HOME, TopLevelDestination.from(nav.currentDestination, true))
 
         nav.navigate(Route.CallDetail("+15550000000"))
         assertNull(TopLevelDestination.from(nav.currentDestination, true))
-        assertFalse(TopLevelDestination.RECENT.matches(nav.currentDestination))
-        assertFalse(TopLevelDestination.RECENT.matches(null))
+        assertFalse(TopLevelDestination.HOME.matches(nav.currentDestination))
+        assertFalse(TopLevelDestination.HOME.matches(null))
     }
 
     @Test
@@ -92,12 +98,13 @@ class TopLevelDestinationTest {
 
         assertTrue(TopLevelDestination.LISTS.matches(nav.currentDestination))
         nav.popBackStack()
-        assertTrue(TopLevelDestination.RECENT.matches(nav.currentDestination))
+        assertTrue(TopLevelDestination.HOME.matches(nav.currentDestination))
     }
 
     @Test
     fun `a tab's own back stack is saved and restored when switching away and back`() {
         val nav = controller()
+        nav.navigateToTopLevel(TopLevelDestination.RECENT)
         nav.navigate(Route.CallDetail("+15550000000"))
         nav.navigateToTopLevel(TopLevelDestination.RULES)
         nav.navigateToTopLevel(TopLevelDestination.RECENT)
@@ -108,9 +115,9 @@ class TopLevelDestinationTest {
     @Test
     fun `leaving onboarding removes it from the back stack`() {
         val nav = controller(start = Route.Onboarding)
-        nav.navigate(Route.Recent) { popUpTo<Route.Onboarding> { inclusive = true } }
+        nav.navigate(Route.Home) { popUpTo<Route.Onboarding> { inclusive = true } }
 
-        assertTrue(TopLevelDestination.RECENT.matches(nav.currentDestination))
+        assertTrue(TopLevelDestination.HOME.matches(nav.currentDestination))
         assertFalse(nav.popBackStack())
     }
 }

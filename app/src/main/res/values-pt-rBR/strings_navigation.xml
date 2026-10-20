@@ -1,0 +1,7 @@
+<resources>
+    <string name="nav_home">Início</string>
+    <string name="nav_recent">Recentes</string>
+    <string name="nav_lists">Listas</string>
+    <string name="nav_rules">Regras</string>
+    <string name="nav_debug">Depuração</string>
+</resources>
