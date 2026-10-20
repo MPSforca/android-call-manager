@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_step_counter">Step %1$d of %2$d</string>
+    <string name="onboarding_skip">Skip for now</string>
+    <string name="onboarding_not_now">Not now</string>
+
+    <string name="onboarding_role_title">Make Call Manager your call-screening app</string>
+    <string name="onboarding_role_why">Android only lets one app screen incoming calls. Taking that role is what lets Call Manager silence or reject calls that match your rules. It does not replace your phone app.</string>
+    <string name="onboarding_role_action">Set as call-screening app</string>
+
+    <string name="onboarding_permissions_title">Allow access to calls and contacts</string>
+    <string name="onboarding_permissions_why">Call log access shows your recent and blocked calls, contacts access lets known people through, and phone state detects calls you answer. Everything stays on this device.</string>
+    <string name="onboarding_permissions_action">Grant permissions</string>
+
+    <string name="onboarding_battery_title">Keep screening reliable</string>
+    <string name="onboarding_battery_why">Some phone makers stop apps in the background, which can prevent Android from reaching Call Manager when a call arrives. Exempting it from battery optimization avoids that and does not keep anything running.</string>
+    <string name="onboarding_battery_action">Exempt from battery optimization</string>
+
+    <string name="permission_banner_role_missing">Call Manager isn\'t your call-screening app, so calls aren\'t being screened.</string>
+    <string name="permission_banner_permissions_missing">Call Manager is missing permissions it needs to work.</string>
+    <string name="permission_banner_fix">Fix</string>
+</resources>

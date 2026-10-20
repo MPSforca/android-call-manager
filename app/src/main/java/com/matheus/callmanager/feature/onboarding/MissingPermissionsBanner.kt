@@ -2,6 +2,8 @@ package com.matheus.callmanager.feature.onboarding
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.matheus.callmanager.R
 import com.matheus.callmanager.core.designsystem.component.PermissionBanner
 
 /** Persistent warning shown when screening can't work because the role or a permission is missing. */
@@ -17,11 +19,11 @@ fun MissingPermissionsBanner(
     PermissionBanner(
         message =
             if (step == OnboardingStep.ROLE) {
-                "Call Manager isn't your call-screening app, so calls aren't being screened."
+                stringResource(R.string.permission_banner_role_missing)
             } else {
-                "Call Manager is missing permissions it needs to work."
+                stringResource(R.string.permission_banner_permissions_missing)
             },
-        actionLabel = "Fix",
+        actionLabel = stringResource(R.string.permission_banner_fix),
         onAction = { onFix(step) },
         modifier = modifier,
     )
