@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_blocked_title">Blocked call from %1$s</string>
+    <string name="notification_channel_name">Rejected calls</string>
+    <string name="notification_channel_description">Notifies you when an incoming call is rejected because the caller is blocked</string>
+</resources>

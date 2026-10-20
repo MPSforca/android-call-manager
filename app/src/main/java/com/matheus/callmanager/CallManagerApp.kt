@@ -103,12 +103,12 @@ private fun AppTopBar(
 ) {
     when {
         topLevel == TopLevelDestination.HOME ->
-            CmTopAppBar(title = "Call Manager") {
+            CmTopAppBar(title = stringResource(R.string.app_name)) {
                 IconButton(onClick = { navController.navigate(Route.Settings) }) {
                     Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_open))
                 }
             }
-        topLevel != null -> CmTopAppBar(title = "Call Manager")
+        topLevel != null -> CmTopAppBar(title = stringResource(R.string.app_name))
         currentDestination?.hasRoute(Route.Settings::class) == true ->
             CmTopAppBar(
                 title = stringResource(R.string.settings_title),

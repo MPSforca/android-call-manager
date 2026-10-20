@@ -34,7 +34,7 @@ object RejectedCallNotifier {
             NotificationCompat
                 .Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Blocked call from $title")
+                .setContentTitle(context.getString(R.string.notification_blocked_title, title))
                 .setContentText(reason)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true)
@@ -48,10 +48,10 @@ object RejectedCallNotifier {
         val channel =
             NotificationChannel(
                 CHANNEL_ID,
-                "Rejected calls",
+                context.getString(R.string.notification_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT,
             ).apply {
-                description = "Notifies you when an incoming call is rejected because the caller is blocked"
+                description = context.getString(R.string.notification_channel_description)
             }
         manager.createNotificationChannel(channel)
     }

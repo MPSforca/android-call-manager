@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_blocked_title">Llamada bloqueada de %1$s</string>
+    <string name="notification_channel_name">Llamadas rechazadas</string>
+    <string name="notification_channel_description">Te avisa cuando se rechaza una llamada entrante porque el número está bloqueado</string>
+</resources>

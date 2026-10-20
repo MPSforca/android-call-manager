@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_step_counter">Etapa %1$d de %2$d</string>
+    <string name="onboarding_skip">Pular por enquanto</string>
+    <string name="onboarding_not_now">Agora não</string>
+
+    <string name="onboarding_role_title">Torne o Call Manager seu app de triagem de chamadas</string>
+    <string name="onboarding_role_why">O Android só permite que um app faça a triagem das chamadas recebidas. Com essa função, o Call Manager pode silenciar ou rejeitar chamadas que correspondam às suas regras. Ele não substitui o seu app de telefone.</string>
+    <string name="onboarding_role_action">Definir como app de triagem de chamadas</string>
+
+    <string name="onboarding_permissions_title">Permita o acesso a chamadas e contatos</string>
+    <string name="onboarding_permissions_why">O acesso ao registro de chamadas mostra suas chamadas recentes e bloqueadas, o acesso aos contatos deixa pessoas conhecidas passarem e o estado do telefone detecta as chamadas que você atende. Tudo fica neste dispositivo.</string>
+    <string name="onboarding_permissions_action">Conceder permissões</string>
+
+    <string name="onboarding_battery_title">Mantenha a triagem confiável</string>
+    <string name="onboarding_battery_why">Alguns fabricantes encerram apps em segundo plano, o que pode impedir o Android de alcançar o Call Manager quando uma chamada chega. Isentá-lo da otimização de bateria evita isso e não mantém nada em execução.</string>
+    <string name="onboarding_battery_action">Isentar da otimização de bateria</string>
+
+    <string name="permission_banner_role_missing">O Call Manager não é o seu app de triagem de chamadas, então as chamadas não estão sendo filtradas.</string>
+    <string name="permission_banner_permissions_missing">O Call Manager não tem as permissões de que precisa para funcionar.</string>
+    <string name="permission_banner_fix">Corrigir</string>
+</resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_step_counter">Paso %1$d de %2$d</string>
+    <string name="onboarding_skip">Omitir por ahora</string>
+    <string name="onboarding_not_now">Ahora no</string>
+
+    <string name="onboarding_role_title">Convierte Call Manager en tu app de filtrado de llamadas</string>
+    <string name="onboarding_role_why">Android solo permite que una app filtre las llamadas entrantes. Con ese rol, Call Manager puede silenciar o rechazar las llamadas que coincidan con tus reglas. No reemplaza tu app de teléfono.</string>
+    <string name="onboarding_role_action">Establecer como app de filtrado de llamadas</string>
+
+    <string name="onboarding_permissions_title">Permite el acceso a llamadas y contactos</string>
+    <string name="onboarding_permissions_why">El acceso al registro de llamadas muestra tus llamadas recientes y bloqueadas, el acceso a contactos deja pasar a las personas conocidas y el estado del teléfono detecta las llamadas que contestas. Todo se queda en este dispositivo.</string>
+    <string name="onboarding_permissions_action">Conceder permisos</string>
+
+    <string name="onboarding_battery_title">Mantén el filtrado fiable</string>
+    <string name="onboarding_battery_why">Algunos fabricantes detienen las apps en segundo plano, lo que puede impedir que Android llegue a Call Manager cuando entra una llamada. Excluirla de la optimización de batería lo evita y no mantiene nada en ejecución.</string>
+    <string name="onboarding_battery_action">Excluir de la optimización de batería</string>
+
+    <string name="permission_banner_role_missing">Call Manager no es tu app de filtrado de llamadas, así que las llamadas no se están filtrando.</string>
+    <string name="permission_banner_permissions_missing">A Call Manager le faltan permisos que necesita para funcionar.</string>
+    <string name="permission_banner_fix">Arreglar</string>
+</resources>
