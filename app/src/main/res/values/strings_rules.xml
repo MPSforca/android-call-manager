@@ -80,4 +80,11 @@
         <item quantity="one">%d entry</item>
         <item quantity="other">%d entries</item>
     </plurals>
+    <string name="rules_preview_title">Try a number</string>
+    <string name="rules_preview_subtitle">See what your current rules would do with a call from this number.</string>
+    <string name="rules_preview_number_label">Phone number</string>
+    <string name="rules_preview_name_label">Caller name (optional)</string>
+    <string name="rules_preview_allowed">Would ring</string>
+    <string name="rules_preview_blocked">Would be blocked</string>
+    <string name="rules_preview_decided_by">Decided by: %1$s</string>
 </resources>

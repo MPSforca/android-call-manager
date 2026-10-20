@@ -68,6 +68,7 @@ internal fun RulesStepContent(
             RulesStep.UNKNOWN_CALLERS -> UnknownCallersStep(state.preferences, viewModel, onInfo)
             RulesStep.BLOCKED_CALLS -> BlockedCallsStep(state.preferences, viewModel)
         }
+        RulePreviewCard(state.preview, onChange = { number, name -> viewModel.setPreview(number, name) })
         if (guided) {
             val last = step.ordinal == RulesStep.entries.lastIndex
             CmButton(

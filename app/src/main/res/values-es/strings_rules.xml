@@ -82,4 +82,11 @@
         <item quantity="many">%d de entradas</item>
         <item quantity="other">%d entradas</item>
     </plurals>
+    <string name="rules_preview_title">Prueba un número</string>
+    <string name="rules_preview_subtitle">Mira qué harían tus reglas actuales con una llamada de este número.</string>
+    <string name="rules_preview_number_label">Número de teléfono</string>
+    <string name="rules_preview_name_label">Nombre de quien llama (opcional)</string>
+    <string name="rules_preview_allowed">Sonaría</string>
+    <string name="rules_preview_blocked">Se bloquearía</string>
+    <string name="rules_preview_decided_by">Decidido por: %1$s</string>
 </resources>

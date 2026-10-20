@@ -8,15 +8,18 @@ import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.database.entity.AllowListEntry
 import com.matheus.callmanager.core.database.entity.BlockListEntry
 import com.matheus.callmanager.core.model.BlockedCallAction
+import com.matheus.callmanager.core.model.ScreeningDecision
 import com.matheus.callmanager.core.model.UserPreferences
 import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
 import com.matheus.callmanager.testing.FakeSettingsRepository
 import com.matheus.callmanager.testing.MainDispatcherRule
 import com.matheus.callmanager.testing.inMemoryTestDatabase
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -73,6 +76,38 @@ class RulesViewModelTest {
                 var item = awaitItem()
                 while (item.listCounts != ListCounts(1, 2, 1)) item = awaitItem()
                 assertEquals(ListCounts(1, 2, 1), item.listCounts)
+            }
+        }
+
+    @Test
+    fun `preview re-evaluates the number live as rules change and clears when blank`() =
+        runTest {
+            viewModel.uiState.test {
+                awaitItem()
+                viewModel.setPreview("+15550000009", "Someone")
+                var item = awaitItem()
+                while (item.preview == null) item = awaitItem()
+                assertEquals(ScreeningDecision.Allow::class, item.preview!!.trace.decision::class)
+
+                settings.update { copy(blockUnknownNumbers = true) }
+                while (item.preview?.trace?.decision !is ScreeningDecision.Reject) item = awaitItem()
+                assertEquals("+15550000009", item.preview!!.number)
+
+                viewModel.setPreview("  ")
+                while (item.preview != null) item = awaitItem()
+                assertNull(item.preview)
+            }
+        }
+
+    @Test
+    fun `previewing never logs a blocked call`() =
+        runTest {
+            settings.update { copy(blockUnknownNumbers = true) }
+            viewModel.uiState.test {
+                viewModel.setPreview("+15550000009")
+                var item = awaitItem()
+                while (item.preview == null) item = awaitItem()
+                assertEquals(0, repository.observeBlockedCallLog().first().size)
             }
         }
 

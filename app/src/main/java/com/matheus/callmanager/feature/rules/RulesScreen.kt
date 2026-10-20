@@ -43,11 +43,23 @@ fun RulesScreen(
         isIgnoringBatteryOptimizations = isIgnoringBatteryOptimizations,
         onRequestIgnoreBatteryOptimizations = onRequestIgnoreBatteryOptimizations,
         dynamicColorSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
-        onOpenStep = onOpenStep,
-        onGuidedSetup = onGuidedSetup,
-        onDynamicColorChange = { viewModel.setDynamicColor(it) },
+        actions =
+            RulesHubActions(
+                onOpenStep = onOpenStep,
+                onGuidedSetup = onGuidedSetup,
+                onDynamicColorChange = { viewModel.setDynamicColor(it) },
+                onPreviewChange = { number, name -> viewModel.setPreview(number, name) },
+            ),
     )
 }
+
+/** What the user can do on the hub, grouped so the stateless body stays readable. */
+internal data class RulesHubActions(
+    val onOpenStep: (RulesStep) -> Unit,
+    val onGuidedSetup: () -> Unit,
+    val onDynamicColorChange: (Boolean) -> Unit,
+    val onPreviewChange: (number: String, callerName: String?) -> Unit,
+)
 
 /** Stateless body of [RulesScreen]. */
 @Composable
@@ -56,9 +68,7 @@ internal fun RulesHubContent(
     isIgnoringBatteryOptimizations: Boolean,
     onRequestIgnoreBatteryOptimizations: () -> Unit,
     dynamicColorSupported: Boolean,
-    onOpenStep: (RulesStep) -> Unit,
-    onGuidedSetup: () -> Unit,
-    onDynamicColorChange: (Boolean) -> Unit,
+    actions: RulesHubActions,
 ) {
     val spacing = LocalSpacing.current
     Column(
@@ -71,7 +81,7 @@ internal fun RulesHubContent(
         )
         CmButton(
             text = stringResource(R.string.rules_hub_guided_setup),
-            onClick = onGuidedSetup,
+            onClick = actions.onGuidedSetup,
             modifier = Modifier.padding(horizontal = spacing.large, vertical = spacing.small),
         )
         if (!isIgnoringBatteryOptimizations) {
@@ -81,16 +91,17 @@ internal fun RulesHubContent(
             StepCard(
                 step = step,
                 summary = summarize(step, state.preferences, state.listCounts).text(),
-                onClick = { onOpenStep(step) },
+                onClick = { actions.onOpenStep(step) },
             )
         }
+        RulePreviewCard(state.preview, actions.onPreviewChange)
         if (dynamicColorSupported) {
             SectionHeader(title = stringResource(R.string.rules_section_appearance))
             CmSwitchRow(
                 title = stringResource(R.string.rules_dynamic_color_title),
                 subtitle = stringResource(R.string.rules_dynamic_color_subtitle),
                 checked = state.preferences.dynamicColor,
-                onCheckedChange = onDynamicColorChange,
+                onCheckedChange = actions.onDynamicColorChange,
             )
         }
     }
