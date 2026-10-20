@@ -1,7 +1,6 @@
 package com.matheus.callmanager.feature.rules
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.matheus.callmanager.core.data.CallRepository
@@ -12,6 +11,7 @@ import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
 import com.matheus.callmanager.testing.FakeSettingsRepository
 import com.matheus.callmanager.testing.MainDispatcherRule
+import com.matheus.callmanager.testing.inMemoryTestDatabase
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -35,7 +35,7 @@ class RulesViewModelTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
+        db = inMemoryTestDatabase(context)
         val repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), settings)
         viewModel = RulesViewModel(repository)
     }

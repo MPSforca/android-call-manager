@@ -3,10 +3,10 @@ package com.matheus.callmanager.screening
 import android.content.Context
 import android.content.Intent
 import android.telephony.TelephonyManager
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.di.DatabaseModule
+import com.matheus.callmanager.testing.inMemoryTestDatabase
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -40,7 +40,7 @@ class PhoneStateReceiverTest {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
+        db = inMemoryTestDatabase(context)
         hilt.inject()
         // The last-ringing number is process-wide state; start every test from IDLE.
         send(TelephonyManager.EXTRA_STATE_IDLE)

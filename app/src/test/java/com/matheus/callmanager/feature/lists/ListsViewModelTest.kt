@@ -1,7 +1,6 @@
 package com.matheus.callmanager.feature.lists
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
@@ -10,6 +9,7 @@ import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
 import com.matheus.callmanager.testing.FakeSettingsRepository
+import com.matheus.callmanager.testing.inMemoryTestDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.map
@@ -38,7 +38,7 @@ class ListsViewModelTest {
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
+        db = inMemoryTestDatabase(context)
         repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), settings)
         viewModel = ListsViewModel(repository)
     }
