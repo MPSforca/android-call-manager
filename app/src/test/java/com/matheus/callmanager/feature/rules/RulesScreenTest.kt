@@ -11,7 +11,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.core.data.CallRepository
 import com.matheus.callmanager.core.database.CallManagerDatabase
@@ -22,6 +21,7 @@ import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
 import com.matheus.callmanager.testing.FakeSettingsRepository
 import com.matheus.callmanager.testing.MainDispatcherRule
+import com.matheus.callmanager.testing.inMemoryTestDatabase
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -52,7 +52,7 @@ class RulesScreenTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
+        db = inMemoryTestDatabase(context)
         viewModel = RulesViewModel(CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), settings))
     }
 

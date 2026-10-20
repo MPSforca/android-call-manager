@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.Uri
 import android.telecom.Call
 import android.telecom.CallScreeningService.CallResponse
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.datastore.SettingsRepository
@@ -20,6 +19,7 @@ import com.matheus.callmanager.testing.FakeCallLogDataSource
 import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
 import com.matheus.callmanager.testing.FakeSettingsRepository
+import com.matheus.callmanager.testing.inMemoryTestDatabase
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -84,7 +84,7 @@ class RuleBasedCallScreeningServiceTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
+        db = inMemoryTestDatabase(context)
         hilt.inject()
         service = spyk(Robolectric.buildService(RuleBasedCallScreeningService::class.java).create().get())
         val captured = slot<CallResponse>()

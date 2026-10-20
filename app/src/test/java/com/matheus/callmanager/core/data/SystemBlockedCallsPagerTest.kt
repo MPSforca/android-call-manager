@@ -1,7 +1,6 @@
 package com.matheus.callmanager.core.data
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.matheus.callmanager.core.database.CallManagerDatabase
@@ -12,6 +11,7 @@ import com.matheus.callmanager.testing.FakeCallLogDataSource
 import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
 import com.matheus.callmanager.testing.FakeSettingsRepository
+import com.matheus.callmanager.testing.inMemoryTestDatabase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -43,7 +43,7 @@ class SystemBlockedCallsPagerTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
+        db = inMemoryTestDatabase(context)
         repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), settings)
         callLogDataSource = FakeCallLogDataSource()
         lifecycle = FakeActivityRetainedLifecycle()

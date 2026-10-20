@@ -1,7 +1,6 @@
 package com.matheus.callmanager.core.data.rule
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.database.entity.AcceptedCaller
@@ -12,6 +11,7 @@ import com.matheus.callmanager.core.model.ScreeningDecision
 import com.matheus.callmanager.core.model.UserPreferences
 import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
+import com.matheus.callmanager.testing.inMemoryTestDatabase
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -35,7 +35,7 @@ class ScreeningRulesTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
+        db = inMemoryTestDatabase(context)
     }
 
     @After

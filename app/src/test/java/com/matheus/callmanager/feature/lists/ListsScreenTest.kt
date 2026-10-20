@@ -9,7 +9,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.core.data.CallRepository
 import com.matheus.callmanager.core.database.CallManagerDatabase
@@ -22,6 +21,8 @@ import com.matheus.callmanager.testing.FakeContactsLookup
 import com.matheus.callmanager.testing.FakeRecentOutgoingLookup
 import com.matheus.callmanager.testing.FakeSettingsRepository
 import com.matheus.callmanager.testing.MainDispatcherRule
+import com.matheus.callmanager.testing.inMemoryTestDatabase
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -52,7 +53,7 @@ class ListsScreenTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db = Room.inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java).allowMainThreadQueries().build()
+        db = inMemoryTestDatabase(context)
         repository = CallRepository(db, FakeContactsLookup(), FakeRecentOutgoingLookup(), FakeSettingsRepository())
         viewModel = ListsViewModel(repository)
     }
@@ -72,9 +73,9 @@ class ListsScreenTest {
         }
     }
 
-    private fun blocked() = runBlocking { repository.observeBlockList().first() }
-
-    private fun allowed() = runBlocking { repository.observeAllowList().first() }
+    // Waits for the dialog's write to land rather than reading whatever the table holds right now.
+    private fun <T> awaitNonEmpty(flow: Flow<List<T>>): List<T> =
+        runBlocking { withTimeout(5_000) { flow.first { it.isNotEmpty() } } }
 
     private fun patterns() = runBlocking { repository.observeAllowedNamePatterns().first() }
 
@@ -152,9 +153,9 @@ class ListsScreenTest {
         compose.onNodeWithText("Block a number").assertIsDisplayed()
         compose.onNodeWithText("Phone number").performTextInput("+15550000009")
         compose.onNodeWithText("Add").performClick()
-        compose.waitForIdle()
 
-        assertEquals(listOf("15550000009"), blocked().map { it.number.filter(Char::isDigit) })
+        val blocked = awaitNonEmpty(repository.observeBlockList())
+        assertEquals(listOf("15550000009"), blocked.map { it.number.filter(Char::isDigit) })
     }
 
     @Test
@@ -163,9 +164,9 @@ class ListsScreenTest {
         compose.onNodeWithContentDescription("Add").performClick()
         compose.onNodeWithText("Phone number").performTextInput("+15550000008")
         compose.onNodeWithText("Add").performClick()
-        compose.waitForIdle()
 
-        assertEquals(listOf("15550000008"), allowed().map { it.number.filter(Char::isDigit) })
+        val allowed = awaitNonEmpty(repository.observeAllowList())
+        assertEquals(listOf("15550000008"), allowed.map { it.number.filter(Char::isDigit) })
     }
 
     @Test
@@ -178,9 +179,8 @@ class ListsScreenTest {
         compose.onNodeWithContentDescription("Add").performClick()
         compose.onNodeWithText("Name contains").performTextInput("PagerDuty")
         compose.onNodeWithText("Add").performClick()
-        compose.waitForIdle()
 
-        assertEquals(listOf("PagerDuty"), patterns().map { it.pattern })
+        assertEquals(listOf("PagerDuty"), awaitNonEmpty(repository.observeAllowedNamePatterns()).map { it.pattern })
     }
 
     @Test

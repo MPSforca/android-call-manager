@@ -1,7 +1,6 @@
 package com.matheus.callmanager.core.data
 
 import android.content.Context
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.matheus.callmanager.core.database.CallManagerDatabase
 import com.matheus.callmanager.core.database.entity.AcceptedCaller
@@ -9,6 +8,7 @@ import com.matheus.callmanager.core.model.ScreeningDecision
 import com.matheus.callmanager.core.telephony.ContactsLookup
 import com.matheus.callmanager.core.telephony.RecentOutgoingLookup
 import com.matheus.callmanager.testing.FakeSettingsRepository
+import com.matheus.callmanager.testing.inMemoryTestDatabase
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -50,11 +50,7 @@ class CallRepositoryTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        db =
-            Room
-                .inMemoryDatabaseBuilder(context, CallManagerDatabase::class.java)
-                .allowMainThreadQueries()
-                .build()
+        db = inMemoryTestDatabase(context)
         contactsLookup = FakeContactsLookup()
         recentOutgoingLookup = FakeRecentOutgoingLookup()
         repository =
