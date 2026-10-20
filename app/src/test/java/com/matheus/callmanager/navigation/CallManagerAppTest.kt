@@ -140,7 +140,7 @@ class CallManagerAppTest {
     }
 
     @Test
-    fun `gear icon opens settings and back returns to Recent`() {
+    fun `gear icon on Home opens settings and back returns to Home`() {
         grantEverything()
         launch()
 
@@ -149,7 +149,7 @@ class CallManagerAppTest {
         compose.onNodeWithText("Version", substring = true).performScrollTo().assertExists()
 
         compose.onNodeWithContentDescription("Back").performClick()
-        compose.onNodeWithText("Search name or number").assertExists()
+        compose.onNodeWithText("Protection is on").assertExists()
     }
 
     @Test
