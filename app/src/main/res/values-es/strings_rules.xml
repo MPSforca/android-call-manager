@@ -62,4 +62,7 @@
     <string name="rules_section_appearance">Apariencia</string>
     <string name="rules_dynamic_color_title">Color dinámico</string>
     <string name="rules_dynamic_color_subtitle">Usar los colores del fondo de pantalla en lugar de la paleta de la marca</string>
+    <string name="rules_info_action">Acerca de %1$s</string>
+    <string name="rules_info_example_label">Ejemplo</string>
+    <string name="rules_info_position">Regla %1$d</string>
 </resources>

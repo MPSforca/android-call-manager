@@ -2,11 +2,14 @@ package com.matheus.callmanager.feature.rules
 
 import android.content.Context
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -128,5 +131,39 @@ class RulesScreenTest {
         show(dynamicColorSupported = false)
 
         compose.onNodeWithText("Dynamic color").assertDoesNotExist()
+    }
+
+    @Test
+    fun `info buttons open the sheet for each rule and it can be dismissed`() {
+        show()
+        val rules =
+            listOf(
+                Triple("Contacts", "Allows anyone saved in your contacts.", 4),
+                Triple("Recently answered", "Allows a number again for a while after you answered a call from it.", 5),
+                Triple(
+                    "Recently called",
+                    "Allows numbers you called yourself for a while, so a callback is not blocked.",
+                    6,
+                ),
+                Triple(
+                    "Unknown numbers",
+                    "The last rule. A number that matched nothing above is allowed, or blocked if you turn this on.",
+                    7,
+                ),
+            )
+
+        rules.forEach { (title, description, order) ->
+            compose.onNodeWithContentDescription("About $title").performScrollTo().performClick()
+            compose.onNodeWithText(description).assertIsDisplayed()
+            compose.onNodeWithText("Rule $order").assertIsDisplayed()
+            compose.onNodeWithText("Example").assertIsDisplayed()
+            compose
+                .onNode(
+                    SemanticsMatcher.keyIsDefined(SemanticsActions.Dismiss),
+                ).performSemanticsAction(SemanticsActions.Dismiss)
+            compose.waitUntil(timeoutMillis = 5_000) {
+                compose.onAllNodesWithText(description).fetchSemanticsNodes().isEmpty()
+            }
+        }
     }
 }
