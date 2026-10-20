@@ -17,14 +17,25 @@ enum class TopLevelDestination(
     val route: Route,
     val routeClass: KClass<out Route>,
     val debugOnly: Boolean = false,
+    private val nestedRouteClasses: List<KClass<out Route>> = emptyList(),
 ) {
     RECENT("Recent", Icons.Filled.History, Route.Recent, Route.Recent::class),
     LISTS("Lists", Icons.Filled.Block, Route.Lists, Route.Lists::class),
-    RULES("Rules", Icons.Filled.Rule, Route.Rules, Route.Rules::class),
+    RULES(
+        "Rules",
+        Icons.Filled.Rule,
+        Route.Rules,
+        Route.Rules::class,
+        nestedRouteClasses = listOf(Route.RulesStep::class),
+    ),
     DEBUG("Debug", Icons.Filled.BugReport, Route.Debug, Route.Debug::class, debugOnly = true),
     ;
 
-    fun matches(destination: NavDestination?): Boolean = destination?.hasRoute(routeClass) == true
+    fun matches(destination: NavDestination?): Boolean =
+        (listOf(routeClass) + nestedRouteClasses).any {
+            destination?.hasRoute(it) ==
+                true
+        }
 
     companion object {
         fun visible(isDebugBuild: Boolean): List<TopLevelDestination> = entries.filter { isDebugBuild || !it.debugOnly }

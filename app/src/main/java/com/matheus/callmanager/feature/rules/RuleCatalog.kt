@@ -1,12 +1,16 @@
 package com.matheus.callmanager.feature.rules
 
+import androidx.annotation.Keep
 import androidx.annotation.StringRes
 import com.matheus.callmanager.R
 import com.matheus.callmanager.core.data.rule.ScreeningRuleId
 import com.matheus.callmanager.core.model.BlockedCallAction
 import com.matheus.callmanager.core.model.UserPreferences
+import kotlinx.serialization.Serializable
 
 /** The pages of the Rules flow, in the order the user walks through them. */
+@Keep
+@Serializable
 enum class RulesStep(
     @StringRes val title: Int,
     @StringRes val intro: Int,

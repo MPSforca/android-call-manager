@@ -7,7 +7,7 @@ import com.matheus.callmanager.core.model.BlockedCallAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,9 +21,14 @@ class RulesViewModel
         private val settings = repository.settings
 
         val uiState: StateFlow<RulesUiState> =
-            settings.preferences
-                .map { RulesUiState(it) }
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RulesUiState())
+            combine(
+                settings.preferences,
+                repository.observeBlockList(),
+                repository.observeAllowList(),
+                repository.observeAllowedNamePatterns(),
+            ) { prefs, blocked, allowed, patterns ->
+                RulesUiState(prefs, ListCounts(blocked.size, allowed.size, patterns.size))
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RulesUiState())
 
         fun setAllowContacts(value: Boolean) = viewModelScope.launch { settings.setAllowContacts(value) }
 

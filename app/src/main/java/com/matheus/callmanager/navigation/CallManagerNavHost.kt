@@ -16,6 +16,8 @@ import com.matheus.callmanager.feature.onboarding.PermissionsState
 import com.matheus.callmanager.feature.recent.CallDetailRoute
 import com.matheus.callmanager.feature.recent.RecentScreen
 import com.matheus.callmanager.feature.rules.RulesScreen
+import com.matheus.callmanager.feature.rules.RulesStep
+import com.matheus.callmanager.feature.rules.RulesStepScreen
 
 @Composable
 fun CallManagerNavHost(
@@ -61,6 +63,18 @@ fun CallManagerNavHost(
             RulesScreen(
                 isIgnoringBatteryOptimizations = permissions.batteryExempt,
                 onRequestIgnoreBatteryOptimizations = actions.requestBatteryExemption,
+                onOpenStep = { navController.navigate(Route.RulesStep(it)) },
+                onGuidedSetup = { navController.navigate(Route.RulesStep(RulesStep.entries.first(), guided = true)) },
+            )
+        }
+        composable<Route.RulesStep> { entry ->
+            val route = entry.toRoute<Route.RulesStep>()
+            RulesStepScreen(
+                step = route.step,
+                guided = route.guided,
+                onOpenLists = { navController.navigateToTopLevel(TopLevelDestination.LISTS) },
+                onNext = { next -> navController.advanceRulesStep(next) },
+                onDone = { navController.popBackStack<Route.Rules>(inclusive = false) },
             )
         }
         if (BuildConfig.DEBUG) {
@@ -78,6 +92,11 @@ private fun NavOptionsBuilder.configureTopLevel() {
     popUpTo<Route.Recent> { saveState = true }
     launchSingleTop = true
     restoreState = true
+}
+
+/** Replaces the current guided step with [next], so back from it returns to the hub. */
+private fun NavHostController.advanceRulesStep(next: RulesStep) {
+    navigate(Route.RulesStep(next, guided = true)) { popUpTo<Route.RulesStep> { inclusive = true } }
 }
 
 private fun NavHostController.leaveOnboarding() {
