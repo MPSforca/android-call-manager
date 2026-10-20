@@ -8,6 +8,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeLeft
 import com.matheus.callmanager.core.designsystem.theme.CallManagerTheme
 import com.matheus.callmanager.core.model.RecentCall
 import com.matheus.callmanager.core.model.UnifiedBlockedCall
@@ -50,6 +52,8 @@ class RecentContentTest {
         onClearFilters: () -> Unit = {},
         onCallSelected: (String) -> Unit = {},
         onLoadMore: () -> Unit = {},
+        onBlock: (String, String?) -> Unit = { _, _ -> },
+        onUndoBlock: (String, String?, Boolean) -> Unit = { _, _, _ -> },
     ) {
         compose.setContent {
             CallManagerTheme {
@@ -64,6 +68,8 @@ class RecentContentTest {
                             onClearFilters = onClearFilters,
                             onCallSelected = onCallSelected,
                             onLoadMore = onLoadMore,
+                            onBlock = onBlock,
+                            onUndoBlock = onUndoBlock,
                         ),
                 )
             }
@@ -227,5 +233,61 @@ class RecentContentTest {
         show(RecentUiState(calls = listOf(call(ALICE, "Alice", NOON_TODAY)), hasMore = false))
 
         compose.onNodeWithText("Load more").assertDoesNotExist()
+    }
+
+    @Test
+    fun `swiping a row blocks that number and offers undo`() {
+        val blocked = mutableListOf<Pair<String, String?>>()
+        val undone = mutableListOf<Triple<String, String?, Boolean>>()
+        show(
+            RecentUiState(calls = listOf(call(ALICE, "Alice", NOON_TODAY))),
+            onBlock = { number, name -> blocked += number to name },
+            onUndoBlock = { number, name, restore -> undone += Triple(number, name, restore) },
+        )
+
+        compose.onNodeWithText("Alice").performTouchInput { swipeLeft() }
+        compose.waitForIdle()
+
+        assertEquals(listOf(ALICE to "Alice"), blocked)
+        compose.onNodeWithText("Blocked Alice").assertExists()
+        compose.onNodeWithText("Undo").performClick()
+        compose.waitForIdle()
+        assertEquals(listOf(Triple(ALICE, "Alice", false)), undone)
+    }
+
+    @Test
+    fun `undoing the block of an allowed number restores its allow entry`() {
+        val undone = mutableListOf<Triple<String, String?, Boolean>>()
+        show(
+            RecentUiState(
+                calls = listOf(call(ALICE, "Alice", NOON_TODAY)),
+                allowedNumbers = setOf(ALICE),
+            ),
+            onUndoBlock = { number, name, restore -> undone += Triple(number, name, restore) },
+        )
+
+        compose.onNodeWithText("Alice").performTouchInput { swipeLeft() }
+        compose.waitForIdle()
+        compose.onNodeWithText("Undo").performClick()
+        compose.waitForIdle()
+
+        assertEquals(listOf(Triple(ALICE, "Alice", true)), undone)
+    }
+
+    @Test
+    fun `a number that is already blocked cannot be swiped`() {
+        var blocked = 0
+        show(
+            RecentUiState(
+                calls = listOf(call(ALICE, "Alice", NOON_TODAY)),
+                blockedNumbers = setOf(ALICE),
+            ),
+            onBlock = { _, _ -> blocked++ },
+        )
+
+        compose.onNodeWithText("Alice").performTouchInput { swipeLeft() }
+        compose.waitForIdle()
+
+        assertEquals(0, blocked)
     }
 }

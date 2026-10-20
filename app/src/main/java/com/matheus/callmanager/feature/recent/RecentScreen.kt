@@ -39,6 +39,8 @@ fun RecentScreen(
                 onClearFilters = viewModel::clearFilters,
                 onCallSelected = onCallSelected,
                 onLoadMore = viewModel::loadMoreRecentCalls,
+                onBlock = viewModel::blockNumber,
+                onUndoBlock = viewModel::undoBlock,
             ),
     )
 }

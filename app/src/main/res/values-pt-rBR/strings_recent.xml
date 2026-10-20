@@ -21,4 +21,8 @@
     <string name="recent_no_match_message">Tente outra pesquisa ou outro filtro.</string>
     <string name="recent_clear_filters">Limpar filtros</string>
     <string name="recent_load_more">Carregar mais</string>
+
+    <string name="recent_blocked_snackbar">Bloqueado: %1$s</string>
+    <string name="recent_undo">Desfazer</string>
+    <string name="recent_swipe_block">Bloquear</string>
 </resources>
