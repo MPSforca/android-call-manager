@@ -124,6 +124,8 @@ class CallManagerAppTest {
         grantEverything()
         launch()
 
+        compose.onNodeWithText("Protection is on").assertExists()
+        compose.onNodeWithText("Recent").performClick()
         compose.onNodeWithText("Search name or number").assertExists()
         compose.onNodeWithText("Lists").performClick()
         compose.onNodeWithText("No blocked numbers").assertExists()
@@ -138,7 +140,7 @@ class CallManagerAppTest {
     }
 
     @Test
-    fun `gear icon opens settings and back returns to Recent`() {
+    fun `gear icon on Home opens settings and back returns to Home`() {
         grantEverything()
         launch()
 
@@ -147,7 +149,7 @@ class CallManagerAppTest {
         compose.onNodeWithText("Version", substring = true).performScrollTo().assertExists()
 
         compose.onNodeWithContentDescription("Back").performClick()
-        compose.onNodeWithText("Search name or number").assertExists()
+        compose.onNodeWithText("Protection is on").assertExists()
     }
 
     @Test
@@ -230,6 +232,7 @@ class CallManagerAppTest {
         grantEverything()
         launch()
 
+        compose.onNodeWithText("Recent").performClick()
         compose.onNodeWithText("Alice").performClick()
         compose.onNodeWithText("Call history").assertExists()
         compose.onNodeWithText("Search name or number").assertDoesNotExist()
@@ -257,6 +260,7 @@ class CallManagerAppTest {
         compose
             .onNodeWithText("Call Manager isn't your call-screening app, so calls aren't being screened.")
             .assertExists()
+        compose.onNodeWithText("Needs attention").assertExists()
         compose.onNodeWithText("Fix").performClick()
         compose.onNodeWithText("Recent").assertExists()
     }
@@ -284,7 +288,7 @@ class CallManagerAppTest {
         compose.onNodeWithText("Exempt from battery optimization").performClick()
         compose.onNodeWithText("Not now").performClick()
 
-        compose.onNodeWithText("Search name or number").assertExists()
+        compose.onNodeWithText("Protection is on").assertExists()
     }
 
     @Test
@@ -294,6 +298,16 @@ class CallManagerAppTest {
         launch()
 
         compose.onNodeWithText("Step 3 of 3").assertDoesNotExist()
+        compose.onNodeWithText("Protection is on").assertExists()
+    }
+
+    @Test
+    fun `home is the start tab and See all opens Recent`() {
+        grantEverything()
+        launch()
+
+        compose.onNodeWithText("See all").performClick()
+
         compose.onNodeWithText("Search name or number").assertExists()
     }
 

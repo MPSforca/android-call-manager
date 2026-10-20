@@ -9,6 +9,9 @@ sealed interface Route {
     data object Onboarding : Route
 
     @Serializable
+    data object Home : Route
+
+    @Serializable
     data object Recent : Route
 
     @Serializable

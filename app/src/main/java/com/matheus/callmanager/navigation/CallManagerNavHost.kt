@@ -11,8 +11,10 @@ import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.matheus.callmanager.BuildConfig
 import com.matheus.callmanager.feature.debug.DebugScreen
+import com.matheus.callmanager.feature.home.HomeScreen
 import com.matheus.callmanager.feature.lists.ListsScreen
 import com.matheus.callmanager.feature.onboarding.OnboardingScreen
+import com.matheus.callmanager.feature.onboarding.OnboardingStep
 import com.matheus.callmanager.feature.onboarding.PermissionsState
 import com.matheus.callmanager.feature.recent.CallDetailRoute
 import com.matheus.callmanager.feature.recent.RecentScreen
@@ -44,6 +46,20 @@ fun CallManagerNavHost(
                 onFinished = finish,
             )
         }
+        composable<Route.Home>(deepLinks = listOf(navDeepLink<Route.Home>(basePath = "${DEEP_LINK_BASE}home"))) {
+            HomeScreen(
+                permissions = permissions,
+                onFix = { step ->
+                    when (step) {
+                        OnboardingStep.ROLE -> actions.requestScreeningRole()
+                        OnboardingStep.PERMISSIONS -> actions.requestRuntimePermissions()
+                        OnboardingStep.BATTERY -> actions.requestBatteryExemption()
+                    }
+                },
+                onCallSelected = { navController.navigate(Route.CallDetail(it)) },
+                onSeeAll = { navController.navigateToTopLevel(TopLevelDestination.RECENT) },
+            )
+        }
         composable<Route.Recent>(deepLinks = listOf(navDeepLink<Route.Recent>(basePath = "${DEEP_LINK_BASE}recent"))) {
             RecentScreen(onCallSelected = { navController.navigate(Route.CallDetail(it)) })
         }
@@ -61,26 +77,30 @@ fun CallManagerNavHost(
                 onPickContactToAllow = actions.pickContactToAllow,
             )
         }
-        composable<Route.Rules>(deepLinks = listOf(navDeepLink<Route.Rules>(basePath = "${DEEP_LINK_BASE}rules"))) {
-            RulesScreen(
-                onOpenStep = { navController.navigate(Route.RulesStep(it)) },
-                onGuidedSetup = { navController.navigate(Route.RulesStep(RulesStep.entries.first(), guided = true)) },
-            )
-        }
-        composable<Route.RulesStep> { entry ->
-            val route = entry.toRoute<Route.RulesStep>()
-            RulesStepScreen(
-                step = route.step,
-                guided = route.guided,
-                onOpenLists = { navController.navigateToTopLevel(TopLevelDestination.LISTS) },
-                onNext = { next -> navController.advanceRulesStep(next) },
-                onDone = { navController.popBackStack<Route.Rules>(inclusive = false) },
-            )
-        }
+        rulesDestinations(navController)
         settingsDestination(permissions, actions)
         if (BuildConfig.DEBUG) {
             composable<Route.Debug> { DebugScreen() }
         }
+    }
+}
+
+private fun NavGraphBuilder.rulesDestinations(navController: NavHostController) {
+    composable<Route.Rules>(deepLinks = listOf(navDeepLink<Route.Rules>(basePath = "${DEEP_LINK_BASE}rules"))) {
+        RulesScreen(
+            onOpenStep = { navController.navigate(Route.RulesStep(it)) },
+            onGuidedSetup = { navController.navigate(Route.RulesStep(RulesStep.entries.first(), guided = true)) },
+        )
+    }
+    composable<Route.RulesStep> { entry ->
+        val route = entry.toRoute<Route.RulesStep>()
+        RulesStepScreen(
+            step = route.step,
+            guided = route.guided,
+            onOpenLists = { navController.navigateToTopLevel(TopLevelDestination.LISTS) },
+            onNext = { next -> navController.advanceRulesStep(next) },
+            onDone = { navController.popBackStack<Route.Rules>(inclusive = false) },
+        )
     }
 }
 
@@ -104,7 +124,7 @@ fun NavHostController.navigateToTopLevel(destination: TopLevelDestination) {
 }
 
 private fun NavOptionsBuilder.configureTopLevel() {
-    popUpTo<Route.Recent> { saveState = true }
+    popUpTo<Route.Home> { saveState = true }
     launchSingleTop = true
     restoreState = true
 }
@@ -115,5 +135,5 @@ private fun NavHostController.advanceRulesStep(next: RulesStep) {
 }
 
 private fun NavHostController.leaveOnboarding() {
-    navigate(Route.Recent) { popUpTo<Route.Onboarding> { inclusive = true } }
+    navigate(Route.Home) { popUpTo<Route.Onboarding> { inclusive = true } }
 }

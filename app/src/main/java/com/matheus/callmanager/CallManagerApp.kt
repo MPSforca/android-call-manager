@@ -46,7 +46,7 @@ fun CallManagerApp(
     val isDebugBuild = BuildConfig.DEBUG
     val topLevel = TopLevelDestination.from(currentDestination, isDebugBuild)
     // Chosen once: later permission changes surface as a banner rather than yanking the user around.
-    val startDestination = remember { if (permissions.needsOnboarding) Route.Onboarding else Route.Recent }
+    val startDestination = remember { if (permissions.needsOnboarding) Route.Onboarding else Route.Home }
     val layoutType =
         if (topLevel != null) {
             NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(currentWindowAdaptiveInfo())
@@ -61,7 +61,7 @@ fun CallManagerApp(
                     selected = destination.matches(currentDestination),
                     onClick = { navController.navigateToTopLevel(destination) },
                     icon = { Icon(destination.icon, contentDescription = null) },
-                    label = { Text(destination.label) },
+                    label = { Text(stringResource(destination.labelRes)) },
                 )
             }
         },
@@ -71,7 +71,8 @@ fun CallManagerApp(
             topBar = { AppTopBar(navController, topLevel, currentDestination) },
         ) { padding ->
             Column(modifier = Modifier.padding(padding)) {
-                if (topLevel != null && permissions.showBanner) {
+                // Home shows its own, richer status header, so the strip would only repeat it there.
+                if (topLevel != null && topLevel != TopLevelDestination.HOME && permissions.showBanner) {
                     MissingPermissionsBanner(
                         state = permissions,
                         onFix = { step ->
@@ -101,7 +102,7 @@ private fun AppTopBar(
     currentDestination: NavDestination?,
 ) {
     when {
-        topLevel == TopLevelDestination.RECENT ->
+        topLevel == TopLevelDestination.HOME ->
             CmTopAppBar(title = "Call Manager") {
                 IconButton(onClick = { navController.navigate(Route.Settings) }) {
                     Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_open))

@@ -1,0 +1,15 @@
+<resources>
+    <string name="home_status_on">Protection is on</string>
+    <string name="home_status_on_detail">Incoming calls are checked against your rules.</string>
+    <string name="home_status_attention">Needs attention</string>
+    <string name="home_status_attention_detail">Calls are not being screened until this is fixed.</string>
+    <string name="home_fix">Fix</string>
+    <string name="home_missing_role">Call Manager isn\'t your call-screening app, so calls aren\'t being screened.</string>
+    <string name="home_missing_permissions">Call Manager is missing permissions it needs to work.</string>
+    <string name="home_missing_battery">Exempt Call Manager from battery optimization so screening stays reliable.</string>
+    <string name="home_blocked_today">Blocked today</string>
+    <string name="home_allowed_today">Allowed today</string>
+    <string name="home_activity">Recent activity</string>
+    <string name="home_see_all">See all</string>
+    <string name="home_activity_empty">No calls yet</string>
+</resources>
