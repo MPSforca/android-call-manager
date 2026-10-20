@@ -1,0 +1,23 @@
+<resources>
+    <string name="recent_search_hint">Search name or number</string>
+    <string name="recent_search_clear">Clear search</string>
+
+    <string name="recent_filter_all">All</string>
+    <string name="recent_filter_blocked">Blocked</string>
+    <string name="recent_filter_missed">Missed</string>
+    <string name="recent_filter_answered">Answered</string>
+
+    <string name="recent_day_today">Today</string>
+    <string name="recent_day_yesterday">Yesterday</string>
+    <plurals name="recent_call_count">
+        <item quantity="one">%d call</item>
+        <item quantity="other">%d calls</item>
+    </plurals>
+
+    <string name="recent_empty_title">No calls yet</string>
+    <string name="recent_empty_message">Calls you receive will show up here.</string>
+    <string name="recent_no_match_title">No matching calls</string>
+    <string name="recent_no_match_message">Try a different search or filter.</string>
+    <string name="recent_clear_filters">Clear filters</string>
+    <string name="recent_load_more">Load more</string>
+</resources>

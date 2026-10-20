@@ -3,6 +3,7 @@ package com.matheus.callmanager.feature.recent
 import android.content.Context
 import android.provider.CallLog
 import androidx.test.core.app.ApplicationProvider
+import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.matheus.callmanager.core.data.CallRepository
 import com.matheus.callmanager.core.data.SystemBlockedCallsPager
@@ -18,6 +19,7 @@ import com.matheus.callmanager.testing.FakeSettingsRepository
 import com.matheus.callmanager.testing.inMemoryTestDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -199,6 +201,7 @@ class RecentViewModelTest {
                     ),
                 )
             viewModel.refreshRecentCalls()
+            viewModel.recentCalls.first { it.isNotEmpty() }
 
             viewModel.visibleCalls.test {
                 assertEquals(2, expectMostRecentItem().size)
@@ -219,6 +222,7 @@ class RecentViewModelTest {
                     ),
                 )
             viewModel.refreshRecentCalls()
+            viewModel.recentCalls.first { it.isNotEmpty() }
 
             viewModel.visibleCalls.test {
                 assertEquals(2, expectMostRecentItem().size)
@@ -234,6 +238,7 @@ class RecentViewModelTest {
             callLogDataSource.recentCallPages =
                 listOf(listOf(RecentCall("+15550000001", null, 5_000L, CallLog.Calls.MISSED_TYPE)))
             viewModel.refreshRecentCalls()
+            viewModel.recentCalls.first { it.isNotEmpty() }
             db.blockedCallLogDao().insert(
                 BlockedCallLog(number = "+15550000001", callerName = null, timestamp = 5_000L, reason = "r"),
             )
@@ -243,4 +248,68 @@ class RecentViewModelTest {
                 assertEquals(1, expectMostRecentItem().size)
             }
         }
+
+    @Test
+    fun `uiState combines the filtered calls, list membership and paging`() =
+        runTest {
+            callLogDataSource.recentCallPages =
+                listOf(
+                    listOf(
+                        RecentCall("+15550000001", "Alice", 2L, CallLog.Calls.MISSED_TYPE),
+                        RecentCall("+15550000002", null, 1L, CallLog.Calls.INCOMING_TYPE),
+                    ),
+                )
+            viewModel.uiState.test {
+                viewModel.refreshRecentCalls()
+                viewModel.blockNumbers(setOf("+15550000002"))
+                viewModel.allowNumbers(setOf("+15550000003"))
+                viewModel.setFilter(RecentFilter.MISSED)
+                viewModel.setQuery("ali")
+
+                val state =
+                    awaitUntil {
+                        it.filter == RecentFilter.MISSED &&
+                            it.query == "ali" &&
+                            it.calls.size == 1 &&
+                            it.blockedNumbers.isNotEmpty() &&
+                            it.allowedNumbers.isNotEmpty()
+                    }
+
+                assertEquals(RecentFilter.MISSED, state.filter)
+                assertEquals("ali", state.query)
+                assertEquals(listOf("Alice"), state.calls.map { it.name })
+                assertEquals(setOf("+15550000002"), state.blockedNumbers)
+                assertEquals(setOf("+15550000003"), state.allowedNumbers)
+                assertFalse(state.hasMore)
+                assertTrue(state.isFiltering)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun `uiState is not filtering by default`() =
+        runTest {
+            viewModel.uiState.test {
+                assertFalse(awaitItem().isFiltering)
+            }
+        }
+
+    @Test
+    fun `clearFilters resets the chip and the query`() =
+        runTest {
+            viewModel.setFilter(RecentFilter.BLOCKED)
+            viewModel.setQuery("x")
+
+            viewModel.clearFilters()
+
+            assertEquals(RecentFilter.ALL, viewModel.filter.value)
+            assertEquals("", viewModel.query.value)
+        }
+}
+
+private suspend fun ReceiveTurbine<RecentUiState>.awaitUntil(predicate: (RecentUiState) -> Boolean): RecentUiState {
+    while (true) {
+        val item = awaitItem()
+        if (predicate(item)) return item
+    }
 }
