@@ -7,6 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -16,17 +18,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
-import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import com.sforca.callmanager.core.data.CallRepository
-import com.sforca.callmanager.core.data.rule.ScreeningRuleId
-import com.sforca.callmanager.core.data.rule.ScreeningTrace
-import com.sforca.callmanager.core.data.rule.TraceOutcome
-import com.sforca.callmanager.core.data.rule.TraceStep
 import com.sforca.callmanager.core.database.CallManagerDatabase
 import com.sforca.callmanager.core.designsystem.theme.CallManagerTheme
 import com.sforca.callmanager.core.model.BlockedCallAction
-import com.sforca.callmanager.core.model.ScreeningDecision
 import com.sforca.callmanager.core.model.UserPreferences
 import com.sforca.callmanager.testing.ComposeHostActivityRule
 import com.sforca.callmanager.testing.FakeContactsLookup
@@ -75,28 +71,26 @@ class RulesScreenTest {
 
     private fun showHub(
         onOpenStep: (RulesStep) -> Unit = {},
-        onGuided: () -> Unit = {},
-        onTestNumber: () -> Unit = {},
-        onPreview: (String, String?) -> Unit = { _, _ -> },
         state: RulesUiState = RulesUiState(),
     ) {
         compose.setContent {
             CallManagerTheme {
-                RulesHubContent(state, RulesHubActions(onOpenStep, onGuided, onTestNumber, onPreview))
+                RulesHubContent(state, onOpenStep)
             }
         }
     }
 
     private fun showStep(
         step: RulesStep,
-        guided: Boolean = false,
         state: RulesUiState = RulesUiState(),
         onOpenLists: () -> Unit = {},
-        onAdvance: () -> Unit = {},
+        onBackToRules: () -> Unit = {},
+        onPrevious: () -> Unit = {},
+        onNext: () -> Unit = {},
     ) {
         compose.setContent {
             CallManagerTheme {
-                RulesStepContent(step, state, viewModel, guided, onOpenLists, onAdvance)
+                RulesStepContent(step, state, viewModel, onOpenLists, onBackToRules, onPrevious, onNext)
             }
         }
     }
@@ -116,87 +110,6 @@ class RulesScreenTest {
         compose.onNodeWithText("Unknown callers").performScrollTo().performClick()
 
         assertEquals(RulesStep.UNKNOWN_CALLERS, opened)
-    }
-
-    private val allowTrace =
-        ScreeningTrace(
-            ScreeningDecision.Allow("Contact"),
-            listOf(
-                TraceStep(ScreeningRuleId.BLOCK_LIST, TraceOutcome.PASSED),
-                TraceStep(ScreeningRuleId.CONTACT, TraceOutcome.DECIDED),
-            ),
-        )
-
-    @Test
-    fun `preview card reports typed numbers and names, normalised`() {
-        val calls = mutableListOf<Pair<String, String?>>()
-        showHub(onPreview = { n, name -> calls += n to name })
-
-        compose.onNodeWithText("Phone number").performScrollTo().performTextInput("+14155552671")
-        compose.onNodeWithText("Caller name (optional)").performScrollTo().performTextInput("Dr. Who")
-
-        assertEquals("+14155552671", calls.last().first)
-        assertEquals("Dr. Who", calls.last().second)
-    }
-
-    @Test
-    fun `preview card shows the verdict and which rule decided it`() {
-        showHub(state = RulesUiState(preview = RulePreview("+15550000001", allowTrace)), onPreview = { _, _ -> })
-        compose.onNodeWithText("Phone number").performScrollTo().performTextInput("+15550000001")
-
-        compose.onNodeWithText("Would ring").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Decided by: Contacts").performScrollTo().assertIsDisplayed()
-    }
-
-    @Test
-    fun `preview card shows a blocked verdict`() {
-        val trace =
-            ScreeningTrace(
-                ScreeningDecision.Reject("Block list"),
-                listOf(TraceStep(ScreeningRuleId.BLOCK_LIST, TraceOutcome.DECIDED)),
-            )
-        showHub(state = RulesUiState(preview = RulePreview("+15550000001", trace)))
-        compose.onNodeWithText("Phone number").performScrollTo().performTextInput("+15550000001")
-
-        compose.onNodeWithText("Would be blocked").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Decided by: Block list").performScrollTo().assertIsDisplayed()
-    }
-
-    @Test
-    fun `preview card hides the verdict when the field is empty`() {
-        showHub(state = RulesUiState(preview = RulePreview("+15550000001", allowTrace)))
-
-        compose.onNodeWithText("Would ring").assertDoesNotExist()
-    }
-
-    @Test
-    fun `step pages show the preview and send it to the view model`() {
-        showStep(RulesStep.UNKNOWN_CALLERS)
-
-        compose.onNodeWithText("Phone number").performScrollTo().performTextInput("+15550000001")
-        compose.waitForIdle()
-
-        compose.onNodeWithText("Try a number").assertExists()
-    }
-
-    @Test
-    fun `hub guided setup button fires`() {
-        var guided = false
-        showHub(onGuided = { guided = true })
-
-        compose.onNodeWithText("Guided setup").performClick()
-
-        assertTrue(guided)
-    }
-
-    @Test
-    fun `hub test a number button fires`() {
-        var opened = false
-        showHub(onTestNumber = { opened = true })
-
-        compose.onNodeWithText("Test a number").performClick()
-
-        assertTrue(opened)
     }
 
     @Test
@@ -264,23 +177,42 @@ class RulesScreenTest {
     }
 
     @Test
-    fun `guided steps show Next, and Done on the last step`() {
-        var advanced = 0
-        showStep(RulesStep.UNKNOWN_CALLERS, guided = true, onAdvance = { advanced++ })
+    fun `step pages have a back to rules button`() {
+        var back = false
+        showStep(RulesStep.UNKNOWN_CALLERS, onBackToRules = { back = true })
+        compose.onNodeWithText("Back to Rules").performClick()
+        assertTrue(back)
+    }
+
+    @Test
+    fun `middle steps have working Previous and Next buttons`() {
+        var previous = 0
+        var next = 0
+        showStep(RulesStep.UNKNOWN_CALLERS, onPrevious = { previous++ }, onNext = { next++ })
+        compose.onNodeWithText("Previous").performScrollTo().performClick()
         compose.onNodeWithText("Next").performScrollTo().performClick()
-        assertEquals(1, advanced)
+        assertEquals(1, previous)
+        assertEquals(1, next)
     }
 
     @Test
-    fun `guided last step shows Done and unguided steps show no button`() {
-        showStep(RulesStep.BLOCKED_CALLS, guided = true)
-        compose.onNodeWithText("Done").assertExists()
+    fun `first step disables Previous`() {
+        showStep(RulesStep.LISTS)
+        compose.onNodeWithText("Previous").assertIsNotEnabled()
+        compose.onNodeWithText("Next").assertIsEnabled()
     }
 
     @Test
-    fun `unguided steps have no Next button`() {
+    fun `last step disables Next`() {
+        showStep(RulesStep.BLOCKED_CALLS)
+        compose.onNodeWithText("Next").assertIsNotEnabled()
+        compose.onNodeWithText("Previous").assertIsEnabled()
+    }
+
+    @Test
+    fun `step pages no longer show the Try a number card`() {
         showStep(RulesStep.UNKNOWN_CALLERS)
-        compose.onNodeWithText("Next").assertDoesNotExist()
+        compose.onNodeWithText("Try a number").assertDoesNotExist()
     }
 
     @Test
@@ -307,7 +239,7 @@ class RulesScreenTest {
             )
         var current: RulesStep by mutableStateOf(RulesStep.PEOPLE_YOU_KNOW)
         compose.setContent {
-            CallManagerTheme { RulesStepContent(current, RulesUiState(), viewModel, false, {}, {}) }
+            CallManagerTheme { RulesStepContent(current, RulesUiState(), viewModel, {}, {}, {}, {}) }
         }
 
         rules.forEach { (step, title, expected) ->

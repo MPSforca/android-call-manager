@@ -19,7 +19,7 @@ All paths are under `app/src/main/java/com/sforca/callmanager/`.
 | `core/database/` | Room database, one file per entity and DAO, migrations. |
 | `core/datastore/` | User settings (`SettingsStore`). |
 | `core/di/` | Hilt modules. |
-| `feature/{recent,lists,rules,debug,onboarding}/` | One screen plus ViewModel per feature. Tabs: Recent (batch-block from call history), Lists (block/allow lists, contact picker), Rules (settings), Test a number (`feature/debug`, all builds; simulate a call against the rules without dialing). |
+| `feature/{recent,lists,rules,debug,onboarding}/` | One screen plus ViewModel per feature. Tabs: Recent (batch-block from call history), Lists (block/allow lists, contact picker), Rules (settings, plus the Test a number section from `feature/debug`, all builds; simulate a call against the rules without dialing). |
 
 ## Rule evaluation order
 

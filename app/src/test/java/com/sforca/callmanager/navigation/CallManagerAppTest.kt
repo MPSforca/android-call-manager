@@ -129,27 +129,6 @@ class CallManagerAppTest {
         compose.onNodeWithText("Lists").performClick()
         compose.onNodeWithText("No blocked numbers").assertExists()
         compose.onNodeWithText("Rules").performClick()
-        compose.onNodeWithText("Guided setup").assertExists()
-        compose.onNodeWithText("Test").performClick()
-        compose.onNodeWithText("Test number").assertExists()
-    }
-
-    @Test
-    fun `rules hub test a number button opens the Test a number tab`() {
-        grantEverything()
-        launch()
-
-        compose.onNodeWithText("Rules").performClick()
-        compose.onNodeWithText("Test a number").performClick()
-
-        compose.onNodeWithText("Test number").assertExists()
-    }
-
-    @Test
-    fun `test deep link opens Test a number`() {
-        grantEverything()
-        launch(deepLink = "callmanager://test")
-
         compose.onNodeWithText("Test number").assertExists()
     }
 
@@ -200,33 +179,27 @@ class CallManagerAppTest {
         compose.onNodeWithText("Rules").performClick()
         compose.onNodeWithText("People you know").performClick()
         compose.onNodeWithText("2. People you know").assertExists()
-        compose.onNodeWithText("Guided setup").assertDoesNotExist()
+        compose.onNodeWithText("Test number").assertDoesNotExist()
 
         scenario!!.onActivity { it.onBackPressedDispatcher.onBackPressed() }
-        compose.onNodeWithText("Guided setup").assertExists()
+        compose.onNodeWithText("Test number").assertExists()
     }
 
     @Test
-    fun `guided setup walks every step in order and ends on the hub`() {
+    fun `step pages move between steps and the top button returns to the hub`() {
         grantEverything()
         launch()
 
         compose.onNodeWithText("Rules").performClick()
-        compose.onNodeWithText("Guided setup").performClick()
-        listOf(
-            "1. Your lists",
-            "2. People you know",
-            "3. Unknown callers",
-            "4. When a call is blocked",
-        ).forEachIndexed {
-                i,
-                header,
-            ->
-            compose.onNodeWithText(header).assertExists()
-            compose.onNodeWithText(if (i == 3) "Done" else "Next").performScrollTo().performClick()
-        }
+        compose.onNodeWithText("Your lists").performClick()
+        compose.onNodeWithText("1. Your lists").assertExists()
+        compose.onNodeWithText("Next").performScrollTo().performClick()
+        compose.onNodeWithText("2. People you know").assertExists()
+        compose.onNodeWithText("Previous").performScrollTo().performClick()
+        compose.onNodeWithText("1. Your lists").assertExists()
 
-        compose.onNodeWithText("Guided setup").assertExists()
+        compose.onNodeWithText("Back to Rules").performClick()
+        compose.onNodeWithText("Test number").assertExists()
     }
 
     @Test

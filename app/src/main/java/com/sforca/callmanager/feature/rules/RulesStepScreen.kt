@@ -1,6 +1,8 @@
 package com.sforca.callmanager.feature.rules
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -17,23 +19,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sforca.callmanager.R
 import com.sforca.callmanager.core.data.rule.ScreeningRuleId
 import com.sforca.callmanager.core.designsystem.component.CmButton
+import com.sforca.callmanager.core.designsystem.component.CmOutlinedButton
 import com.sforca.callmanager.core.designsystem.theme.LocalSpacing
 import com.sforca.callmanager.feature.rules.steps.BlockedCallsStep
 import com.sforca.callmanager.feature.rules.steps.ListsStep
 import com.sforca.callmanager.feature.rules.steps.PeopleYouKnowStep
 import com.sforca.callmanager.feature.rules.steps.UnknownCallersStep
 
-/**
- * One page of the Rules flow. In [guided] mode a Next button (Done on the last step) walks the user
- * through the steps in order.
- */
+/** One page of the Rules flow, with a button back to the hub and Previous / Next buttons between steps. */
 @Composable
 fun RulesStepScreen(
     step: RulesStep,
-    guided: Boolean,
     onOpenLists: () -> Unit,
-    onNext: (RulesStep) -> Unit,
-    onDone: () -> Unit,
+    onBackToRules: () -> Unit,
+    onNavigate: (RulesStep) -> Unit,
     viewModel: RulesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -41,9 +40,10 @@ fun RulesStepScreen(
         step = step,
         state = state,
         viewModel = viewModel,
-        guided = guided,
         onOpenLists = onOpenLists,
-        onAdvance = { RulesStep.entries.getOrNull(step.ordinal + 1)?.let(onNext) ?: onDone() },
+        onBackToRules = onBackToRules,
+        onPrevious = { RulesStep.entries.getOrNull(step.ordinal - 1)?.let(onNavigate) },
+        onNext = { RulesStep.entries.getOrNull(step.ordinal + 1)?.let(onNavigate) },
     )
 }
 
@@ -53,14 +53,20 @@ internal fun RulesStepContent(
     step: RulesStep,
     state: RulesUiState,
     viewModel: RulesViewModel,
-    guided: Boolean,
     onOpenLists: () -> Unit,
-    onAdvance: () -> Unit,
+    onBackToRules: () -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
 ) {
     val spacing = LocalSpacing.current
     var infoRule by remember { mutableStateOf<ScreeningRuleId?>(null) }
     infoRule?.let { RuleInfoSheet(RuleCatalog.forRule(it), onDismiss = { infoRule = null }) }
     Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = spacing.medium)) {
+        CmOutlinedButton(
+            text = stringResource(R.string.rules_step_back_to_rules),
+            onClick = onBackToRules,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.large, vertical = spacing.small),
+        )
         val onInfo: (ScreeningRuleId) -> Unit = { infoRule = it }
         when (step) {
             RulesStep.LISTS -> ListsStep(state.listCounts, onOpenLists, onInfo)
@@ -68,13 +74,21 @@ internal fun RulesStepContent(
             RulesStep.UNKNOWN_CALLERS -> UnknownCallersStep(state.preferences, viewModel, onInfo)
             RulesStep.BLOCKED_CALLS -> BlockedCallsStep(state.preferences, viewModel)
         }
-        RulePreviewCard(state.preview, onChange = { number, name -> viewModel.setPreview(number, name) })
-        if (guided) {
-            val last = step.ordinal == RulesStep.entries.lastIndex
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.large, vertical = spacing.medium),
+            horizontalArrangement = Arrangement.spacedBy(spacing.medium),
+        ) {
+            CmOutlinedButton(
+                text = stringResource(R.string.rules_step_previous),
+                onClick = onPrevious,
+                enabled = step.ordinal > 0,
+                modifier = Modifier.weight(1f),
+            )
             CmButton(
-                text = stringResource(if (last) R.string.rules_step_done else R.string.rules_step_next),
-                onClick = onAdvance,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.large, vertical = spacing.medium),
+                text = stringResource(R.string.rules_step_next),
+                onClick = onNext,
+                enabled = step.ordinal < RulesStep.entries.lastIndex,
+                modifier = Modifier.weight(1f),
             )
         }
     }
