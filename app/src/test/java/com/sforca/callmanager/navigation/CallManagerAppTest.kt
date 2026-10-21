@@ -5,7 +5,12 @@ import android.net.Uri
 import android.os.Looper
 import android.provider.CallLog
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -18,6 +23,7 @@ import com.sforca.callmanager.MainActivity
 import com.sforca.callmanager.core.datastore.SettingsRepository
 import com.sforca.callmanager.core.di.PermissionsModule
 import com.sforca.callmanager.core.di.TelephonyModule
+import com.sforca.callmanager.core.model.BlockedCallAction
 import com.sforca.callmanager.core.model.RecentCall
 import com.sforca.callmanager.core.model.SystemBlockedCall
 import com.sforca.callmanager.core.model.ThemeMode
@@ -92,8 +98,15 @@ class CallManagerAppTest {
 
     private var scenario: ActivityScenario<MainActivity>? = null
 
+    private var injected = false
+
+    private fun inject() {
+        if (!injected) hilt.inject()
+        injected = true
+    }
+
     private fun launch(deepLink: String? = null) {
-        hilt.inject()
+        inject()
         val context = ApplicationProvider.getApplicationContext<android.app.Application>()
         val intent =
             if (deepLink == null) {
@@ -238,44 +251,70 @@ class CallManagerAppTest {
     }
 
     @Test
-    fun `first run shows onboarding and skipping reveals the app with a fix banner`() {
+    fun `first run shows every permission on one page and skipping reveals the app with a fix banner`() {
         launch()
 
-        compose.onNodeWithText("Step 1 of 3").assertExists()
-        compose.onNodeWithText("Skip for now").performClick()
+        compose.onNodeWithText("Set as call-screening app").assertExists()
+        compose.onNodeWithText("Grant permissions").assertExists()
+        compose.onNodeWithText("Exempt from battery optimization").assertExists()
+        compose.onNodeWithText("Skip for now").performScrollTo().performClick()
+
+        // Skipping permissions still offers the key rules once.
+        awaitText("Finish setup")
+        compose.onNodeWithText("Finish setup").performScrollTo().performClick()
+        awaitText("Needs attention")
 
         compose
             .onNodeWithText("Call Manager isn't your call-screening app, so calls aren't being screened.")
             .assertExists()
         compose.onNodeWithText("Needs attention").assertExists()
-        compose.onNodeWithText("Fix").performClick()
-        compose.onNodeWithText("Recent").assertExists()
     }
 
     @Test
-    fun `onboarding moves on once the system reports the role was granted`() {
+    fun `granting permissions leads to the rules page and then Home with a Rules hint`() {
         launch()
-        compose.onNodeWithText("Set as call-screening app").performClick()
+        compose.onNodeWithText("Continue").assertIsNotEnabled()
 
         fakeStatus.role = true
+        fakeStatus.permissions = true
         resumeActivity()
+        compose
+            .onNodeWithText("Continue")
+            .performScrollTo()
+            .assertIsEnabled()
+            .performClick()
 
-        compose.onNodeWithText("Step 2 of 3").assertExists()
-        compose.onNodeWithText("Grant permissions").performClick()
+        awaitText("Choose your key rules")
+        // Recommended choices are preselected; changing them must stick.
+        compose.onNode(isToggleable()).assertIsOn()
+        compose.onNodeWithText("Silence").performScrollTo().performSemanticsAction(SemanticsActions.OnClick)
+        compose.onNode(isToggleable()).performScrollTo().performClick()
+        compose.onNodeWithText("Finish setup").performScrollTo().performClick()
+
+        awaitText("Protection is on")
+        compose.onNodeWithText("Protection is on. You can add more customizable rules in the Rules tab.").assertExists()
+        compose.onNodeWithText("Open Rules").performClick()
+        compose.onNodeWithText("Guided setup").assertExists()
+
+        val prefs = kotlinx.coroutines.runBlocking { settings.preferences.first() }
+        assertEquals(BlockedCallAction.SILENCE, prefs.blockedCallAction)
+        assertEquals(false, prefs.blockUnknownNumbers)
+        assertEquals(true, prefs.rulesSetupCompleted)
     }
 
     @Test
-    fun `declining the optional battery step enters the app`() {
+    fun `the rules page is only shown the first time`() {
+        inject()
+        kotlinx.coroutines.runBlocking { settings.setRulesSetupCompleted(true) }
         launch()
         fakeStatus.role = true
         fakeStatus.permissions = true
         resumeActivity()
 
-        compose.onNodeWithText("Step 3 of 3").assertExists()
-        compose.onNodeWithText("Exempt from battery optimization").performClick()
-        compose.onNodeWithText("Not now").performClick()
+        compose.onNodeWithText("Continue").performScrollTo().performClick()
 
-        compose.onNodeWithText("Protection is on").assertExists()
+        awaitText("Protection is on")
+        compose.onNodeWithText("Choose your key rules").assertDoesNotExist()
     }
 
     @Test
@@ -284,7 +323,7 @@ class CallManagerAppTest {
         fakeStatus.permissions = true
         launch()
 
-        compose.onNodeWithText("Step 3 of 3").assertDoesNotExist()
+        compose.onNodeWithText("Continue").assertDoesNotExist()
         compose.onNodeWithText("Protection is on").assertExists()
     }
 
@@ -297,6 +336,14 @@ class CallManagerAppTest {
 
         compose.onNodeWithText("Search name or number").assertExists()
     }
+
+    /** Waits for a transition that hops through DataStore's IO thread, which compose idling can't see. */
+    private fun awaitText(text: String) =
+        compose.waitUntil(timeoutMillis = 5_000) {
+            Thread.sleep(20)
+            shadowOf(Looper.getMainLooper()).idle()
+            compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+        }
 
     private fun resumeActivity() {
         scenario!!.moveToState(Lifecycle.State.STARTED)

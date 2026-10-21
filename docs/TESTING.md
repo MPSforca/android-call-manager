@@ -196,8 +196,8 @@ should fetch the rest with no duplicates or gaps. Mark some of the seeded number
 
 Onboarding only appears when the screening role or a runtime permission is missing, so an
 already-set-up emulator opens straight on the Recent tab. `pm clear` wipes app data and revokes
-runtime permissions but **leaves the screening role**, so the flow would start at step 2. Remove
-the role as well to start from step 1:
+runtime permissions but **leaves the screening role**, so that row would already show as done. Remove
+the role as well to see every row pending:
 
 ```bash
 # Check who holds the call-screening role (prints the package name, or nothing)
@@ -208,9 +208,11 @@ adb shell pm clear com.sforca.callmanager
 adb shell am start -n com.sforca.callmanager/.MainActivity
 ```
 
-You should see "Step 1 of 3" (screening role), then permissions, then the battery step. The
-battery step is optional and first-run only, and is skipped on API < 29, where the role doesn't
-exist. To give the role back without going through the flow:
+You should see one page listing the screening role, runtime permissions and the optional battery
+exemption, each turning into a check mark as it's granted; Continue unlocks once the role and
+permissions are done. The next page (first run only, since `pm clear` also resets it) asks whether
+to reject unknown callers and whether blocked calls are silenced or rejected, then lands on Home
+with a note pointing to the Rules tab. To give the role back without going through the flow:
 
 ```bash
 adb shell cmd role add-role-holder android.app.role.CALL_SCREENING com.sforca.callmanager

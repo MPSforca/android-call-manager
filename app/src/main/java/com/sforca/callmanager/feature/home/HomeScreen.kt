@@ -18,6 +18,7 @@ fun HomeScreen(
     onFix: (OnboardingStep) -> Unit,
     onCallSelected: (number: String) -> Unit,
     onSeeAll: () -> Unit,
+    rulesHint: RulesHint?,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
@@ -25,9 +26,22 @@ fun HomeScreen(
     val blockedCalls by viewModel.blockedCalls.collectAsStateWithLifecycle()
     val zone = remember { ZoneId.systemDefault() }
     HomeContent(
-        state = HomeUiState(permissions = permissions, calls = calls, blockedCalls = blockedCalls),
+        state =
+            HomeUiState(
+                permissions = permissions,
+                calls = calls,
+                blockedCalls = blockedCalls,
+                showRulesHint = rulesHint != null,
+            ),
         today = LocalDate.now(zone),
         zone = zone,
-        actions = HomeActions(onFix = onFix, onCallSelected = onCallSelected, onSeeAll = onSeeAll),
+        actions =
+            HomeActions(
+                onFix = onFix,
+                onCallSelected = onCallSelected,
+                onSeeAll = onSeeAll,
+                onDismissRulesHint = { rulesHint?.onDismiss?.invoke() },
+                onOpenRules = { rulesHint?.onOpen?.invoke() },
+            ),
     )
 }

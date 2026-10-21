@@ -46,6 +46,8 @@ class DataStoreSettingsRepository
 
         override suspend fun setThemeMode(value: ThemeMode) = set(THEME_MODE, value.name)
 
+        override suspend fun setRulesSetupCompleted(value: Boolean) = set(RULES_SETUP_COMPLETED, value)
+
         private suspend fun <T> set(
             key: Preferences.Key<T>,
             value: T,
@@ -73,6 +75,7 @@ class DataStoreSettingsRepository
                     this[THEME_MODE]
                         ?.let { name -> ThemeMode.entries.firstOrNull { it.name == name } }
                         ?: defaults.themeMode,
+                rulesSetupCompleted = this[RULES_SETUP_COMPLETED] ?: defaults.rulesSetupCompleted,
             )
         }
 
@@ -89,5 +92,6 @@ class DataStoreSettingsRepository
             internal val SHOW_REJECTED_NOTIFICATION = booleanPreferencesKey("show_rejected_call_notification")
             internal val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
             internal val THEME_MODE = stringPreferencesKey("theme_mode")
+            internal val RULES_SETUP_COMPLETED = booleanPreferencesKey("rules_setup_completed")
         }
     }

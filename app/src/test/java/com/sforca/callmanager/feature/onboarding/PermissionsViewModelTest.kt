@@ -44,6 +44,16 @@ class PermissionsViewModelTest {
     }
 
     @Test
+    fun `isDone reflects each step`() {
+        status.permissions = true
+        val state = viewModel().state.value
+
+        assertFalse(state.isDone(OnboardingStep.ROLE))
+        assertTrue(state.isDone(OnboardingStep.PERMISSIONS))
+        assertFalse(state.isDone(OnboardingStep.BATTERY))
+    }
+
+    @Test
     fun `onboarding is needed until core steps are done or skipped`() {
         val vm = viewModel()
         assertTrue(vm.state.value.needsOnboarding)

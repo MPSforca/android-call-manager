@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="onboarding_step_counter">Step %1$d of %2$d</string>
+    <string name="onboarding_title">Let\'s set up Call Manager</string>
+    <string name="onboarding_intro">Allow these so Call Manager can screen your calls. Everything stays on this device.</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_done">Done</string>
+    <string name="onboarding_optional">Optional</string>
+    <string name="onboarding_rules_title">Choose your key rules</string>
+    <string name="onboarding_rules_intro">Two quick choices to get you protected. You can change them any time.</string>
+    <string name="onboarding_rules_action_label">When a call is blocked</string>
+    <string name="onboarding_rules_finish">Finish setup</string>
     <string name="onboarding_skip">Skip for now</string>
-    <string name="onboarding_not_now">Not now</string>
 
     <string name="onboarding_role_title">Make Call Manager your call-screening app</string>
     <string name="onboarding_role_why">Android only lets one app screen incoming calls. Taking that role is what lets Call Manager silence or reject calls that match your rules. It does not replace your phone app.</string>

@@ -75,15 +75,10 @@ internal fun HomeContent(
                 )
             }
         }
-        item(key = "stats") {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(spacing.large),
-                horizontalArrangement = Arrangement.spacedBy(spacing.medium),
-            ) {
-                StatCard(value = summary.blockedToday.toString(), label = stringResource(R.string.home_blocked_today))
-                StatCard(value = summary.allowedToday.toString(), label = stringResource(R.string.home_allowed_today))
-            }
+        if (state.showRulesHint) {
+            item(key = "rules-hint") { RulesHintCard(actions, Modifier.padding(horizontal = spacing.large)) }
         }
+        item(key = "stats") { StatsRow(summary, Modifier.padding(spacing.large)) }
         item(key = "activity-header") {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 SectionHeader(title = stringResource(R.string.home_activity), modifier = Modifier.weight(1f))
@@ -104,6 +99,34 @@ internal fun HomeContent(
                 ActivityRow(group, state, zone, actions.onCallSelected)
             }
         }
+    }
+}
+
+@Composable
+private fun RulesHintCard(
+    actions: HomeActions,
+    modifier: Modifier = Modifier,
+) {
+    CmCard(modifier = modifier) {
+        Text(stringResource(R.string.home_rules_hint), style = MaterialTheme.typography.bodyMedium)
+        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            CmTextButton(text = stringResource(R.string.home_rules_hint_dismiss), onClick = actions.onDismissRulesHint)
+            CmTextButton(text = stringResource(R.string.home_rules_hint_open), onClick = actions.onOpenRules)
+        }
+    }
+}
+
+@Composable
+private fun StatsRow(
+    summary: HomeSummary,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(LocalSpacing.current.medium),
+    ) {
+        StatCard(value = summary.blockedToday.toString(), label = stringResource(R.string.home_blocked_today))
+        StatCard(value = summary.allowedToday.toString(), label = stringResource(R.string.home_allowed_today))
     }
 }
 

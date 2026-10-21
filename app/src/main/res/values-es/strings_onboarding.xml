@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="onboarding_step_counter">Paso %1$d de %2$d</string>
+    <string name="onboarding_title">Configuremos Call Manager</string>
+    <string name="onboarding_intro">Permite estos accesos para que Call Manager filtre tus llamadas. Todo se queda en este dispositivo.</string>
+    <string name="onboarding_continue">Continuar</string>
+    <string name="onboarding_done">Listo</string>
+    <string name="onboarding_optional">Opcional</string>
+    <string name="onboarding_rules_title">Elige tus reglas principales</string>
+    <string name="onboarding_rules_intro">Dos decisiones rápidas para quedar protegido. Puedes cambiarlas cuando quieras.</string>
+    <string name="onboarding_rules_action_label">Cuando se bloquea una llamada</string>
+    <string name="onboarding_rules_finish">Terminar configuración</string>
     <string name="onboarding_skip">Omitir por ahora</string>
-    <string name="onboarding_not_now">Ahora no</string>
 
     <string name="onboarding_role_title">Convierte Call Manager en tu app de filtrado de llamadas</string>
     <string name="onboarding_role_why">Android solo permite que una app filtre las llamadas entrantes. Con ese rol, Call Manager puede silenciar o rechazar las llamadas que coincidan con tus reglas. No reemplaza tu app de teléfono.</string>

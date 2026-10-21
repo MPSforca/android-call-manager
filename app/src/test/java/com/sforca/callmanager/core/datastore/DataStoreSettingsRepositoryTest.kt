@@ -105,6 +105,17 @@ class DataStoreSettingsRepositoryTest {
         }
 
     @Test
+    fun `rules setup completion is false by default and persists once set`() =
+        runTest {
+            val repo = DataStoreSettingsRepository(dataStore())
+            assertEquals(false, repo.preferences.first().rulesSetupCompleted)
+
+            repo.setRulesSetupCompleted(true)
+
+            assertEquals(true, repo.preferences.first().rulesSetupCompleted)
+        }
+
+    @Test
     fun `an unrecognised stored theme mode falls back to following the system`() =
         runTest {
             val store = dataStore()

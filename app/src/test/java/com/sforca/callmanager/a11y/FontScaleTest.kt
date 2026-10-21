@@ -46,7 +46,7 @@ class FontScaleTest {
                         onRequestPermissions = { calls += "permissions" },
                         onRequestBatteryExemption = { calls += "battery" },
                         onSkip = { calls += "skip" },
-                        onFinished = { calls += "finished" },
+                        onContinue = { calls += "continue" },
                     )
                 }
             }

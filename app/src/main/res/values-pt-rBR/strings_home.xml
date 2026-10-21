@@ -12,4 +12,7 @@
     <string name="home_activity">Atividade recente</string>
     <string name="home_see_all">Ver tudo</string>
     <string name="home_activity_empty">Nenhuma chamada ainda</string>
+    <string name="home_rules_hint">A proteção está ativa. Você pode adicionar mais regras personalizáveis na aba Regras.</string>
+    <string name="home_rules_hint_dismiss">Dispensar</string>
+    <string name="home_rules_hint_open">Abrir Regras</string>
 </resources>
