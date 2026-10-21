@@ -28,4 +28,6 @@ interface SettingsRepository {
     suspend fun setDynamicColor(value: Boolean)
 
     suspend fun setThemeMode(value: ThemeMode)
+
+    suspend fun setRulesSetupCompleted(value: Boolean)
 }

@@ -20,6 +20,13 @@ data class PermissionsState(
     /** What the app can't work without: the screening role and the runtime permissions. */
     val coreComplete: Boolean get() = hasRole && hasPermissions
 
+    fun isDone(step: OnboardingStep): Boolean =
+        when (step) {
+            OnboardingStep.ROLE -> hasRole
+            OnboardingStep.PERMISSIONS -> hasPermissions
+            OnboardingStep.BATTERY -> batteryExempt
+        }
+
     /** First step still outstanding, or null when every step is satisfied. */
     val nextStep: OnboardingStep?
         get() =

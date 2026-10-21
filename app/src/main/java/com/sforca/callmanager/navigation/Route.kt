@@ -8,6 +8,10 @@ sealed interface Route {
     @Serializable
     data object Onboarding : Route
 
+    /** Second first-run page: the most important rules. Only shown once, after the permissions page. */
+    @Serializable
+    data object OnboardingRules : Route
+
     @Serializable
     data object Home : Route
 

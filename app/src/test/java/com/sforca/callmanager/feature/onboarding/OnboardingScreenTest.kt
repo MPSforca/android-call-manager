@@ -1,8 +1,11 @@
 package com.sforca.callmanager.feature.onboarding
 
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.sforca.callmanager.testing.ComposeHostRule
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -30,46 +33,50 @@ class OnboardingScreenTest {
                 onRequestPermissions = { calls += "permissions" },
                 onRequestBatteryExemption = { calls += "battery" },
                 onSkip = { calls += "skip" },
-                onFinished = { calls += "finished" },
+                onContinue = { calls += "continue" },
             )
         }
 
     @Test
-    fun `role step explains itself and requests the role`() {
+    fun `every permission is requested from the same page`() {
         show(PermissionsState())
 
-        compose.onNodeWithText("Step 1 of 3").assertExists()
-        compose.onNodeWithText("Set as call-screening app").performClick()
-        compose.onNodeWithText("Skip for now").performClick()
+        compose.onNodeWithText("Set as call-screening app").performScrollTo().performClick()
+        compose.onNodeWithText("Grant permissions").performScrollTo().performClick()
+        compose.onNodeWithText("Exempt from battery optimization").performScrollTo().performClick()
 
-        assertEquals(listOf("role", "skip"), calls)
+        assertEquals(listOf("role", "permissions", "battery"), calls)
     }
 
     @Test
-    fun `permissions step requests runtime permissions`() {
+    fun `continue stays disabled until role and permissions are granted`() {
         show(PermissionsState(hasRole = true))
 
-        compose.onNodeWithText("Step 2 of 3").assertExists()
-        compose.onNodeWithText("Grant permissions").performClick()
-
-        assertEquals(listOf("permissions"), calls)
+        compose.onNodeWithText("Continue").performScrollTo().assertIsNotEnabled()
     }
 
     @Test
-    fun `battery step can be declined without skipping onboarding`() {
+    fun `granted steps drop their button and optional battery does not block continue`() {
         show(PermissionsState(hasRole = true, hasPermissions = true))
 
-        compose.onNodeWithText("Exempt from battery optimization").performClick()
-        compose.onNodeWithText("Not now").performClick()
+        compose.onNodeWithText("Set as call-screening app").assertDoesNotExist()
+        compose.onNodeWithText("Grant permissions").assertDoesNotExist()
+        compose.onNodeWithText("Optional").assertExists()
+        compose
+            .onNodeWithText("Continue")
+            .performScrollTo()
+            .assertIsEnabled()
+            .performClick()
 
-        assertEquals(listOf("battery", "finished"), calls)
+        assertEquals(listOf("continue"), calls)
     }
 
     @Test
-    fun `finishes immediately when everything is already granted`() {
-        show(PermissionsState(hasRole = true, hasPermissions = true, batteryExempt = true))
-        compose.waitForIdle()
+    fun `skip is always available`() {
+        show(PermissionsState())
 
-        assertEquals(listOf("finished"), calls)
+        compose.onNodeWithText("Skip for now").performScrollTo().performClick()
+
+        assertEquals(listOf("skip"), calls)
     }
 }

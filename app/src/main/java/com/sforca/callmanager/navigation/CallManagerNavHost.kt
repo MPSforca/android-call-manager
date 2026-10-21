@@ -1,7 +1,13 @@
 package com.sforca.callmanager.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
@@ -11,7 +17,10 @@ import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
 import com.sforca.callmanager.feature.debug.DebugScreen
 import com.sforca.callmanager.feature.home.HomeScreen
+import com.sforca.callmanager.feature.home.RulesHint
 import com.sforca.callmanager.feature.lists.ListsScreen
+import com.sforca.callmanager.feature.onboarding.OnboardingRulesScreen
+import com.sforca.callmanager.feature.onboarding.OnboardingRulesViewModel
 import com.sforca.callmanager.feature.onboarding.OnboardingScreen
 import com.sforca.callmanager.feature.onboarding.OnboardingStep
 import com.sforca.callmanager.feature.onboarding.PermissionsState
@@ -30,21 +39,10 @@ fun CallManagerNavHost(
     actions: SystemActions,
     modifier: Modifier = Modifier,
 ) {
+    // One-shot "more rules live in the Rules tab" note shown on Home right after first-run setup.
+    var showRulesHint by rememberSaveable { mutableStateOf(false) }
     NavHost(navController = navController, startDestination = startDestination, modifier = modifier) {
-        composable<Route.Onboarding> {
-            val finish = { navController.leaveOnboarding() }
-            OnboardingScreen(
-                state = permissions,
-                onRequestRole = actions.requestScreeningRole,
-                onRequestPermissions = actions.requestRuntimePermissions,
-                onRequestBatteryExemption = actions.requestBatteryExemption,
-                onSkip = {
-                    actions.skipOnboarding()
-                    finish()
-                },
-                onFinished = finish,
-            )
-        }
+        onboardingDestinations(navController, permissions, actions, onRulesSetupDone = { showRulesHint = true })
         composable<Route.Home>(deepLinks = listOf(navDeepLink<Route.Home>(basePath = "${DEEP_LINK_BASE}home"))) {
             HomeScreen(
                 permissions = permissions,
@@ -57,6 +55,18 @@ fun CallManagerNavHost(
                 },
                 onCallSelected = { navController.navigate(Route.CallDetail(it)) },
                 onSeeAll = { navController.navigateToTopLevel(TopLevelDestination.RECENT) },
+                rulesHint =
+                    if (showRulesHint) {
+                        RulesHint(
+                            onDismiss = { showRulesHint = false },
+                            onOpen = {
+                                showRulesHint = false
+                                navController.navigateToTopLevel(TopLevelDestination.RULES)
+                            },
+                        )
+                    } else {
+                        null
+                    },
             )
         }
         composable<Route.Recent>(deepLinks = listOf(navDeepLink<Route.Recent>(basePath = "${DEEP_LINK_BASE}recent"))) {
@@ -81,6 +91,49 @@ fun CallManagerNavHost(
         composable<Route.TestNumber>(
             deepLinks = listOf(navDeepLink<Route.TestNumber>(basePath = "${DEEP_LINK_BASE}test")),
         ) { DebugScreen() }
+    }
+}
+
+private fun NavGraphBuilder.onboardingDestinations(
+    navController: NavHostController,
+    permissions: PermissionsState,
+    actions: SystemActions,
+    onRulesSetupDone: () -> Unit,
+) {
+    composable<Route.Onboarding> {
+        val rulesViewModel: OnboardingRulesViewModel = hiltViewModel()
+        // The rules page is first-run only, so a returning user goes straight to Home.
+        val leave = {
+            rulesViewModel.needsRulesSetup { needed ->
+                if (needed) navController.openOnboardingRules() else navController.leaveOnboarding()
+            }
+        }
+        OnboardingScreen(
+            state = permissions,
+            onRequestRole = actions.requestScreeningRole,
+            onRequestPermissions = actions.requestRuntimePermissions,
+            onRequestBatteryExemption = actions.requestBatteryExemption,
+            onSkip = {
+                actions.skipOnboarding()
+                leave()
+            },
+            onContinue = { leave() },
+        )
+    }
+    composable<Route.OnboardingRules> {
+        val viewModel: OnboardingRulesViewModel = hiltViewModel()
+        val preferences by viewModel.preferences.collectAsStateWithLifecycle()
+        OnboardingRulesScreen(
+            preferences = preferences,
+            onBlockUnknownChange = { viewModel.setBlockUnknownNumbers(it) },
+            onActionChange = { viewModel.setBlockedCallAction(it) },
+            onFinish = {
+                viewModel.finish {
+                    onRulesSetupDone()
+                    navController.leaveOnboardingRules()
+                }
+            },
+        )
     }
 }
 
@@ -132,6 +185,14 @@ private fun NavOptionsBuilder.configureTopLevel() {
 /** Replaces the current guided step with [next], so back from it returns to the hub. */
 private fun NavHostController.advanceRulesStep(next: RulesStep) {
     navigate(Route.RulesStep(next, guided = true)) { popUpTo<Route.RulesStep> { inclusive = true } }
+}
+
+private fun NavHostController.openOnboardingRules() {
+    navigate(Route.OnboardingRules) { popUpTo<Route.Onboarding> { inclusive = true } }
+}
+
+private fun NavHostController.leaveOnboardingRules() {
+    navigate(Route.Home) { popUpTo<Route.OnboardingRules> { inclusive = true } }
 }
 
 private fun NavHostController.leaveOnboarding() {

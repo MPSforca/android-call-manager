@@ -38,6 +38,8 @@ class HomeContentTest {
         onFix: (OnboardingStep) -> Unit = {},
         onCallSelected: (String) -> Unit = {},
         onSeeAll: () -> Unit = {},
+        onDismissRulesHint: () -> Unit = {},
+        onOpenRules: () -> Unit = {},
     ) {
         compose.setContent {
             CallManagerTheme {
@@ -45,7 +47,14 @@ class HomeContentTest {
                     state = state,
                     today = TODAY,
                     zone = ZoneOffset.UTC,
-                    actions = HomeActions(onFix = onFix, onCallSelected = onCallSelected, onSeeAll = onSeeAll),
+                    actions =
+                        HomeActions(
+                            onFix = onFix,
+                            onCallSelected = onCallSelected,
+                            onSeeAll = onSeeAll,
+                            onDismissRulesHint = onDismissRulesHint,
+                            onOpenRules = onOpenRules,
+                        ),
                 )
             }
         }
@@ -124,6 +133,29 @@ class HomeContentTest {
         compose.onNodeWithText("See all").performClick()
 
         assertEquals(1, seeAll)
+    }
+
+    @Test
+    fun `rules hint is hidden unless requested`() {
+        show(HomeUiState(permissions = ALL_GRANTED))
+
+        compose.onNodeWithText("Open Rules").assertDoesNotExist()
+    }
+
+    @Test
+    fun `rules hint points to the Rules tab and can be dismissed`() {
+        val events = mutableListOf<String>()
+        show(
+            HomeUiState(permissions = ALL_GRANTED, showRulesHint = true),
+            onDismissRulesHint = { events += "dismiss" },
+            onOpenRules = { events += "open" },
+        )
+
+        compose.onNodeWithText("Protection is on. You can add more customizable rules in the Rules tab.").assertExists()
+        compose.onNodeWithText("Open Rules").performClick()
+        compose.onNodeWithText("Dismiss").performClick()
+
+        assertEquals(listOf("open", "dismiss"), events)
     }
 
     @Test

@@ -12,4 +12,7 @@
     <string name="home_activity">Recent activity</string>
     <string name="home_see_all">See all</string>
     <string name="home_activity_empty">No calls yet</string>
+    <string name="home_rules_hint">Protection is on. You can add more customizable rules in the Rules tab.</string>
+    <string name="home_rules_hint_dismiss">Dismiss</string>
+    <string name="home_rules_hint_open">Open Rules</string>
 </resources>

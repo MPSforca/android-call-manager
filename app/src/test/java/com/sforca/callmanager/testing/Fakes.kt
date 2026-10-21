@@ -96,6 +96,8 @@ class FakeSettingsRepository(
 
     override suspend fun setThemeMode(value: ThemeMode) = update { copy(themeMode = value) }
 
+    override suspend fun setRulesSetupCompleted(value: Boolean) = update { copy(rulesSetupCompleted = value) }
+
     override suspend fun setShowRejectedCallNotification(value: Boolean) =
         update {
             copy(showRejectedCallNotification = value)

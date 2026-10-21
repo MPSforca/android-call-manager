@@ -19,4 +19,6 @@ data class UserPreferences(
     val dynamicColor: Boolean = false,
     /** Light, dark or follow the system. */
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    /** Set once the first-run "most important rules" page has been completed, so it is only ever shown once. */
+    val rulesSetupCompleted: Boolean = false,
 )
