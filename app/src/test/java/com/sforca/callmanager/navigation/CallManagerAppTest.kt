@@ -7,6 +7,7 @@ import android.provider.CallLog
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -310,8 +311,10 @@ class CallManagerAppTest {
             .assertIsEnabled()
             .performClick()
 
-        compose.onNodeWithText("Choose your key rules").assertExists()
-        compose.onNodeWithText("Reject").performScrollTo().performSemanticsAction(SemanticsActions.OnClick)
+        awaitText("Choose your key rules")
+        // Recommended choices are preselected; changing them must stick.
+        compose.onNode(isToggleable()).assertIsOn()
+        compose.onNodeWithText("Silence").performScrollTo().performSemanticsAction(SemanticsActions.OnClick)
         compose.onNode(isToggleable()).performScrollTo().performClick()
         compose.onNodeWithText("Finish setup").performScrollTo().performClick()
 
@@ -321,8 +324,8 @@ class CallManagerAppTest {
         compose.onNodeWithText("Guided setup").assertExists()
 
         val prefs = kotlinx.coroutines.runBlocking { settings.preferences.first() }
-        assertEquals(BlockedCallAction.REJECT, prefs.blockedCallAction)
-        assertEquals(true, prefs.blockUnknownNumbers)
+        assertEquals(BlockedCallAction.SILENCE, prefs.blockedCallAction)
+        assertEquals(false, prefs.blockUnknownNumbers)
         assertEquals(true, prefs.rulesSetupCompleted)
     }
 

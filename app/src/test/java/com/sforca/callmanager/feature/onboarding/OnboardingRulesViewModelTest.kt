@@ -32,6 +32,29 @@ class OnboardingRulesViewModelTest {
     }
 
     @Test
+    fun `first-run setup preselects rejecting unknown numbers and blocked calls`() =
+        runTest {
+            needsSetup()
+
+            val prefs = settings.preferences.first()
+            assertTrue(prefs.blockUnknownNumbers)
+            assertEquals(BlockedCallAction.REJECT, prefs.blockedCallAction)
+        }
+
+    @Test
+    fun `returning users keep their existing choices`() =
+        runTest {
+            settings.setRulesSetupCompleted(true)
+            settings.setBlockedCallAction(BlockedCallAction.SILENCE)
+
+            assertFalse(needsSetup())
+
+            val prefs = settings.preferences.first()
+            assertFalse(prefs.blockUnknownNumbers)
+            assertEquals(BlockedCallAction.SILENCE, prefs.blockedCallAction)
+        }
+
+    @Test
     fun `finishing marks the setup done exactly once and notifies`() =
         runTest {
             var finished = false

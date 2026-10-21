@@ -23,9 +23,21 @@ class OnboardingRulesViewModel
         val preferences: StateFlow<UserPreferences> =
             settings.preferences.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UserPreferences())
 
-        /** Calls [onResult] with true when the user has never completed the first-run rules page. */
+        /**
+         * Calls [onResult] with true when the user has never completed the first-run rules page. In that
+         * case the recommended choices (reject unknown numbers, reject blocked calls) are saved first,
+         * so the page opens showing exactly what is stored. This runs once per transition, so it never
+         * overwrites a choice the user makes on the page itself.
+         */
         fun needsRulesSetup(onResult: (Boolean) -> Unit) {
-            viewModelScope.launch { onResult(!settings.preferences.first().rulesSetupCompleted) }
+            viewModelScope.launch {
+                val needed = !settings.preferences.first().rulesSetupCompleted
+                if (needed) {
+                    settings.setBlockUnknownNumbers(true)
+                    settings.setBlockedCallAction(BlockedCallAction.REJECT)
+                }
+                onResult(needed)
+            }
         }
 
         fun setBlockUnknownNumbers(value: Boolean) = viewModelScope.launch { settings.setBlockUnknownNumbers(value) }
