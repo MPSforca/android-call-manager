@@ -1,5 +1,9 @@
 package com.sforca.callmanager.feature.debug
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -47,7 +51,12 @@ class DebugScreenTest {
         onSimulate: (String, String?) -> Unit = { _, _ -> },
         onClear: () -> Unit = {},
     ) {
-        compose.setContent { CallManagerTheme { DebugContent(state, onSimulate, onClear) } }
+        // The Rules hub provides the scrolling in the app.
+        compose.setContent {
+            CallManagerTheme {
+                Column(Modifier.verticalScroll(rememberScrollState())) { DebugContent(state, onSimulate, onClear) }
+            }
+        }
     }
 
     @Test

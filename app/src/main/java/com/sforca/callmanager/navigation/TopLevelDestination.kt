@@ -6,7 +6,6 @@ import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Rule
-import androidx.compose.material.icons.filled.Science
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -31,7 +30,6 @@ enum class TopLevelDestination(
         Route.Rules::class,
         nestedRouteClasses = listOf(Route.RulesStep::class),
     ),
-    TEST_NUMBER(R.string.nav_test_number, Icons.Filled.Science, Route.TestNumber, Route.TestNumber::class),
     ;
 
     fun matches(destination: NavDestination?): Boolean =

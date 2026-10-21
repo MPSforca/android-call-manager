@@ -25,18 +25,14 @@ sealed interface Route {
     @Serializable
     data object Rules : Route
 
-    /** One page of the Rules flow; [guided] shows a Next/Done button that walks to the following step. */
+    /** One page of the Rules flow. */
     @Serializable
     data class RulesStep(
         val step: RulesStepPage,
-        val guided: Boolean = false,
     ) : Route
 
     @Serializable
     data object Settings : Route
-
-    @Serializable
-    data object TestNumber : Route
 }
 
 /** Base URI for deep links, e.g. `callmanager://call/%2B15551234567`. */

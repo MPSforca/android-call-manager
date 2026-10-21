@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material3.MaterialTheme
@@ -41,7 +39,10 @@ import com.sforca.callmanager.core.designsystem.theme.LocalSpacing
 import com.sforca.callmanager.core.model.ScreeningDecision
 import com.sforca.callmanager.core.telephony.PhoneNumberFormatter
 
-/** "Test a number": runs the same rule evaluation the real CallScreeningService uses, without a real call. */
+/**
+ * "Test a number" section of the Rules hub (it scrolls with the hub): runs the same rule evaluation the real
+ * CallScreeningService uses, without a real call.
+ */
 @Composable
 fun DebugScreen(viewModel: DebugViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -71,7 +72,7 @@ internal fun DebugContent(
     var callerName by rememberSaveable { mutableStateOf("") }
 
     Column(
-        modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = spacing.medium),
+        modifier = Modifier.padding(vertical = spacing.medium),
         verticalArrangement = Arrangement.spacedBy(spacing.small),
     ) {
         SectionHeader(

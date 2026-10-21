@@ -59,8 +59,6 @@
     <string name="rules_info_example_label">Example</string>
     <string name="rules_info_position">Rule %1$d</string>
     <string name="rules_hub_intro">Rules run from top to bottom. The first rule that matches decides what happens to a call.</string>
-    <string name="rules_hub_guided_setup">Guided setup</string>
-    <string name="rules_hub_test_number">Test a number</string>
     <string name="rules_summary_lists">Blocked: %1$d · Allowed: %2$d · Patterns: %3$d</string>
     <string name="rules_summary_toggles">%1$d of %2$d on</string>
     <string name="rules_summary_unknown_on">Unknown numbers are blocked</string>
@@ -69,17 +67,11 @@
     <string name="rules_summary_blocked_reject">Blocked calls are rejected</string>
     <string name="rules_summary_blocked_reject_notify">Blocked calls are rejected, with a notification</string>
     <string name="rules_step_next">Next</string>
-    <string name="rules_step_done">Done</string>
+    <string name="rules_step_back_to_rules">Back to Rules</string>
+    <string name="rules_step_previous">Previous</string>
     <string name="rules_lists_open">Open Lists</string>
     <plurals name="rules_lists_entries">
         <item quantity="one">%d entry</item>
         <item quantity="other">%d entries</item>
     </plurals>
-    <string name="rules_preview_title">Try a number</string>
-    <string name="rules_preview_subtitle">See what your current rules would do with a call from this number.</string>
-    <string name="rules_preview_number_label">Phone number</string>
-    <string name="rules_preview_name_label">Caller name (optional)</string>
-    <string name="rules_preview_allowed">Would ring</string>
-    <string name="rules_preview_blocked">Would be blocked</string>
-    <string name="rules_preview_decided_by">Decided by: %1$s</string>
 </resources>

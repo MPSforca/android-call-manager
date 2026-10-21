@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
 import androidx.navigation.toRoute
-import com.sforca.callmanager.feature.debug.DebugScreen
 import com.sforca.callmanager.feature.home.HomeScreen
 import com.sforca.callmanager.feature.lists.ListsScreen
 import com.sforca.callmanager.feature.onboarding.OnboardingScreen
@@ -78,28 +77,20 @@ fun CallManagerNavHost(
         }
         rulesDestinations(navController)
         settingsDestination(permissions, actions)
-        composable<Route.TestNumber>(
-            deepLinks = listOf(navDeepLink<Route.TestNumber>(basePath = "${DEEP_LINK_BASE}test")),
-        ) { DebugScreen() }
     }
 }
 
 private fun NavGraphBuilder.rulesDestinations(navController: NavHostController) {
     composable<Route.Rules>(deepLinks = listOf(navDeepLink<Route.Rules>(basePath = "${DEEP_LINK_BASE}rules"))) {
-        RulesScreen(
-            onOpenStep = { navController.navigate(Route.RulesStep(it)) },
-            onGuidedSetup = { navController.navigate(Route.RulesStep(RulesStep.entries.first(), guided = true)) },
-            onTestNumber = { navController.navigateToTopLevel(TopLevelDestination.TEST_NUMBER) },
-        )
+        RulesScreen(onOpenStep = { navController.navigate(Route.RulesStep(it)) })
     }
     composable<Route.RulesStep> { entry ->
         val route = entry.toRoute<Route.RulesStep>()
         RulesStepScreen(
             step = route.step,
-            guided = route.guided,
             onOpenLists = { navController.navigateToTopLevel(TopLevelDestination.LISTS) },
-            onNext = { next -> navController.advanceRulesStep(next) },
-            onDone = { navController.popBackStack<Route.Rules>(inclusive = false) },
+            onBackToRules = { navController.popBackStack<Route.Rules>(inclusive = false) },
+            onNavigate = { navController.switchRulesStep(it) },
         )
     }
 }
@@ -129,9 +120,9 @@ private fun NavOptionsBuilder.configureTopLevel() {
     restoreState = true
 }
 
-/** Replaces the current guided step with [next], so back from it returns to the hub. */
-private fun NavHostController.advanceRulesStep(next: RulesStep) {
-    navigate(Route.RulesStep(next, guided = true)) { popUpTo<Route.RulesStep> { inclusive = true } }
+/** Replaces the current step with [next], so back from it returns to the hub. */
+private fun NavHostController.switchRulesStep(next: RulesStep) {
+    navigate(Route.RulesStep(next)) { popUpTo<Route.RulesStep> { inclusive = true } }
 }
 
 private fun NavHostController.leaveOnboarding() {

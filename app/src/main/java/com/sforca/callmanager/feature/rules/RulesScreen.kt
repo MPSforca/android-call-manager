@@ -20,45 +20,26 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sforca.callmanager.R
-import com.sforca.callmanager.core.designsystem.component.CmButton
 import com.sforca.callmanager.core.designsystem.component.CmCard
-import com.sforca.callmanager.core.designsystem.component.CmOutlinedButton
 import com.sforca.callmanager.core.designsystem.theme.LocalSpacing
+import com.sforca.callmanager.feature.debug.DebugScreen
 
-/** The Rules hub: how rules are evaluated, one status card per step, and a guided walkthrough. */
+/** The Rules hub: how rules are evaluated, one status card per step, and the Test a number tool. */
 @Composable
 fun RulesScreen(
     onOpenStep: (RulesStep) -> Unit,
-    onGuidedSetup: () -> Unit,
-    onTestNumber: () -> Unit,
     viewModel: RulesViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    RulesHubContent(
-        state = state,
-        actions =
-            RulesHubActions(
-                onOpenStep = onOpenStep,
-                onGuidedSetup = onGuidedSetup,
-                onTestNumber = onTestNumber,
-                onPreviewChange = { number, name -> viewModel.setPreview(number, name) },
-            ),
-    )
+    RulesHubContent(state = state, onOpenStep = onOpenStep, footer = { DebugScreen() })
 }
 
-/** What the user can do on the hub, grouped so the stateless body stays readable. */
-internal data class RulesHubActions(
-    val onOpenStep: (RulesStep) -> Unit,
-    val onGuidedSetup: () -> Unit,
-    val onTestNumber: () -> Unit,
-    val onPreviewChange: (number: String, callerName: String?) -> Unit,
-)
-
-/** Stateless body of [RulesScreen]. */
+/** Stateless body of [RulesScreen]; [footer] holds the Test a number section below the step cards. */
 @Composable
 internal fun RulesHubContent(
     state: RulesUiState,
-    actions: RulesHubActions,
+    onOpenStep: (RulesStep) -> Unit,
+    footer: @Composable () -> Unit = {},
 ) {
     val spacing = LocalSpacing.current
     Column(
@@ -69,24 +50,14 @@ internal fun RulesHubContent(
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(horizontal = spacing.large, vertical = spacing.small),
         )
-        CmButton(
-            text = stringResource(R.string.rules_hub_guided_setup),
-            onClick = actions.onGuidedSetup,
-            modifier = Modifier.padding(horizontal = spacing.large, vertical = spacing.small),
-        )
-        CmOutlinedButton(
-            text = stringResource(R.string.rules_hub_test_number),
-            onClick = actions.onTestNumber,
-            modifier = Modifier.padding(horizontal = spacing.large, vertical = spacing.small),
-        )
         RulesStep.entries.forEach { step ->
             StepCard(
                 step = step,
                 summary = summarize(step, state.preferences, state.listCounts).text(),
-                onClick = { actions.onOpenStep(step) },
+                onClick = { onOpenStep(step) },
             )
         }
-        RulePreviewCard(state.preview, actions.onPreviewChange)
+        footer()
     }
 }
 

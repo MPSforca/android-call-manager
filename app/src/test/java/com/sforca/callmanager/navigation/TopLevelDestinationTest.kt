@@ -33,20 +33,18 @@ class TopLevelDestinationTest {
                     composable<Route.Lists> {}
                     composable<Route.Rules> {}
                     composable<Route.RulesStep> {}
-                    composable<Route.TestNumber> {}
                 }
         }
     }
 
     @Test
-    fun `test a number is a tab in every build`() {
+    fun `the bottom bar has four tabs`() {
         assertEquals(
             listOf(
                 TopLevelDestination.HOME,
                 TopLevelDestination.RECENT,
                 TopLevelDestination.LISTS,
                 TopLevelDestination.RULES,
-                TopLevelDestination.TEST_NUMBER,
             ),
             TopLevelDestination.entries.toList(),
         )
@@ -70,14 +68,6 @@ class TopLevelDestinationTest {
 
         assertEquals(TopLevelDestination.RULES, TopLevelDestination.from(nav.currentDestination))
         assertFalse(TopLevelDestination.LISTS.matches(nav.currentDestination))
-    }
-
-    @Test
-    fun `test a number destination resolves to its tab`() {
-        val nav = controller()
-        nav.navigateToTopLevel(TopLevelDestination.TEST_NUMBER)
-
-        assertEquals(TopLevelDestination.TEST_NUMBER, TopLevelDestination.from(nav.currentDestination))
     }
 
     @Test
