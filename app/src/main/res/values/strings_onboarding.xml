@@ -9,6 +9,7 @@
     <string name="onboarding_rules_intro">Two quick choices to get you protected. You can change them any time.</string>
     <string name="onboarding_rules_action_label">When a call is blocked</string>
     <string name="onboarding_rules_finish">Finish setup</string>
+    <string name="onboarding_privacy">Privacy policy</string>
     <string name="onboarding_skip">Skip for now</string>
 
     <string name="onboarding_role_title">Make Call Manager your call-screening app</string>

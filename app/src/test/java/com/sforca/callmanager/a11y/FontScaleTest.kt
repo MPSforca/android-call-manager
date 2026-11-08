@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.Density
 import androidx.test.core.app.ApplicationProvider
 import com.sforca.callmanager.R
 import com.sforca.callmanager.core.designsystem.theme.CallManagerTheme
+import com.sforca.callmanager.feature.onboarding.OnboardingActions
 import com.sforca.callmanager.feature.onboarding.OnboardingScreen
 import com.sforca.callmanager.feature.onboarding.PermissionsState
 import com.sforca.callmanager.testing.ComposeHostRule
@@ -42,11 +43,15 @@ class FontScaleTest {
                 CallManagerTheme {
                     OnboardingScreen(
                         state = state,
-                        onRequestRole = { calls += "role" },
-                        onRequestPermissions = { calls += "permissions" },
-                        onRequestBatteryExemption = { calls += "battery" },
-                        onSkip = { calls += "skip" },
-                        onContinue = { calls += "continue" },
+                        actions =
+                            OnboardingActions(
+                                onRequestRole = { calls += "role" },
+                                onRequestPermissions = { calls += "permissions" },
+                                onRequestBatteryExemption = { calls += "battery" },
+                                onSkip = { calls += "skip" },
+                                onContinue = { calls += "continue" },
+                                onOpenPrivacy = { calls += "privacy" },
+                            ),
                     )
                 }
             }

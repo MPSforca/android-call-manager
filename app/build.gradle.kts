@@ -66,6 +66,8 @@ android {
         abortOnError = true
         checkDependencies = true
         baseline = file("lint-baseline.xml")
+        // Renovate and Dependabot own version bumps; these checks only fail CI whenever a release lands.
+        disable += setOf("AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
     }
 }
 

@@ -29,11 +29,15 @@ class OnboardingScreenTest {
         compose.setContent {
             OnboardingScreen(
                 state = state,
-                onRequestRole = { calls += "role" },
-                onRequestPermissions = { calls += "permissions" },
-                onRequestBatteryExemption = { calls += "battery" },
-                onSkip = { calls += "skip" },
-                onContinue = { calls += "continue" },
+                actions =
+                    OnboardingActions(
+                        onRequestRole = { calls += "role" },
+                        onRequestPermissions = { calls += "permissions" },
+                        onRequestBatteryExemption = { calls += "battery" },
+                        onSkip = { calls += "skip" },
+                        onContinue = { calls += "continue" },
+                        onOpenPrivacy = { calls += "privacy" },
+                    ),
             )
         }
 
@@ -78,5 +82,14 @@ class OnboardingScreenTest {
         compose.onNodeWithText("Skip for now").performScrollTo().performClick()
 
         assertEquals(listOf("skip"), calls)
+    }
+
+    @Test
+    fun `privacy policy is reachable from the page`() {
+        show(PermissionsState())
+
+        compose.onNodeWithText("Privacy policy").performScrollTo().performClick()
+
+        assertEquals(listOf("privacy"), calls)
     }
 }

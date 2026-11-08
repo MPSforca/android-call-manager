@@ -32,7 +32,7 @@ import com.sforca.callmanager.core.designsystem.theme.LocalSpacing
 import com.sforca.callmanager.core.model.ThemeMode
 import com.sforca.callmanager.core.model.UserPreferences
 
-internal const val PRIVACY_URL = "https://github.com/MPSforca/android-call-manager/blob/main/PRIVACY.md"
+internal const val PRIVACY_URL = "https://mpsforca.github.io/android-call-manager/privacy/"
 internal const val LICENSE_URL = "https://github.com/MPSforca/android-call-manager/blob/main/LICENSE"
 
 /** App-wide settings: appearance, protection against the system killing screening, and about. */

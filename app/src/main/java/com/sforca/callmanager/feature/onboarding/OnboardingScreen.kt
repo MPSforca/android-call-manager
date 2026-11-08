@@ -57,6 +57,16 @@ private fun contentFor(step: OnboardingStep) =
             )
     }
 
+/** Everything the first-run permissions page can ask its host to do. */
+data class OnboardingActions(
+    val onRequestRole: () -> Unit,
+    val onRequestPermissions: () -> Unit,
+    val onRequestBatteryExemption: () -> Unit,
+    val onSkip: () -> Unit,
+    val onContinue: () -> Unit,
+    val onOpenPrivacy: () -> Unit,
+)
+
 /**
  * First-run permissions page: every access Call Manager needs on one screen, each with its reason
  * and a live done/enable state. Continue unlocks once the core steps (role, permissions) are done;
@@ -65,11 +75,7 @@ private fun contentFor(step: OnboardingStep) =
 @Composable
 fun OnboardingScreen(
     state: PermissionsState,
-    onRequestRole: () -> Unit,
-    onRequestPermissions: () -> Unit,
-    onRequestBatteryExemption: () -> Unit,
-    onSkip: () -> Unit,
-    onContinue: () -> Unit,
+    actions: OnboardingActions,
     modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
@@ -89,21 +95,26 @@ fun OnboardingScreen(
                 done = state.isDone(step),
                 onAction =
                     when (step) {
-                        OnboardingStep.ROLE -> onRequestRole
-                        OnboardingStep.PERMISSIONS -> onRequestPermissions
-                        OnboardingStep.BATTERY -> onRequestBatteryExemption
+                        OnboardingStep.ROLE -> actions.onRequestRole
+                        OnboardingStep.PERMISSIONS -> actions.onRequestPermissions
+                        OnboardingStep.BATTERY -> actions.onRequestBatteryExemption
                     },
             )
         }
         CmButton(
             text = stringResource(R.string.onboarding_continue),
-            onClick = onContinue,
+            onClick = actions.onContinue,
             enabled = state.coreComplete,
             modifier = Modifier.fillMaxWidth(),
         )
         CmTextButton(
             text = stringResource(R.string.onboarding_skip),
-            onClick = onSkip,
+            onClick = actions.onSkip,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        )
+        CmTextButton(
+            text = stringResource(R.string.onboarding_privacy),
+            onClick = actions.onOpenPrivacy,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
     }

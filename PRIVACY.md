@@ -1,6 +1,10 @@
-# Privacy
+# Call Manager Privacy Policy
 
-Call Manager is designed so your call data never leaves your phone.
+_Last updated: 2026-11-08_
+
+Call Manager ("the app") is an open-source Android app that blocks unwanted phone calls. It is
+designed so your call data never leaves your phone. The developer does not collect, receive, store,
+share or sell any personal data.
 
 ## What the app accesses
 
@@ -34,11 +38,29 @@ Android's settings.
 Clear the app's storage or uninstall it in Android settings. Call-log and contact data belong to
 Android and are only read by this app, never modified.
 
-## Distribution
+## Children
 
-The project is not on the Google Play Store. If it is ever published there, this document will be
-updated to match any store requirements.
+The app is not directed at children and collects no information from anyone.
+
+## Permissions
+
+The app asks for access to your call log, contacts and phone state only for the purposes above, and
+only on your device. Each permission and its purpose is listed in the
+[README](https://github.com/MPSforca/android-call-manager#permissions-and-why). You can revoke any
+of them in Android settings at any time; the related features then stop working.
+
+## Open source
+
+The complete source code is public at
+[github.com/MPSforca/android-call-manager](https://github.com/MPSforca/android-call-manager), so
+every statement here can be checked against the code.
+
+## Contact
+
+Questions about this policy: matheus.sforca2@gmail.com, or open an issue at
+[github.com/MPSforca/android-call-manager/issues](https://github.com/MPSforca/android-call-manager/issues).
 
 ## Changes
 
-Changes to this policy appear in the git history of this file.
+Changes to this policy are published at this address, with the date above updated. The full history
+is in the git log of `PRIVACY.md`.
