@@ -61,7 +61,7 @@ Gradle needs a **JDK 17–21** (newer JDKs fail); set `JAVA_HOME` accordingly. S
 ```
 
 - Robolectric is pinned to `sdk = [34]` via `@Config` on `CallRepositoryTest`, because Robolectric
-  4.13 doesn't support API 35 (the project's `compileSdk`/`targetSdk`). Bump only together with a
+  4.13 doesn't support API 36 (the project's `compileSdk`/`targetSdk`). Bump only together with a
   Robolectric upgrade.
 - Raw `CallLog.Calls.CONTENT_URI` queries in `CallLogUtil` are not Robolectric-testable; they are
   covered by the manual adb recipes in `docs/TESTING.md`.

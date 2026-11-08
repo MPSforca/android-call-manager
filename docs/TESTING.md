@@ -16,7 +16,7 @@ Conventions:
 - Pure logic (`ScreeningPolicy`, `BlockedCallMerger`) is tested with plain JUnit, no Robolectric,
   by design. Keep new rule and merge logic Android-free where possible.
 - `CallRepositoryTest` is pinned to `@Config(sdk = [34])` because Robolectric 4.13 doesn't support
-  API 35. Bump the pin only when upgrading Robolectric.
+  API 36. Bump the pin only when upgrading Robolectric.
 - `CallLogUtil`'s `recentCalls` / `systemBlockedCalls` / `outgoingNumbersSince` (raw
   `CallLog.Calls.CONTENT_URI` queries, including LIMIT/OFFSET paging) are **not**
   Robolectric-testable: its `CallLog` shadow doesn't back a real queryable table, so even a plain

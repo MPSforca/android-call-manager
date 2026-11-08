@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-08
+
+### Changed
+
+- Target and compile against Android 16 (API 36), as Google Play now requires. Builds with AGP 8.9.3 and
+  Gradle 8.11.1.
+
 ## [1.0.0] - 2026-11-08
 
 ### Added
