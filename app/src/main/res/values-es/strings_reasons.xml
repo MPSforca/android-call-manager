@@ -1,0 +1,18 @@
+<resources>
+    <string name="reason_block_list">En tu lista de bloqueados</string>
+    <string name="reason_allow_list">En tu lista de permitidos</string>
+    <string name="reason_name_pattern">El nombre del llamante coincide con un patrón permitido</string>
+    <string name="reason_known_contact">Contacto conocido</string>
+    <plurals name="reason_recently_accepted">
+        <item quantity="one">Atendida en el último día</item>
+        <item quantity="many">Atendida en los últimos %d de días</item>
+        <item quantity="other">Atendida en los últimos %d días</item>
+    </plurals>
+    <plurals name="reason_recently_called">
+        <item quantity="one">Lo llamaste en el último día</item>
+        <item quantity="many">Lo llamaste en los últimos %d de días</item>
+        <item quantity="other">Lo llamaste en los últimos %d días</item>
+    </plurals>
+    <string name="reason_unknown_number">Número desconocido</string>
+    <string name="reason_no_matching_block_rule">Ninguna regla de bloqueo coincide</string>
+</resources>

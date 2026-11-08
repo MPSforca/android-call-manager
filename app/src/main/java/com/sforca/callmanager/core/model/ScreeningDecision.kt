@@ -1,11 +1,13 @@
 package com.sforca.callmanager.core.model
 
 sealed class ScreeningDecision {
+    abstract val reason: ScreeningReason
+
     data class Allow(
-        val reason: String,
+        override val reason: ScreeningReason,
     ) : ScreeningDecision()
 
     data class Reject(
-        val reason: String,
+        override val reason: ScreeningReason,
     ) : ScreeningDecision()
 }

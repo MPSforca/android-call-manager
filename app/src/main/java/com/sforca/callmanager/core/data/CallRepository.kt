@@ -20,6 +20,7 @@ import com.sforca.callmanager.core.database.entity.BlockListEntry
 import com.sforca.callmanager.core.database.entity.BlockedCallLog
 import com.sforca.callmanager.core.datastore.SettingsRepository
 import com.sforca.callmanager.core.model.ScreeningDecision
+import com.sforca.callmanager.core.model.ScreeningReason
 import com.sforca.callmanager.core.telephony.ContactsLookup
 import com.sforca.callmanager.core.telephony.RecentOutgoingLookup
 import kotlinx.coroutines.flow.Flow
@@ -134,7 +135,7 @@ class CallRepository
         /** Returns the caller's contact name, if any, so callers can reuse it (e.g. for a notification). */
         suspend fun logBlockedCall(
             number: String,
-            reason: String,
+            reason: ScreeningReason,
         ): String? {
             val name = contactsLookup.displayName(number)
             blockedCallLogDao.insert(
@@ -142,7 +143,7 @@ class CallRepository
                     number = number,
                     callerName = name,
                     timestamp = System.currentTimeMillis(),
-                    reason = reason,
+                    reason = reason.code,
                 ),
             )
             return name

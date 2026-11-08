@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.sforca.callmanager.core.database.CallManagerDatabase
+import com.sforca.callmanager.core.model.ScreeningReason
 import com.sforca.callmanager.core.model.SystemBlockedCall
 import com.sforca.callmanager.core.telephony.CallLogUtil
 import com.sforca.callmanager.testing.FakeActivityRetainedLifecycle
@@ -111,7 +112,7 @@ class SystemBlockedCallsPagerTest {
                 assertEquals(0, awaitItem().size)
 
                 repository.blockNumbers(listOf("+15550000000" to "Spammer"))
-                repository.logBlockedCall("+15550000000", "On your block list")
+                repository.logBlockedCall("+15550000000", ScreeningReason.BlockList)
                 val afterOwnLog = awaitItem()
                 assertEquals(1, afterOwnLog.size)
                 assertEquals("Call Manager", afterOwnLog.first().source)

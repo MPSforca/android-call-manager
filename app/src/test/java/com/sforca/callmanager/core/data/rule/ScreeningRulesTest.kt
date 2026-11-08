@@ -8,6 +8,7 @@ import com.sforca.callmanager.core.database.entity.AllowListEntry
 import com.sforca.callmanager.core.database.entity.AllowedNamePattern
 import com.sforca.callmanager.core.database.entity.BlockListEntry
 import com.sforca.callmanager.core.model.ScreeningDecision
+import com.sforca.callmanager.core.model.ScreeningReason
 import com.sforca.callmanager.core.model.UserPreferences
 import com.sforca.callmanager.testing.FakeContactsLookup
 import com.sforca.callmanager.testing.FakeRecentOutgoingLookup
@@ -58,7 +59,7 @@ class ScreeningRulesTest {
 
             db.blockListDao().insertAll(listOf(BlockListEntry(number, null, now)))
 
-            assertEquals(ScreeningDecision.Reject("On your block list"), rule.evaluate(ctx()))
+            assertEquals(ScreeningDecision.Reject(ScreeningReason.BlockList), rule.evaluate(ctx()))
         }
 
     @Test
@@ -69,7 +70,7 @@ class ScreeningRulesTest {
 
             db.allowListDao().insertAll(listOf(AllowListEntry(number, null, now)))
 
-            assertEquals(ScreeningDecision.Allow("On your allow list"), rule.evaluate(ctx()))
+            assertEquals(ScreeningDecision.Allow(ScreeningReason.AllowList), rule.evaluate(ctx()))
         }
 
     @Test
@@ -79,7 +80,7 @@ class ScreeningRulesTest {
             db.allowedNamePatternDao().insert(AllowedNamePattern("Dr.", now))
 
             assertEquals(
-                ScreeningDecision.Allow("Caller name matches an allow pattern"),
+                ScreeningDecision.Allow(ScreeningReason.NamePattern),
                 rule.evaluate(ctx(callerName = "Dr. Smith")),
             )
             assertNull(rule.evaluate(ctx(callerName = "Telemarketer")))
@@ -92,7 +93,7 @@ class ScreeningRulesTest {
             val rule = ContactRule(contacts)
             contacts.contacts[number] = "Friend"
 
-            assertEquals(ScreeningDecision.Allow("Known contact"), rule.evaluate(ctx()))
+            assertEquals(ScreeningDecision.Allow(ScreeningReason.KnownContact), rule.evaluate(ctx()))
             assertNull(rule.evaluate(ctx(UserPreferences(allowContacts = false))))
             assertNull(ContactRule(FakeContactsLookup()).evaluate(ctx()))
         }
@@ -104,7 +105,7 @@ class ScreeningRulesTest {
             assertNull(rule.evaluate(ctx()))
 
             db.acceptedCallerDao().upsert(AcceptedCaller(number, daysAgo(5)))
-            assertEquals(ScreeningDecision.Allow("Accepted within the last 30 days"), rule.evaluate(ctx()))
+            assertEquals(ScreeningDecision.Allow(ScreeningReason.RecentlyAccepted(30)), rule.evaluate(ctx()))
             assertNull(rule.evaluate(ctx(UserPreferences(recentAcceptedRuleEnabled = false))))
             assertNull(rule.evaluate(ctx(UserPreferences(allowRecentAcceptedDays = 1))))
         }
@@ -116,7 +117,7 @@ class ScreeningRulesTest {
             assertNull(rule.evaluate(ctx()))
 
             outgoing.outgoingCalls[number] = daysAgo(5)
-            assertEquals(ScreeningDecision.Allow("You called them within the last 30 days"), rule.evaluate(ctx()))
+            assertEquals(ScreeningDecision.Allow(ScreeningReason.RecentlyCalled(30)), rule.evaluate(ctx()))
             assertNull(rule.evaluate(ctx(UserPreferences(recentOutgoingRuleEnabled = false))))
             assertNull(rule.evaluate(ctx(UserPreferences(allowRecentOutgoingDays = 1))))
         }
@@ -126,9 +127,9 @@ class ScreeningRulesTest {
         runTest {
             val rule = UnknownNumberFallbackRule()
 
-            assertEquals(ScreeningDecision.Allow("No matching block rule"), rule.evaluate(ctx()))
+            assertEquals(ScreeningDecision.Allow(ScreeningReason.NoMatchingBlockRule), rule.evaluate(ctx()))
             assertEquals(
-                ScreeningDecision.Reject("Unknown number"),
+                ScreeningDecision.Reject(ScreeningReason.UnknownNumber),
                 rule.evaluate(ctx(UserPreferences(blockUnknownNumbers = true))),
             )
         }

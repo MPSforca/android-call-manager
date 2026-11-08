@@ -35,6 +35,7 @@ import com.sforca.callmanager.core.designsystem.component.EmptyState
 import com.sforca.callmanager.core.designsystem.component.SectionHeader
 import com.sforca.callmanager.core.designsystem.component.StatusPill
 import com.sforca.callmanager.core.designsystem.component.StatusTone
+import com.sforca.callmanager.core.designsystem.text
 import com.sforca.callmanager.core.designsystem.theme.LocalSpacing
 import com.sforca.callmanager.core.model.ScreeningDecision
 import com.sforca.callmanager.core.telephony.PhoneNumberFormatter
@@ -136,7 +137,7 @@ private fun TraceCard(
             horizontalArrangement = Arrangement.spacedBy(spacing.small),
         ) {
             DecisionPill(decision)
-            Text(decision.reason(), style = MaterialTheme.typography.titleSmall)
+            Text(decision.reasonText(), style = MaterialTheme.typography.titleSmall)
         }
         Text(
             stringResource(R.string.debug_trace_title),
@@ -184,7 +185,7 @@ private fun HistorySection(
             Column(modifier = Modifier.weight(1f)) {
                 Text(entry.number, style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    entry.trace.decision.reason(),
+                    entry.trace.decision.reasonText(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -202,11 +203,8 @@ private fun DecisionPill(decision: ScreeningDecision) {
     }
 }
 
-private fun ScreeningDecision.reason(): String =
-    when (this) {
-        is ScreeningDecision.Allow -> reason
-        is ScreeningDecision.Reject -> reason
-    }
+@Composable
+private fun ScreeningDecision.reasonText(): String = reason.text(LocalContext.current)
 
 private fun TraceOutcome.tone(decision: ScreeningDecision): StatusTone =
     when (this) {

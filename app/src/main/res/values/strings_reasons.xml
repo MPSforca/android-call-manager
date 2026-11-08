@@ -1,0 +1,16 @@
+<resources>
+    <string name="reason_block_list">On your block list</string>
+    <string name="reason_allow_list">On your allow list</string>
+    <string name="reason_name_pattern">Caller name matches an allow pattern</string>
+    <string name="reason_known_contact">Known contact</string>
+    <plurals name="reason_recently_accepted">
+        <item quantity="one">Accepted within the last day</item>
+        <item quantity="other">Accepted within the last %d days</item>
+    </plurals>
+    <plurals name="reason_recently_called">
+        <item quantity="one">You called them within the last day</item>
+        <item quantity="other">You called them within the last %d days</item>
+    </plurals>
+    <string name="reason_unknown_number">Unknown number</string>
+    <string name="reason_no_matching_block_rule">No matching block rule</string>
+</resources>

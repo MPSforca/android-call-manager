@@ -18,6 +18,7 @@ import com.sforca.callmanager.core.data.rule.TraceOutcome
 import com.sforca.callmanager.core.data.rule.TraceStep
 import com.sforca.callmanager.core.designsystem.theme.CallManagerTheme
 import com.sforca.callmanager.core.model.ScreeningDecision
+import com.sforca.callmanager.core.model.ScreeningReason
 import com.sforca.callmanager.testing.ComposeHostActivityRule
 import com.sforca.callmanager.testing.MainDispatcherRule
 import org.junit.Assert.assertEquals
@@ -40,7 +41,7 @@ class DebugScreenTest {
 
     private val blockedTrace =
         ScreeningTrace(
-            ScreeningDecision.Reject("On your block list"),
+            ScreeningDecision.Reject(ScreeningReason.BlockList),
             ScreeningRuleId.entries.mapIndexed { i, id ->
                 TraceStep(id, if (i == 0) TraceOutcome.DECIDED else TraceOutcome.NOT_REACHED)
             },
