@@ -24,4 +24,14 @@
     <string name="recent_blocked_snackbar">Blocked %1$s</string>
     <string name="recent_undo">Undo</string>
     <string name="recent_swipe_block">Block</string>
+
+    <string name="call_outcome_incoming">Incoming</string>
+    <string name="call_outcome_outgoing">Outgoing</string>
+    <string name="call_outcome_missed">Missed</string>
+    <string name="call_outcome_voicemail">Voicemail</string>
+    <string name="call_outcome_rejected">Rejected</string>
+    <string name="call_outcome_blocked">Blocked</string>
+    <string name="call_outcome_answered_elsewhere">Answered elsewhere</string>
+    <string name="call_outcome_call">Call</string>
+    <string name="call_outcome_allowed">Allowed</string>
 </resources>

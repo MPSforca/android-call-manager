@@ -5,6 +5,8 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.provider.CallLog
+import androidx.annotation.StringRes
+import com.sforca.callmanager.R
 import com.sforca.callmanager.core.model.RecentCall
 import com.sforca.callmanager.core.model.RecentCallGroup
 import com.sforca.callmanager.core.model.SystemBlockedCall
@@ -182,17 +184,18 @@ object CallLogUtil {
                 )
             }.sortedByDescending { it.latestTimestamp }
 
-    /** Human-readable label for a CallLog.Calls.TYPE value, for showing call outcome in the UI. */
-    fun callTypeLabel(type: Int): String =
+    /** String resource for a CallLog.Calls.TYPE value, for showing call outcome in the UI. */
+    @StringRes
+    fun callTypeLabel(type: Int): Int =
         when (type) {
-            CallLog.Calls.INCOMING_TYPE -> "Incoming"
-            CallLog.Calls.OUTGOING_TYPE -> "Outgoing"
-            CallLog.Calls.MISSED_TYPE -> "Missed"
-            CallLog.Calls.VOICEMAIL_TYPE -> "Voicemail"
-            CallLog.Calls.REJECTED_TYPE -> "Rejected"
-            CallLog.Calls.BLOCKED_TYPE -> "Blocked"
-            CallLog.Calls.ANSWERED_EXTERNALLY_TYPE -> "Answered elsewhere"
-            else -> "Call"
+            CallLog.Calls.INCOMING_TYPE -> R.string.call_outcome_incoming
+            CallLog.Calls.OUTGOING_TYPE -> R.string.call_outcome_outgoing
+            CallLog.Calls.MISSED_TYPE -> R.string.call_outcome_missed
+            CallLog.Calls.VOICEMAIL_TYPE -> R.string.call_outcome_voicemail
+            CallLog.Calls.REJECTED_TYPE -> R.string.call_outcome_rejected
+            CallLog.Calls.BLOCKED_TYPE -> R.string.call_outcome_blocked
+            CallLog.Calls.ANSWERED_EXTERNALLY_TYPE -> R.string.call_outcome_answered_elsewhere
+            else -> R.string.call_outcome_call
         }
 
     private fun blockReasonLabel(reason: Int): String =

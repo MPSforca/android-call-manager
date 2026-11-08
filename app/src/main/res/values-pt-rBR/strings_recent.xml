@@ -25,4 +25,14 @@
     <string name="recent_blocked_snackbar">Bloqueado: %1$s</string>
     <string name="recent_undo">Desfazer</string>
     <string name="recent_swipe_block">Bloquear</string>
+
+    <string name="call_outcome_incoming">Recebida</string>
+    <string name="call_outcome_outgoing">Realizada</string>
+    <string name="call_outcome_missed">Perdida</string>
+    <string name="call_outcome_voicemail">Caixa postal</string>
+    <string name="call_outcome_rejected">Rejeitada</string>
+    <string name="call_outcome_blocked">Bloqueada</string>
+    <string name="call_outcome_answered_elsewhere">Atendida em outro lugar</string>
+    <string name="call_outcome_call">Chamada</string>
+    <string name="call_outcome_allowed">Permitida</string>
 </resources>
