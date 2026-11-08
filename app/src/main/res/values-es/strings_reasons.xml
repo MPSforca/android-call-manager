@@ -5,10 +5,12 @@
     <string name="reason_known_contact">Contacto conocido</string>
     <plurals name="reason_recently_accepted">
         <item quantity="one">Atendida en el último día</item>
+        <item quantity="many">Atendida en los últimos %d de días</item>
         <item quantity="other">Atendida en los últimos %d días</item>
     </plurals>
     <plurals name="reason_recently_called">
         <item quantity="one">Lo llamaste en el último día</item>
+        <item quantity="many">Lo llamaste en los últimos %d de días</item>
         <item quantity="other">Lo llamaste en los últimos %d días</item>
     </plurals>
     <string name="reason_unknown_number">Número desconocido</string>

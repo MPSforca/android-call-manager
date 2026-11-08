@@ -4,12 +4,14 @@
     <string name="reason_name_pattern">O nome do chamador corresponde a um padrão permitido</string>
     <string name="reason_known_contact">Contato conhecido</string>
     <plurals name="reason_recently_accepted">
-        <item quantity="one">Atendida no último dia</item>
-        <item quantity="other">Atendida nos últimos %d dias</item>
+        <item quantity="one">Atendida em até %d dia</item>
+        <item quantity="many">Atendida em até %d de dias</item>
+        <item quantity="other">Atendida em até %d dias</item>
     </plurals>
     <plurals name="reason_recently_called">
-        <item quantity="one">Você ligou para o contato no último dia</item>
-        <item quantity="other">Você ligou para o contato nos últimos %d dias</item>
+        <item quantity="one">Você ligou para o contato em até %d dia</item>
+        <item quantity="many">Você ligou para o contato em até %d de dias</item>
+        <item quantity="other">Você ligou para o contato em até %d dias</item>
     </plurals>
     <string name="reason_unknown_number">Número desconhecido</string>
     <string name="reason_no_matching_block_rule">Nenhuma regra de bloqueio correspondente</string>

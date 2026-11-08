@@ -55,8 +55,8 @@ class ScreeningReasonTextTest {
     @Config(qualifiers = "pt-rBR")
     fun `portuguese text differs from english for every reason`() {
         assertEquals("Na sua lista de bloqueados", ScreeningReason.BlockList.text(context))
-        assertEquals("Atendida nos últimos 30 dias", ScreeningReason.RecentlyAccepted(30).text(context))
-        assertEquals("Você ligou para o contato no último dia", ScreeningReason.RecentlyCalled(1).text(context))
+        assertEquals("Atendida em até 30 dias", ScreeningReason.RecentlyAccepted(30).text(context))
+        assertEquals("Você ligou para o contato em até 1 dia", ScreeningReason.RecentlyCalled(1).text(context))
         allReasons.forEach { assertTrue(it.text(context).isNotBlank()) }
     }
 
