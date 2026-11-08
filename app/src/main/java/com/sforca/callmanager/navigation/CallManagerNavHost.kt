@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
@@ -18,6 +19,7 @@ import androidx.navigation.toRoute
 import com.sforca.callmanager.feature.home.HomeScreen
 import com.sforca.callmanager.feature.home.RulesHint
 import com.sforca.callmanager.feature.lists.ListsScreen
+import com.sforca.callmanager.feature.onboarding.OnboardingActions
 import com.sforca.callmanager.feature.onboarding.OnboardingRulesScreen
 import com.sforca.callmanager.feature.onboarding.OnboardingRulesViewModel
 import com.sforca.callmanager.feature.onboarding.OnboardingScreen
@@ -28,6 +30,7 @@ import com.sforca.callmanager.feature.recent.RecentScreen
 import com.sforca.callmanager.feature.rules.RulesScreen
 import com.sforca.callmanager.feature.rules.RulesStep
 import com.sforca.callmanager.feature.rules.RulesStepScreen
+import com.sforca.callmanager.feature.settings.PRIVACY_URL
 import com.sforca.callmanager.feature.settings.SettingsScreen
 
 @Composable
@@ -97,6 +100,7 @@ private fun NavGraphBuilder.onboardingDestinations(
     onRulesSetupDone: () -> Unit,
 ) {
     composable<Route.Onboarding> {
+        val uriHandler = LocalUriHandler.current
         val rulesViewModel: OnboardingRulesViewModel = hiltViewModel()
         // The rules page is first-run only, so a returning user goes straight to Home.
         val leave = {
@@ -106,14 +110,18 @@ private fun NavGraphBuilder.onboardingDestinations(
         }
         OnboardingScreen(
             state = permissions,
-            onRequestRole = actions.requestScreeningRole,
-            onRequestPermissions = actions.requestRuntimePermissions,
-            onRequestBatteryExemption = actions.requestBatteryExemption,
-            onSkip = {
-                actions.skipOnboarding()
-                leave()
-            },
-            onContinue = { leave() },
+            actions =
+                OnboardingActions(
+                    onRequestRole = actions.requestScreeningRole,
+                    onRequestPermissions = actions.requestRuntimePermissions,
+                    onRequestBatteryExemption = actions.requestBatteryExemption,
+                    onSkip = {
+                        actions.skipOnboarding()
+                        leave()
+                    },
+                    onContinue = { leave() },
+                    onOpenPrivacy = { uriHandler.openUri(PRIVACY_URL) },
+                ),
         )
     }
     composable<Route.OnboardingRules> {

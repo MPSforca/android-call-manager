@@ -75,7 +75,8 @@ The call-screening role is granted through a system dialog, not a permission pro
 ## Privacy
 
 All rules, lists and logs live in a local database on your phone. The app has no network
-permission and no analytics. Details in [PRIVACY.md](PRIVACY.md).
+permission and no analytics. Details in [PRIVACY.md](PRIVACY.md), also published at
+<https://mpsforca.github.io/android-call-manager/privacy/>.
 
 ## Contributing
 

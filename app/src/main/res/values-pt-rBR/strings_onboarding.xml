@@ -9,6 +9,7 @@
     <string name="onboarding_rules_intro">Duas escolhas rápidas para você ficar protegido. Você pode mudá-las quando quiser.</string>
     <string name="onboarding_rules_action_label">Quando uma chamada é bloqueada</string>
     <string name="onboarding_rules_finish">Concluir configuração</string>
+    <string name="onboarding_privacy">Política de privacidade</string>
     <string name="onboarding_skip">Pular por enquanto</string>
 
     <string name="onboarding_role_title">Torne o Call Manager seu app de triagem de chamadas</string>
