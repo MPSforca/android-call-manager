@@ -2,9 +2,9 @@ package com.sforca.callmanager.core.telephony
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.core.net.toUri
 
 /**
  * The app has no persistent background process: Telecom binds RuleBasedCallScreeningService only
@@ -24,5 +24,5 @@ object BatteryUtil {
     }
 
     fun requestIgnoreBatteryOptimizationsIntent(context: Context): Intent =
-        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${context.packageName}"))
+        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, "package:${context.packageName}".toUri())
 }
