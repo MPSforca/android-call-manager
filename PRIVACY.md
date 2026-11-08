@@ -57,7 +57,7 @@ every statement here can be checked against the code.
 
 ## Contact
 
-Questions about this policy: matheussforza@gmail.com, or open an issue at
+Questions about this policy: matheus.sforca2@gmail.com, or open an issue at
 [github.com/MPSforca/android-call-manager/issues](https://github.com/MPSforca/android-call-manager/issues).
 
 ## Changes

@@ -68,7 +68,6 @@ Requires Android 8.0 (API 26) or newer. Silencing (as opposed to rejecting) need
 | `READ_PHONE_STATE` | Detects that you answered a ringing call, which feeds the "answered recently" rule. |
 | `POST_NOTIFICATIONS` | Optional notification when a call is rejected outright (Android 13+). |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Lets the app ask you to exempt it from battery optimization. It isn't a wakelock. |
-| `ANSWER_PHONE_CALLS` | Declared in the manifest but not currently used by any code; the app never answers or ends calls. |
 
 The call-screening role is granted through a system dialog, not a permission prompt.
 

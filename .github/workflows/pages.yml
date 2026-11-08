@@ -1,7 +1,6 @@
 name: Pages
 
 # Publishes site/ plus PRIVACY.md (the single source of truth for the policy) to GitHub Pages.
-# One-time setup: Settings > Pages > Source = "GitHub Actions".
 
 on:
   push:
