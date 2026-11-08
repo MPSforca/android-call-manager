@@ -294,7 +294,10 @@ class CallManagerAppTest {
         awaitText("Protection is on")
         compose.onNodeWithText("Protection is on. You can add more customizable rules in the Rules tab.").assertExists()
         compose.onNodeWithText("Open Rules").performClick()
-        compose.onNodeWithText("Guided setup").assertExists()
+        compose
+            .onNodeWithText(
+                "Rules run from top to bottom. The first rule that matches decides what happens to a call.",
+            ).assertExists()
 
         val prefs = kotlinx.coroutines.runBlocking { settings.preferences.first() }
         assertEquals(BlockedCallAction.SILENCE, prefs.blockedCallAction)
