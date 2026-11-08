@@ -306,6 +306,6 @@ class CallRepositoryTest {
 
             assertEquals(1, log.size)
             assertEquals("+15558888888", log.first().number)
-            assertEquals("On your block list", log.first().reason)
+            assertEquals("block_list", log.first().reason)
         }
 }

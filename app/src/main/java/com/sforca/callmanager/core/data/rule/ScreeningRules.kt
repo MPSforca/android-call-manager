@@ -6,6 +6,7 @@ import com.sforca.callmanager.core.database.dao.AllowListDao
 import com.sforca.callmanager.core.database.dao.AllowedNamePatternDao
 import com.sforca.callmanager.core.database.dao.BlockListDao
 import com.sforca.callmanager.core.model.ScreeningDecision
+import com.sforca.callmanager.core.model.ScreeningReason
 import com.sforca.callmanager.core.telephony.ContactsLookup
 import com.sforca.callmanager.core.telephony.RecentOutgoingLookup
 import java.util.concurrent.TimeUnit
@@ -14,14 +15,14 @@ class BlockListRule(
     private val dao: BlockListDao,
 ) : ScreeningRule {
     override suspend fun evaluate(context: ScreeningContext): ScreeningDecision? =
-        if (dao.isBlocked(context.number)) ScreeningDecision.Reject("On your block list") else null
+        if (dao.isBlocked(context.number)) ScreeningDecision.Reject(ScreeningReason.BlockList) else null
 }
 
 class AllowListRule(
     private val dao: AllowListDao,
 ) : ScreeningRule {
     override suspend fun evaluate(context: ScreeningContext): ScreeningDecision? =
-        if (dao.isAllowed(context.number)) ScreeningDecision.Allow("On your allow list") else null
+        if (dao.isAllowed(context.number)) ScreeningDecision.Allow(ScreeningReason.AllowList) else null
 }
 
 class NamePatternRule(
@@ -29,7 +30,7 @@ class NamePatternRule(
 ) : ScreeningRule {
     override suspend fun evaluate(context: ScreeningContext): ScreeningDecision? =
         if (NameAllowMatcher.matches(context.callerName, dao.getAllPatterns())) {
-            ScreeningDecision.Allow("Caller name matches an allow pattern")
+            ScreeningDecision.Allow(ScreeningReason.NamePattern)
         } else {
             null
         }
@@ -40,7 +41,7 @@ class ContactRule(
 ) : ScreeningRule {
     override suspend fun evaluate(context: ScreeningContext): ScreeningDecision? =
         if (context.preferences.allowContacts && contactsLookup.isContact(context.number)) {
-            ScreeningDecision.Allow("Known contact")
+            ScreeningDecision.Allow(ScreeningReason.KnownContact)
         } else {
             null
         }
@@ -55,7 +56,7 @@ class RecentlyAcceptedRule(
         val cutoff = context.nowMillis - TimeUnit.DAYS.toMillis(days.toLong())
         val accepted = dao.get(context.number)
         return if (accepted != null && accepted.lastAcceptedAt >= cutoff) {
-            ScreeningDecision.Allow("Accepted within the last $days days")
+            ScreeningDecision.Allow(ScreeningReason.RecentlyAccepted(days))
         } else {
             null
         }
@@ -70,7 +71,7 @@ class RecentlyCalledRule(
         val days = context.preferences.allowRecentOutgoingDays
         val cutoff = context.nowMillis - TimeUnit.DAYS.toMillis(days.toLong())
         return if (lookup.hasOutgoingCallSince(context.number, cutoff)) {
-            ScreeningDecision.Allow("You called them within the last $days days")
+            ScreeningDecision.Allow(ScreeningReason.RecentlyCalled(days))
         } else {
             null
         }
@@ -81,8 +82,8 @@ class RecentlyCalledRule(
 class UnknownNumberFallbackRule : ScreeningRule {
     override suspend fun evaluate(context: ScreeningContext): ScreeningDecision =
         if (context.preferences.blockUnknownNumbers) {
-            ScreeningDecision.Reject("Unknown number")
+            ScreeningDecision.Reject(ScreeningReason.UnknownNumber)
         } else {
-            ScreeningDecision.Allow("No matching block rule")
+            ScreeningDecision.Allow(ScreeningReason.NoMatchingBlockRule)
         }
 }

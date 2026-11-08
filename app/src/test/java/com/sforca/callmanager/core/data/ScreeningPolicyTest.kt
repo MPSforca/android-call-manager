@@ -3,6 +3,7 @@ package com.sforca.callmanager.core.data
 import com.sforca.callmanager.core.model.BlockedCallAction
 import com.sforca.callmanager.core.model.ScreeningAction
 import com.sforca.callmanager.core.model.ScreeningDecision
+import com.sforca.callmanager.core.model.ScreeningReason
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -15,7 +16,7 @@ import org.junit.Test
 class ScreeningPolicyTest {
     @Test
     fun `allowed calls ring normally regardless of blocked-call setting`() {
-        val decision = ScreeningDecision.Allow("Known contact")
+        val decision = ScreeningDecision.Allow(ScreeningReason.KnownContact)
 
         assertEquals(
             ScreeningAction.ALLOW,
@@ -29,7 +30,7 @@ class ScreeningPolicyTest {
 
     @Test
     fun `blocked calls are silenced by default so they stay visible but do not ring`() {
-        val decision = ScreeningDecision.Reject("On your block list")
+        val decision = ScreeningDecision.Reject(ScreeningReason.BlockList)
 
         assertEquals(
             ScreeningAction.SILENCE,
@@ -39,7 +40,7 @@ class ScreeningPolicyTest {
 
     @Test
     fun `user can opt into an outright reject instead of silencing`() {
-        val decision = ScreeningDecision.Reject("On your block list")
+        val decision = ScreeningDecision.Reject(ScreeningReason.BlockList)
 
         assertEquals(
             ScreeningAction.REJECT,

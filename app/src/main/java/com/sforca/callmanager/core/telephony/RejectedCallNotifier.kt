@@ -8,6 +8,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.sforca.callmanager.R
+import com.sforca.callmanager.core.designsystem.text
+import com.sforca.callmanager.core.model.ScreeningReason
 
 /**
  * Posts a heads-up-free notification when a call gets fully rejected, since those otherwise vanish
@@ -24,7 +26,7 @@ object RejectedCallNotifier {
         context: Context,
         callerName: String?,
         number: String,
-        reason: String,
+        reason: ScreeningReason,
     ) {
         ensureChannel(context)
         val title =
@@ -35,7 +37,7 @@ object RejectedCallNotifier {
                 .Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(context.getString(R.string.notification_blocked_title, title))
-                .setContentText(reason)
+                .setContentText(reason.text(context))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true)
                 .build()
