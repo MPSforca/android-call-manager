@@ -5,7 +5,7 @@
     <string name="recent_filter_all">Todas</string>
     <string name="recent_filter_blocked">Bloqueadas</string>
     <string name="recent_filter_missed">Perdidas</string>
-    <string name="recent_filter_answered">Contestadas</string>
+    <string name="recent_filter_answered">Atendidas</string>
 
     <string name="recent_day_today">Hoy</string>
     <string name="recent_day_yesterday">Ayer</string>
@@ -25,4 +25,14 @@
     <string name="recent_blocked_snackbar">Bloqueado: %1$s</string>
     <string name="recent_undo">Deshacer</string>
     <string name="recent_swipe_block">Bloquear</string>
+
+    <string name="call_outcome_incoming">Entrante</string>
+    <string name="call_outcome_outgoing">Saliente</string>
+    <string name="call_outcome_missed">Perdida</string>
+    <string name="call_outcome_voicemail">Buzón de voz</string>
+    <string name="call_outcome_rejected">Rechazada</string>
+    <string name="call_outcome_blocked">Bloqueada</string>
+    <string name="call_outcome_answered_elsewhere">Contestada en otro dispositivo</string>
+    <string name="call_outcome_call">Llamada</string>
+    <string name="call_outcome_allowed">Permitida</string>
 </resources>

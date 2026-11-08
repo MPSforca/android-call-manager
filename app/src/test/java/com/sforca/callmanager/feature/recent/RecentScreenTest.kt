@@ -1,6 +1,7 @@
 package com.sforca.callmanager.feature.recent
 
 import android.provider.CallLog
+import com.sforca.callmanager.R
 import com.sforca.callmanager.core.model.RecentCall
 import com.sforca.callmanager.core.model.UnifiedBlockedCall
 import org.junit.Assert.assertEquals
@@ -37,7 +38,7 @@ class RecentScreenTest {
         val blockedCalls =
             listOf(UnifiedBlockedCall("+15550000000", null, 1_000L, "On your block list", "Call Manager"))
 
-        assertEquals("Blocked", callOutcomeLabel(call, blockedCalls))
+        assertEquals(R.string.call_outcome_blocked, callOutcomeLabel(call, blockedCalls))
     }
 
     @Test
@@ -45,6 +46,6 @@ class RecentScreenTest {
         val call =
             RecentCall(number = "+15550000000", name = null, timestamp = 1_000L, type = CallLog.Calls.MISSED_TYPE)
 
-        assertEquals("Missed", callOutcomeLabel(call, emptyList()))
+        assertEquals(R.string.call_outcome_missed, callOutcomeLabel(call, emptyList()))
     }
 }

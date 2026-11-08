@@ -1,6 +1,7 @@
 package com.sforca.callmanager.core.telephony
 
 import android.provider.CallLog
+import com.sforca.callmanager.R
 import com.sforca.callmanager.core.model.RecentCall
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -8,11 +9,17 @@ import org.junit.Test
 class CallLogUtilTest {
     @Test
     fun `call type label describes the outcome of a call`() {
-        assertEquals("Incoming", CallLogUtil.callTypeLabel(CallLog.Calls.INCOMING_TYPE))
-        assertEquals("Outgoing", CallLogUtil.callTypeLabel(CallLog.Calls.OUTGOING_TYPE))
-        assertEquals("Missed", CallLogUtil.callTypeLabel(CallLog.Calls.MISSED_TYPE))
-        assertEquals("Rejected", CallLogUtil.callTypeLabel(CallLog.Calls.REJECTED_TYPE))
-        assertEquals("Blocked", CallLogUtil.callTypeLabel(CallLog.Calls.BLOCKED_TYPE))
+        assertEquals(R.string.call_outcome_incoming, CallLogUtil.callTypeLabel(CallLog.Calls.INCOMING_TYPE))
+        assertEquals(R.string.call_outcome_outgoing, CallLogUtil.callTypeLabel(CallLog.Calls.OUTGOING_TYPE))
+        assertEquals(R.string.call_outcome_missed, CallLogUtil.callTypeLabel(CallLog.Calls.MISSED_TYPE))
+        assertEquals(R.string.call_outcome_voicemail, CallLogUtil.callTypeLabel(CallLog.Calls.VOICEMAIL_TYPE))
+        assertEquals(R.string.call_outcome_rejected, CallLogUtil.callTypeLabel(CallLog.Calls.REJECTED_TYPE))
+        assertEquals(R.string.call_outcome_blocked, CallLogUtil.callTypeLabel(CallLog.Calls.BLOCKED_TYPE))
+        assertEquals(
+            R.string.call_outcome_answered_elsewhere,
+            CallLogUtil.callTypeLabel(CallLog.Calls.ANSWERED_EXTERNALLY_TYPE),
+        )
+        assertEquals(R.string.call_outcome_call, CallLogUtil.callTypeLabel(-1))
     }
 
     @Test

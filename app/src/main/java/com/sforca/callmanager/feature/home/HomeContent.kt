@@ -185,7 +185,7 @@ private fun ActivityRow(
                     ).withZone(zone)
                     .format(Instant.ofEpochMilli(latest.timestamp))
             },
-        outcomeLabel = callOutcomeLabel(latest, state.blockedCalls),
+        outcomeLabel = stringResource(callOutcomeLabel(latest, state.blockedCalls)),
         outcomeTone = if (latest.isBlocked(state.blockedCalls)) StatusTone.BLOCKED else StatusTone.UNKNOWN,
         modifier = Modifier.clickable { onCallSelected(group.number) }.padding(horizontal = LocalSpacing.current.large),
     )

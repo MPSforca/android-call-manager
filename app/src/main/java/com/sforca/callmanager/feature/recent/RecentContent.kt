@@ -244,7 +244,7 @@ private fun RecentCallRow(
         displayName = displayName,
         number = listOfNotNull(formattedNumber.takeIf { group.name != null }, count).joinToString(" · "),
         timeLabel = remember(latest.timestamp, zone) { formatTime(latest.timestamp, zone) },
-        outcomeLabel = callOutcomeLabel(latest, state.blockedCalls),
+        outcomeLabel = stringResource(callOutcomeLabel(latest, state.blockedCalls)),
         outcomeTone =
             when {
                 blocked || group.number in state.blockedNumbers -> StatusTone.BLOCKED

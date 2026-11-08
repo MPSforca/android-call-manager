@@ -1,15 +1,18 @@
 package com.sforca.callmanager.feature.recent
 
+import androidx.annotation.StringRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sforca.callmanager.R
 import com.sforca.callmanager.core.data.BlockedCallMerger
 import com.sforca.callmanager.core.model.RecentCall
 import com.sforca.callmanager.core.model.UnifiedBlockedCall
@@ -63,12 +66,13 @@ internal fun statusOf(
  * just looks like a normal missed/incoming call there — but it IS correctly recorded as blocked in
  * our own log, so that's the source of truth for "was this call actually blocked".
  */
+@StringRes
 internal fun callOutcomeLabel(
     call: RecentCall,
     blockedCalls: List<UnifiedBlockedCall>,
-): String =
+): Int =
     if (BlockedCallMerger.wasBlocked(call.number, call.timestamp, blockedCalls)) {
-        "Blocked"
+        R.string.call_outcome_blocked
     } else {
         CallLogUtil.callTypeLabel(call.type)
     }
@@ -80,8 +84,8 @@ internal fun StatusBadge(
 ) {
     val (label, color) =
         when (status) {
-            NumberStatus.BLOCKED -> "Blocked" to MaterialTheme.colorScheme.error
-            NumberStatus.ALLOWED -> "Allowed" to MaterialTheme.colorScheme.primary
+            NumberStatus.BLOCKED -> stringResource(R.string.call_outcome_blocked) to MaterialTheme.colorScheme.error
+            NumberStatus.ALLOWED -> stringResource(R.string.call_outcome_allowed) to MaterialTheme.colorScheme.primary
             NumberStatus.NONE -> return
         }
     Text(
