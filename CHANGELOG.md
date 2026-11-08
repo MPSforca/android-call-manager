@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-08
+
 ### Added
 
 - Privacy policy hosted on GitHub Pages (<https://mpsforca.github.io/android-call-manager/privacy/>),
