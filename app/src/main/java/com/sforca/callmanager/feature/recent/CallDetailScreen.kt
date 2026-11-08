@@ -234,7 +234,7 @@ private fun HistoryRow(
             modifier = Modifier.weight(1f).padding(horizontal = spacing.medium),
         )
         StatusPill(
-            text = callOutcomeLabel(call, blockedCalls),
+            text = stringResource(callOutcomeLabel(call, blockedCalls)),
             tone = if (wasBlocked) StatusTone.BLOCKED else StatusTone.UNKNOWN,
         )
     }
